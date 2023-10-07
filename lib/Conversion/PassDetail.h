@@ -7,21 +7,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_CONVERSION_TCPTOLINALG_TCPTOLINALG_H_
-#define TORCH_MLIR_DIALECTS_CONVERSION_TCPTOLINALG_TCPTOLINALG_H_
+#ifndef TORCH_MLIR_DIALECTS_CONVERSION_PASSDETAIL_H
+#define TORCH_MLIR_DIALECTS_CONVERSION_PASSDETAIL_H
 
+#include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Pass/Pass.h"
+#include "Dialect/Tcp/IR/TcpDialect.h"
 
 namespace mlir {
 
-#define GEN_PASS_DECL_CONVERTTCPTOLINALG
+#define GEN_PASS_CLASSES
 #include "Conversion/Passes.h.inc"
 
-namespace tcp {
+} // end namespace mlir
 
-std::unique_ptr<Pass> createConvertTcpToLinalgPass();
-
-} // namespace tcp
-} // namespace mlir
-
-#endif // TORCH_MLIR_DIALECTS_CONVERSION_TCPTOLINALG_TCPTOLINALG_H_
+#endif // TORCH_MLIR_DIALECTS_CONVERSION_PASSDETAIL_H

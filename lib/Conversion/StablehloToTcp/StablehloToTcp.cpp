@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "torch-mlir-dialects/Conversion/StablehloToTcp/StablehloToTcp.h"
+#include "Conversion/StablehloToTcp/StablehloToTcp.h"
 
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpDialect.h"
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOps.h"
+#include "Dialect/Tcp/IR/TcpDialect.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
 
 #include "../PassDetail.h"
 #include "mlir/IR/PatternMatch.h"
@@ -23,7 +23,7 @@
 namespace mlir {
 
 #define GEN_PASS_DEF_CONVERTTCPTOLINALG
-#include "torch-mlir-dialects/Conversion/Passes.h.inc"
+#include "Conversion/Passes.h.inc"
 
 namespace tcp {
 

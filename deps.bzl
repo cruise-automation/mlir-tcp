@@ -1,0 +1,68 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+def third_party_deps():
+    LLVM_COMMIT = "4acc3ffbb0af5631bc7916aeff3570f448899647"
+    LLVM_SHA256 = "7c5a640383e220dcf16e41a717b5e7d589c29598d31ae304ebc81b73b3be5fd2"
+    http_archive(
+        name = "llvm-raw",
+        build_file_content = "# empty",
+        sha256 = LLVM_SHA256,
+        strip_prefix = "llvm-project-" + LLVM_COMMIT,
+        urls = ["https://github.com/llvm/llvm-project/archive/{commit}.tar.gz".format(commit = LLVM_COMMIT)],
+    )
+
+    TORCH_MLIR_COMMIT = "3d974ed9883eac4c3651ac7799a49da5ad9c597b"
+    TORCH_MLIR_SHA256 = "71aec7c30d72604325ffe275f36bef8df2476dd11d7bf502aaf14f72011ea7f9"
+    http_archive(
+        name = "torch-mlir-raw",
+        sha256 = TORCH_MLIR_SHA256,
+        build_file_content = "# empty",
+        strip_prefix = "torch-mlir-" + TORCH_MLIR_COMMIT,
+        urls = ["https://github.com/llvm/torch-mlir/archive/{commit}.tar.gz".format(commit = TORCH_MLIR_COMMIT)],
+
+        # This patch file deletes the dependency that Torch-MLIR has on Bazel
+        # build tools.  This cuts the dependency on the Go compiler toolchain,
+        # eliminating significant complexity.
+        patches = ["@//:torch-mlir.patch"],
+        patch_args = ["-p1"],
+    )
+
+    STABLEHLO_COMMIT = "77a59815a82b34f7b08ed2d42a711d9920682d0e"
+    STABLEHLO_SHA256 = "367ac567bc9a543ec3c9bbf16e1304a174b1d42bdb7bdeab2ce8b20134ed68d2"
+    http_archive(
+        name = "stablehlo",
+        sha256 = STABLEHLO_SHA256,
+        strip_prefix = "stablehlo-" + STABLEHLO_COMMIT,
+        urls = ["https://github.com/openxla/stablehlo/archive/{commit}.tar.gz".format(commit = STABLEHLO_COMMIT)],
+    )
+
+    SKYLIB_VERSION = "1.3.0"
+
+    http_archive(
+        name = "bazel_skylib",
+        sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/{version}/bazel-skylib-{version}.tar.gz".format(version=SKYLIB_VERSION),
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/{version}/bazel-skylib-{version}.tar.gz".format(version=SKYLIB_VERSION),
+        ],
+    )
+
+    http_archive(
+        name = "llvm_zstd",
+        build_file = "@llvm-raw//utils/bazel/third_party_build:zstd.BUILD",
+        sha256 = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
+        strip_prefix = "zstd-1.5.2",
+        urls = [
+            "https://github.com/facebook/zstd/releases/download/v1.5.2/zstd-1.5.2.tar.gz",
+        ],
+    )
+
+    http_archive(
+        name = "llvm_zlib",
+        build_file = "//:zlib.BUILD",
+        sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
+        strip_prefix = "zlib-1.2.13",
+        urls = [
+            "https://zlib.net/fossils/zlib-1.2.13.tar.gz",
+        ],
+    )

@@ -1,4 +1,4 @@
-// RUN: torch-mlir-dialects-opt %s -canonicalize | FileCheck %s
+// RUN: tcp-opt %s -canonicalize | FileCheck %s
 
 // CHECK-LABEL: func.func @test_constant_folding() -> tensor<f32>
 // CHECK:         %[[CONST0:.*]] = tcp.const {value = dense<2.500000e+00> : tensor<f32>} : tensor<f32>

@@ -7,12 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPDIALECT_H_
-#define TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPDIALECT_H_
+#ifndef TORCH_MLIR_DIALECTS_CONVERSION_PASSES_H
+#define TORCH_MLIR_DIALECTS_CONVERSION_PASSES_H
 
-#include "mlir/IR/Dialect.h"
-#include "mlir/IR/OpDefinition.h"
+namespace mlir {
+namespace torch_mlir_dialects {
 
-#include "Dialect/Tcp/IR/TcpDialect.h.inc"
+void registerConversionPasses();
 
-#endif // TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPDIALECT_H_
+} // namespace torch_mlir_dialects
+} // namespace mlir
+
+#endif // TORCH_MLIR_DIALECTS_CONVERSION_PASSES_H

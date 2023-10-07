@@ -1,18 +1,24 @@
 //===------------------------------------------------------------*- C++ -*-===//
 //
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// This file is licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // Also available under a BSD-style license. See LICENSE.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPDIALECT_H_
-#define TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPDIALECT_H_
+#ifndef TORCH_MLIR_INITALL_H
+#define TORCH_MLIR_INITALL_H
 
 #include "mlir/IR/Dialect.h"
-#include "mlir/IR/OpDefinition.h"
 
-#include "Dialect/Tcp/IR/TcpDialect.h.inc"
+namespace mlir {
+namespace torch {
 
-#endif // TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPDIALECT_H_
+void registerAllDialects(mlir::DialectRegistry &registry);
+void registerAllPasses();
+
+} // namespace torch
+} // namespace mlir
+
+#endif // TORCH_MLIR_INITALL_H

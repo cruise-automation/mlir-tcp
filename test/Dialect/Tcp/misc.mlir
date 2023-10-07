@@ -1,4 +1,4 @@
-// RUN: torch-mlir-dialects-opt %s -split-input-file -verify-diagnostics | FileCheck %s
+// RUN: tcp-opt %s -split-input-file -verify-diagnostics | FileCheck %s
 
 // CHECK-LABEL: func.func @test_broadcast(
 // CHECK-SAME:          %[[ARG0:.*]]: tensor<1x?xf32>,

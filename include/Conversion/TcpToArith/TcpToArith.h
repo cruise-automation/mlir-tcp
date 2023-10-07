@@ -15,7 +15,7 @@
 namespace mlir {
 
 #define GEN_PASS_DECL_CONVERTTCPTOARITH
-#include "torch-mlir-dialects/Conversion/Passes.h.inc"
+#include "Conversion/Passes.h.inc"
 
 namespace tcp {
 

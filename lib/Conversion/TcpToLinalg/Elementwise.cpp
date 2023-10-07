@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "torch-mlir-dialects/Conversion/TcpToLinalg/TcpToLinalg.h"
+#include "Conversion/TcpToLinalg/TcpToLinalg.h"
 
 #include "../PassDetail.h"
 #include "PopulatePatterns.h"
@@ -18,8 +18,8 @@
 #include "mlir/Dialect/Tensor/Utils/Utils.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Transforms/DialectConversion.h"
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpDialect.h"
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOps.h"
+#include "Dialect/Tcp/IR/TcpDialect.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
 
 using namespace mlir;
 using namespace mlir::tcp;

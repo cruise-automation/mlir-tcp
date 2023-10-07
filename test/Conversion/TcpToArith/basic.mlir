@@ -1,4 +1,4 @@
-// RUN: torch-mlir-dialects-opt <%s -convert-tcp-to-arith -split-input-file | FileCheck %s
+// RUN: tcp-opt <%s -convert-tcp-to-arith -split-input-file | FileCheck %s
 
 // CHECK-LABEL: func.func @test_constants() -> tensor<f32> {
 // CHECK:         %[[C0:.*]] = arith.constant dense<2.500000e+00> : tensor<f32>

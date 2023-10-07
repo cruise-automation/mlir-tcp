@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOps.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
 
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/OpImplementation.h"
@@ -16,7 +16,7 @@
 #include "mlir/IR/Value.h"
 
 #define GET_OP_CLASSES
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOps.cpp.inc"
+#include "Dialect/Tcp/IR/TcpOps.cpp.inc"
 
 namespace mlir::tcp {
 

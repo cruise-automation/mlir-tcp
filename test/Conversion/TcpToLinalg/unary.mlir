@@ -1,4 +1,4 @@
-// RUN: torch-mlir-dialects-opt <%s -convert-tcp-to-linalg -split-input-file | FileCheck %s
+// RUN: tcp-opt <%s -convert-tcp-to-linalg -split-input-file | FileCheck %s
 
 // CHECK: #[[MAP:.*]] = affine_map<(d0, d1) -> (d0, d1)>
 

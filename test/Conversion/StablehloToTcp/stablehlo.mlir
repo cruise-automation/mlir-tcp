@@ -1,4 +1,4 @@
-// RUN: torch-mlir-dialects-opt <%s -convert-stablehlo-to-tcp -split-input-file | FileCheck %s
+// RUN: tcp-opt <%s -convert-stablehlo-to-tcp -split-input-file | FileCheck %s
 
 // CHECK-LABEL: func.func @tanh(
 // CHECK-SAME:                %[[ARG0:.*]]: tensor<?x?xf32>) -> tensor<?x?xf32> {

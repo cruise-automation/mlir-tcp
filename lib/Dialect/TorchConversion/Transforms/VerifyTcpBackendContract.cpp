@@ -15,8 +15,8 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/Transforms/DialectConversion.h"
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpDialect.h"
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOps.h"
+#include "Dialect/Tcp/IR/TcpDialect.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
 #include "torch-mlir/Dialect/TorchConversion/Transforms/Passes.h"
 
 using namespace mlir;

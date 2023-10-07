@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "torch-mlir/Conversion/TorchToTcp/TorchToTcp.h"
+#include "Conversion/TorchToTcp/TorchToTcp.h"
 
 #include "PopulatePatterns.h"
 #include "Utils.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpDialect.h"
-#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOps.h"
+#include "Dialect/Tcp/IR/TcpDialect.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
