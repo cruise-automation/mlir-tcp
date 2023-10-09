@@ -67,6 +67,6 @@ public:
 } // namespace
 
 std::unique_ptr<OperationPass<func::FuncOp>>
-mlir::torch::createConvertTorchToTcpPass() {
+mlir::tcp::createConvertTorchToTcpPass() {
   return std::make_unique<ConvertTorchToTcp>();
 }

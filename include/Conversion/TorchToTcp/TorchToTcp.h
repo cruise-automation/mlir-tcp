@@ -13,9 +13,9 @@
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
-namespace torch {
+namespace tcp {
 
 std::unique_ptr<OperationPass<func::FuncOp>> createConvertTorchToTcpPass();
 
-} // namespace torch
+} // namespace tcp
 } // namespace mlir

@@ -20,12 +20,12 @@ using namespace mlir;
 
 int main(int argc, char **argv) {
   registerAllPasses();
-  mlir::torch::registerAllPasses();
+  mlir::tcp::registerAllPasses();
 
   DialectRegistry registry;
   registerAllDialects(registry);
   registerAllExtensions(registry);
-  mlir::torch::registerAllDialects(registry);
+  mlir::tcp::registerAllDialects(registry);
 
   mlir::stablehlo::registerAllDialects(registry);
 

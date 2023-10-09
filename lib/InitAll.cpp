@@ -17,16 +17,13 @@
 #include "mlir/IR/Dialect.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"
 
-void mlir::torch::registerAllDialects(mlir::DialectRegistry &registry) {
+void mlir::tcp::registerAllDialects(mlir::DialectRegistry &registry) {
   registry.insert<tcp::TcpDialect>();
-  registry.insert<Torch::TorchDialect>();
+  registry.insert<torch::Torch::TorchDialect>();
   mlir::func::registerInlinerExtension(registry);
 }
 
-void mlir::torch::registerAllPasses() {
-  // mlir::torch::registerTorchPasses();
-  // mlir::torch::registerTorchConversionPasses();
-
+void mlir::tcp::registerAllPasses() {
   mlir::tcp::registerConversionPasses();
   mlir::tcp::registerTcpPasses();
 }

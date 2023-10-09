@@ -12,10 +12,10 @@
 #include "mlir/IR/Dialect.h"
 
 namespace mlir {
-namespace torch {
+namespace tcp {
 
 void registerAllDialects(mlir::DialectRegistry &registry);
 void registerAllPasses();
 
-} // namespace torch
+} // namespace tcp
 } // namespace mlir
