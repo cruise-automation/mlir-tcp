@@ -10,8 +10,8 @@
 #ifndef TORCH_MLIR_DIALECT_TCP_OPS
 #define TORCH_MLIR_DIALECT_TCP_OPS
 
-include "Dialect/Tcp/IR/TcpBase.td"
-include "Dialect/Tcp/IR/TcpEnums.td"
+include "IR/TcpBase.td"
+include "IR/TcpEnums.td"
 
 include "mlir/IR/OpBase.td"
 

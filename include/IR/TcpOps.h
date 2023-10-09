@@ -20,10 +20,10 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/TypeSwitch.h"
 
-#include "Dialect/Tcp/IR/TcpEnums.h.inc"
+#include "IR/TcpEnums.h.inc"
 #define GET_ATTRDEF_CLASSES
-#include "Dialect/Tcp/IR/TcpAttrs.h.inc"
+#include "IR/TcpAttrs.h.inc"
 #define GET_OP_CLASSES
-#include "Dialect/Tcp/IR/TcpOps.h.inc"
+#include "IR/TcpOps.h.inc"
 
 #endif // TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPOPS_H_

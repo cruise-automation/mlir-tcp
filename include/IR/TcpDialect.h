@@ -13,6 +13,6 @@
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/OpDefinition.h"
 
-#include "Dialect/Tcp/IR/TcpDialect.h.inc"
+#include "IR/TcpDialect.h.inc"
 
 #endif // TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPDIALECT_H_

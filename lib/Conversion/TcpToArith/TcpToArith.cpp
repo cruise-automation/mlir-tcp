@@ -9,8 +9,8 @@
 
 #include "Conversion/TcpToArith/TcpToArith.h"
 
-#include "Dialect/Tcp/IR/TcpDialect.h"
-#include "Dialect/Tcp/IR/TcpOps.h"
+#include "IR/TcpDialect.h"
+#include "IR/TcpOps.h"
 
 #include "../PassDetail.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"

@@ -9,8 +9,8 @@
 
 #include "Conversion/TcpToLinalg/TcpToLinalg.h"
 
-#include "Dialect/Tcp/IR/TcpDialect.h"
-#include "Dialect/Tcp/IR/TcpOps.h"
+#include "IR/TcpDialect.h"
+#include "IR/TcpOps.h"
 
 #include "../PassDetail.h"
 #include "PopulatePatterns.h"

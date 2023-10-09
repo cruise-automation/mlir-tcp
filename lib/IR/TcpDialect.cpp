@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Dialect/Tcp/IR/TcpDialect.h"
-#include "Dialect/Tcp/IR/TcpOps.h"
+#include "IR/TcpDialect.h"
+#include "IR/TcpOps.h"
 
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/DialectImplementation.h"
@@ -23,19 +23,19 @@ using namespace mlir::tcp;
 void TcpDialect::initialize() {
 #define GET_OP_LIST
   addOperations<
-#include "Dialect/Tcp/IR/TcpOps.cpp.inc"
+#include "IR/TcpOps.cpp.inc"
       >();
 #define GET_ATTRDEF_LIST
   addAttributes<
-#include "Dialect/Tcp/IR/TcpAttrs.cpp.inc"
+#include "IR/TcpAttrs.cpp.inc"
       >();
 }
 
-#include "Dialect/Tcp/IR/TcpEnums.cpp.inc"
+#include "IR/TcpEnums.cpp.inc"
 #define GET_ATTRDEF_CLASSES
-#include "Dialect/Tcp/IR/TcpAttrs.cpp.inc"
+#include "IR/TcpAttrs.cpp.inc"
 
-#include "Dialect/Tcp/IR/TcpDialect.cpp.inc"
+#include "IR/TcpDialect.cpp.inc"
 
 Attribute TcpDialect::parseAttribute(DialectAsmParser &parser,
                                      Type type) const {

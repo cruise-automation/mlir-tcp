@@ -1,9 +1,9 @@
-#include "Dialect/Tcp/Transforms/IsolateGroupOpsPass.h"
+#include "Transforms/IsolateGroupOpsPass.h"
 #include "./PassDetail.h"
 
-#include "Dialect/Tcp/IR/TcpDialect.h"
-#include "Dialect/Tcp/IR/TcpOps.h"
-#include "Dialect/Tcp/Transforms/Passes.h"
+#include "IR/TcpDialect.h"
+#include "IR/TcpOps.h"
+#include "Transforms/Passes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/OpDefinition.h"

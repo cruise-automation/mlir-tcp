@@ -9,9 +9,9 @@ package(
 td_library(
     name = "TcpTdFiles",
     srcs = [
-        "include/Dialect/Tcp/IR/TcpBase.td",
-        "include/Dialect/Tcp/IR/TcpEnums.td",
-        "include/Dialect/Tcp/IR/TcpOps.td",
+        "include/IR/TcpBase.td",
+        "include/IR/TcpEnums.td",
+        "include/IR/TcpOps.td",
     ],
     includes = ["include"],
     deps = [
@@ -26,15 +26,15 @@ gentbl_cc_library(
     tbl_outs = [
         (
             ["-gen-enum-decls"],
-            "include/Dialect/Tcp/IR/TcpEnums.h.inc",
+            "include/IR/TcpEnums.h.inc",
         ),
         (
             ["-gen-enum-defs"],
-            "include/Dialect/Tcp/IR/TcpEnums.cpp.inc",
+            "include/IR/TcpEnums.cpp.inc",
         ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/Dialect/Tcp/IR/TcpOps.td",
+    td_file = "include/IR/TcpOps.td",
     deps = [
         ":TcpTdFiles",
     ],
@@ -46,15 +46,15 @@ gentbl_cc_library(
     tbl_outs = [
         (
             ["-gen-attrdef-decls"],
-            "include/Dialect/Tcp/IR/TcpAttrs.h.inc",
+            "include/IR/TcpAttrs.h.inc",
         ),
         (
             ["-gen-attrdef-defs"],
-            "include/Dialect/Tcp/IR/TcpAttrs.cpp.inc",
+            "include/IR/TcpAttrs.cpp.inc",
         ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/Dialect/Tcp/IR/TcpOps.td",
+    td_file = "include/IR/TcpOps.td",
     deps = [
         ":TcpTdFiles",
     ],
@@ -66,29 +66,29 @@ gentbl_cc_library(
     tbl_outs = [
         (
             ["-gen-op-decls"],
-            "include/Dialect/Tcp/IR/TcpOps.h.inc",
+            "include/IR/TcpOps.h.inc",
         ),
         (
             ["-gen-op-defs"],
-            "include/Dialect/Tcp/IR/TcpOps.cpp.inc",
+            "include/IR/TcpOps.cpp.inc",
         ),
         (
             [
                 "-gen-dialect-decls",
                 "-dialect=tcp",
             ],
-            "include/Dialect/Tcp/IR/TcpDialect.h.inc",
+            "include/IR/TcpDialect.h.inc",
         ),
         (
             [
                 "-gen-dialect-defs",
                 "-dialect=tcp",
             ],
-            "include/Dialect/Tcp/IR/TcpDialect.cpp.inc",
+            "include/IR/TcpDialect.cpp.inc",
         ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/Dialect/Tcp/IR/TcpOps.td",
+    td_file = "include/IR/TcpOps.td",
     deps = [
         ":TcpTdFiles",
     ],
@@ -97,12 +97,12 @@ gentbl_cc_library(
 cc_library(
     name = "TcpDialect",
     srcs = [
-        "lib/Dialect/Tcp/IR/TcpDialect.cpp",
-        "lib/Dialect/Tcp/IR/TcpOps.cpp",
+        "lib/IR/TcpDialect.cpp",
+        "lib/IR/TcpOps.cpp",
     ],
     hdrs = [
-        "include/Dialect/Tcp/IR/TcpDialect.h",
-        "include/Dialect/Tcp/IR/TcpOps.h",
+        "include/IR/TcpDialect.h",
+        "include/IR/TcpOps.h",
     ],
     strip_include_prefix = "include",
     deps = [
@@ -119,7 +119,7 @@ cc_library(
 td_library(
     name = "TcpTransformsPassesTdFiles",
     srcs = [
-        "include/Dialect/Tcp/Transforms/Passes.td",
+        "include/Transforms/Passes.td",
     ],
     deps = [
         "@llvm-project//mlir:OpBaseTdFiles",
@@ -133,11 +133,11 @@ gentbl_cc_library(
     tbl_outs = [
         (
             ["-gen-pass-decls"],
-            "include/Dialect/Tcp/Transforms/Passes.h.inc",
+            "include/Transforms/Passes.h.inc",
         ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/Dialect/Tcp/Transforms/Passes.td",
+    td_file = "include/Transforms/Passes.td",
     deps = [
         ":TcpTransformsPassesTdFiles",
     ],
@@ -146,15 +146,15 @@ gentbl_cc_library(
 cc_library(
     name = "TcpPasses",
     srcs = [
-        "lib/Dialect/Tcp/Transforms/FuseTcpOpsPass.cpp",
-        "lib/Dialect/Tcp/Transforms/IsolateGroupOpsPass.cpp",
-        "lib/Dialect/Tcp/Transforms/PassDetail.h",
-        "lib/Dialect/Tcp/Transforms/Passes.cpp",
+        "lib/Transforms/FuseTcpOpsPass.cpp",
+        "lib/Transforms/IsolateGroupOpsPass.cpp",
+        "lib/Transforms/PassDetail.h",
+        "lib/Transforms/Passes.cpp",
     ],
     hdrs = [
-        "include/Dialect/Tcp/Transforms/FuseTcpOpsPass.h",
-        "include/Dialect/Tcp/Transforms/IsolateGroupOpsPass.h",
-        "include/Dialect/Tcp/Transforms/Passes.h",
+        "include/Transforms/FuseTcpOpsPass.h",
+        "include/Transforms/IsolateGroupOpsPass.h",
+        "include/Transforms/Passes.h",
     ],
     strip_include_prefix = "include",
     deps = [
