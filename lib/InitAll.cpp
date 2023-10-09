@@ -9,12 +9,12 @@
 
 #include "InitAll.h"
 
-#include "mlir/Dialect/Func/Extensions/InlinerExtension.h"
-#include "mlir/Dialect/Func/IR/FuncOps.h"
-#include "mlir/IR/Dialect.h"
 #include "Conversion/Passes.h"
 #include "Dialect/Tcp/IR/TcpDialect.h"
 #include "Dialect/Tcp/Transforms/Passes.h"
+#include "mlir/Dialect/Func/Extensions/InlinerExtension.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/IR/Dialect.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"
 
 void mlir::torch::registerAllDialects(mlir::DialectRegistry &registry) {

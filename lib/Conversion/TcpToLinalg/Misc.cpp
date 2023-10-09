@@ -10,6 +10,8 @@
 #include "Conversion/TcpToLinalg/TcpToLinalg.h"
 
 #include "../PassDetail.h"
+#include "Dialect/Tcp/IR/TcpDialect.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
 #include "PopulatePatterns.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
@@ -17,8 +19,6 @@
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Transforms/DialectConversion.h"
-#include "Dialect/Tcp/IR/TcpDialect.h"
-#include "Dialect/Tcp/IR/TcpOps.h"
 
 using namespace mlir;
 using namespace mlir::tcp;

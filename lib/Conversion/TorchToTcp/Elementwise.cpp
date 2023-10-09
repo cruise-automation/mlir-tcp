@@ -9,12 +9,12 @@
 
 #include "Conversion/TorchToTcp/TorchToTcp.h"
 
+#include "Dialect/Tcp/IR/TcpDialect.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
 #include "PopulatePatterns.h"
 #include "Utils.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
-#include "Dialect/Tcp/IR/TcpDialect.h"
-#include "Dialect/Tcp/IR/TcpOps.h"
 #include "torch-mlir/Conversion/Utils/Utils.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
@@ -618,8 +618,7 @@ public:
       else
         return rewriter.notifyMatchFailure(
             op, "expect output type to be signless/signed/unsigned integer");
-    }
-    else if (outputType.getDtype().isa<mlir::FloatType>()) {
+    } else if (outputType.getDtype().isa<mlir::FloatType>()) {
       // INT -> FP
       if (auto intType = inputType.getDtype().dyn_cast<mlir::IntegerType>())
         rewriter.replaceOpWithNewOp<tcp::CastOp>(
@@ -629,8 +628,7 @@ public:
       else
         return rewriter.notifyMatchFailure(
             op, "expect input type to be signless/signed/unsigned integer");
-    }
-    else {
+    } else {
       // INT -> INT
       auto inIntType = inputType.getDtype().dyn_cast<mlir::IntegerType>();
       auto outIntType = outputType.getDtype().dyn_cast<mlir::IntegerType>();

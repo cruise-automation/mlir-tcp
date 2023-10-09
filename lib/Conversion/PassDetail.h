@@ -10,11 +10,11 @@
 #ifndef TORCH_MLIR_DIALECTS_CONVERSION_PASSDETAIL_H
 #define TORCH_MLIR_DIALECTS_CONVERSION_PASSDETAIL_H
 
+#include "Dialect/Tcp/IR/TcpDialect.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Pass/Pass.h"
-#include "Dialect/Tcp/IR/TcpDialect.h"
 
 namespace mlir {
 

@@ -30,7 +30,7 @@ namespace tcp {
 namespace {
 
 class TanhOpConverter : public OpRewritePattern<stablehlo::TanhOp> {
- public:
+public:
   using OpRewritePattern::OpRewritePattern;
 
   LogicalResult matchAndRewrite(stablehlo::TanhOp op,
@@ -46,7 +46,7 @@ void populateStablehloToTcpConversionPatterns(RewritePatternSet *patterns) {
 
 class ConvertStablehloToTcp
     : public ConvertStablehloToTcpBase<ConvertStablehloToTcp> {
- public:
+public:
   void runOnOperation() override {
     MLIRContext *context = &getContext();
     ConversionTarget target(*context);
@@ -65,11 +65,11 @@ class ConvertStablehloToTcp
   }
 };
 
-}  // namespace
+} // namespace
 
 std::unique_ptr<Pass> createConvertStablehloToTcpPass() {
   return std::make_unique<ConvertStablehloToTcp>();
 }
 
-}  // namespace tcp
-}  // namespace mlir
+} // namespace tcp
+} // namespace mlir

@@ -9,14 +9,14 @@
 #ifdef TORCH_MLIR_ENABLE_TCP
 #include "PassDetail.h"
 
+#include "Dialect/Tcp/IR/TcpDialect.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/Transforms/DialectConversion.h"
-#include "Dialect/Tcp/IR/TcpDialect.h"
-#include "Dialect/Tcp/IR/TcpOps.h"
 #include "torch-mlir/Dialect/TorchConversion/Transforms/Passes.h"
 
 using namespace mlir;

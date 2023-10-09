@@ -21,7 +21,7 @@ namespace tcp {
 
 std::unique_ptr<Pass> createConvertStablehloToTcpPass();
 
-}  // namespace tcp
-}  // namespace mlir
+} // namespace tcp
+} // namespace mlir
 
-#endif  // TORCH_MLIR_DIALECTS_CONVERSION_STABLEHLOTOTCP_STABLEHLOTOTCP_H_
+#endif // TORCH_MLIR_DIALECTS_CONVERSION_STABLEHLOTOTCP_STABLEHLOTOTCP_H_

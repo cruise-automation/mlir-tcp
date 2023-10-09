@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
   registerAllDialects(registry);
   registerAllExtensions(registry);
   mlir::torch::registerAllDialects(registry);
-  
+
   mlir::stablehlo::registerAllDialects(registry);
 
   return mlir::asMainReturnCode(mlir::MlirOptMain(

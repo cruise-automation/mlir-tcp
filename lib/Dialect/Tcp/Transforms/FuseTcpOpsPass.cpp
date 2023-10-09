@@ -1,15 +1,15 @@
 #include "Dialect/Tcp/Transforms/FuseTcpOpsPass.h"
 #include "./PassDetail.h"
 
+#include "Dialect/Tcp/IR/TcpDialect.h"
+#include "Dialect/Tcp/IR/TcpOps.h"
+#include "Dialect/Tcp/Transforms/Passes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
-#include "Dialect/Tcp/IR/TcpDialect.h"
-#include "Dialect/Tcp/IR/TcpOps.h"
-#include "Dialect/Tcp/Transforms/Passes.h"
 
 using namespace mlir;
 

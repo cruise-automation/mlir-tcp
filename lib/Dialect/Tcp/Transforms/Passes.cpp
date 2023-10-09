@@ -1,7 +1,7 @@
 #include "Dialect/Tcp/Transforms/Passes.h"
-#include "mlir/Pass/Pass.h"
 #include "Dialect/Tcp/Transforms/FuseTcpOpsPass.h"
 #include "Dialect/Tcp/Transforms/IsolateGroupOpsPass.h"
+#include "mlir/Pass/Pass.h"
 #include <memory>
 
 namespace {
