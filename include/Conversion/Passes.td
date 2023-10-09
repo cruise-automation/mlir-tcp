@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_CONVERSION_PASSES
-#define TORCH_MLIR_DIALECTS_CONVERSION_PASSES
+#ifndef TCP_CONVERSION_PASSES
+#define TCP_CONVERSION_PASSES
 
 include "mlir/Pass/PassBase.td"
 
@@ -71,4 +71,4 @@ def ConvertTcpToArith
   ];
 }
 
-#endif // TORCH_MLIR_DIALECTS_CONVERSION_PASSES
+#endif // TCP_CONVERSION_PASSES

@@ -23,7 +23,7 @@ namespace {
 #include "Conversion/Passes.h.inc"
 } // end namespace
 
-void mlir::torch_mlir_dialects::registerConversionPasses() {
+void mlir::tcp::registerConversionPasses() {
   ::registerPasses();
   ::mlir::registerPass([]() -> std::unique_ptr<::mlir::Pass> {
     return mlir::tcp::createConvertStablehloToTcpPass();

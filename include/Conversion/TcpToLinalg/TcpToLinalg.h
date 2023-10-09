@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_CONVERSION_TCPTOLINALG_TCPTOLINALG_H_
-#define TORCH_MLIR_DIALECTS_CONVERSION_TCPTOLINALG_TCPTOLINALG_H_
+#pragma once
 
 #include "mlir/Pass/Pass.h"
 
@@ -23,5 +22,3 @@ std::unique_ptr<Pass> createConvertTcpToLinalgPass();
 
 } // namespace tcp
 } // namespace mlir
-
-#endif // TORCH_MLIR_DIALECTS_CONVERSION_TCPTOLINALG_TCPTOLINALG_H_

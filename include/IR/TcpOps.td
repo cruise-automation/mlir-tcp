@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECT_TCP_OPS
-#define TORCH_MLIR_DIALECT_TCP_OPS
+#ifndef TCP_OPS
+#define TCP_OPS
 
 include "IR/TcpBase.td"
 include "IR/TcpEnums.td"
@@ -555,4 +555,4 @@ def Tcp_CastOp:  Tcp_Op<"cast", [Pure, Elementwise, SameOperandsAndResultShape]>
   let hasVerifier = 1;
 }
 
-#endif // TORCH_MLIR_DIALECT_TCP_OPS
+#endif // TCP_OPS

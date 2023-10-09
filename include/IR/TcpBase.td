@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECT_TCP_BASE
-#define TORCH_MLIR_DIALECT_TCP_BASE
+#ifndef TCP_BASE
+#define TCP_BASE
 
 include "mlir/IR/OpBase.td"
 
@@ -97,4 +97,4 @@ class Tcp_BinaryElementwiseOp<string mnemonic, list<Trait> traits = []> :
         SameOperandsAndResultShape])> {
 }
 
-#endif // TORCH_MLIR_DIALECT_TCP_BASE
+#endif // TCP_BASE

@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_INITALL_H
-#define TORCH_MLIR_INITALL_H
+#pragma once
 
 #include "mlir/IR/Dialect.h"
 
@@ -20,5 +19,3 @@ void registerAllPasses();
 
 } // namespace torch
 } // namespace mlir
-
-#endif // TORCH_MLIR_INITALL_H

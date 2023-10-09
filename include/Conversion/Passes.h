@@ -7,15 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_CONVERSION_PASSES_H
-#define TORCH_MLIR_DIALECTS_CONVERSION_PASSES_H
+#pragma once
 
 namespace mlir {
-namespace torch_mlir_dialects {
+namespace tcp {
 
 void registerConversionPasses();
 
-} // namespace torch_mlir_dialects
+} // namespace tcp
 } // namespace mlir
-
-#endif // TORCH_MLIR_DIALECTS_CONVERSION_PASSES_H

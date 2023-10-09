@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_CONVERSION_TCPTOARITH_TCPTOARITH_H_
-#define TORCH_MLIR_DIALECTS_CONVERSION_TCPTOARITH_TCPTOARITH_H_
+#pragma once
 
 #include "mlir/Pass/Pass.h"
 
@@ -23,5 +22,3 @@ std::unique_ptr<Pass> createConvertTcpToArithPass();
 
 } // namespace tcp
 } // namespace mlir
-
-#endif // TORCH_MLIR_DIALECTS_CONVERSION_TCPTOARITH_TCPTOARITH_H_

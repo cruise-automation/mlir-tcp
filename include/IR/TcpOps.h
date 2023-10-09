@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPOPS_H_
-#define TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPOPS_H_
+#pragma once
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Quant/QuantTypes.h"
@@ -25,5 +24,3 @@
 #include "IR/TcpAttrs.h.inc"
 #define GET_OP_CLASSES
 #include "IR/TcpOps.h.inc"
-
-#endif // TORCH_MLIR_DIALECTS_DIALECT_TCP_IR_TCPOPS_H_

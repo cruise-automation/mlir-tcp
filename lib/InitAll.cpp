@@ -27,6 +27,6 @@ void mlir::torch::registerAllPasses() {
   // mlir::torch::registerTorchPasses();
   // mlir::torch::registerTorchConversionPasses();
 
-  mlir::torch_mlir_dialects::registerConversionPasses();
+  mlir::tcp::registerConversionPasses();
   mlir::tcp::registerTcpPasses();
 }

@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCHMLIR_CONVERSION_TORCHTOTCP_TORCHTOTCP_H
-#define TORCHMLIR_CONVERSION_TORCHTOTCP_TORCHTOTCP_H
+#pragma once
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Pass/Pass.h"
@@ -20,5 +19,3 @@ std::unique_ptr<OperationPass<func::FuncOp>> createConvertTorchToTcpPass();
 
 } // namespace torch
 } // namespace mlir
-
-#endif // TORCHMLIR_CONVERSION_TORCHTOTCP_TORCHTOTCP_H

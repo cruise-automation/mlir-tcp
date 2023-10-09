@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECTS_CONVERSION_PASSDETAIL_H
-#define TORCH_MLIR_DIALECTS_CONVERSION_PASSDETAIL_H
+#pragma once
 
 #include "IR/TcpDialect.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
@@ -22,5 +21,3 @@ namespace mlir {
 #include "Conversion/Passes.h.inc"
 
 } // end namespace mlir
-
-#endif // TORCH_MLIR_DIALECTS_CONVERSION_PASSDETAIL_H

@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCH_MLIR_DIALECT_TCP_ENUMS
-#define TORCH_MLIR_DIALECT_TCP_ENUMS
+#ifndef TCP_ENUMS
+#define TCP_ENUMS
 
 include "mlir/IR/EnumAttr.td"
 
@@ -30,4 +30,4 @@ def Tcp_Signedness : I32EnumAttr<"Signedness",
 
 def Tcp_SignednessAttr : EnumAttr<Tcp_Dialect, Tcp_Signedness, "signedness">;
 
-#endif // TORCH_MLIR_DIALECT_TCP_ENUMS
+#endif // TCP_ENUMS

@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TORCHMLIR_TCP_PASSES
-#define TORCHMLIR_TCP_PASSES
+#ifndef TCP_PASSES
+#define TCP_PASSES
 
 include "mlir/Pass/PassBase.td"
 
@@ -24,4 +24,4 @@ def TcpIsolateGroupOps : Pass<"tcp-isolate-group-ops", "ModuleOp"> {
   let constructor = "mlir::tcp::createTcpIsolateGroupOpsPass()";
 }
 
-#endif // TORCHMLIR_TCP_PASSES
+#endif // TCP_PASSES
