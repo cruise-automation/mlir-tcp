@@ -203,8 +203,8 @@ cc_library(
     strip_include_prefix = "include",
     deps = [
         ":StablehloToTcp",
-        ":TcpToLinalg",
         ":TcpToArith",
+        ":TcpToLinalg",
         ":TorchToTcp",
     ],
 )
@@ -220,11 +220,11 @@ cc_library(
     strip_include_prefix = "include",
     deps = [
         ":TcpConversionPassesIncGen",
-        "@torch-mlir//:TorchMLIRConversionUtils",
         ":TcpDialect",
+        "@llvm-project//mlir:Dialect",
+        "@torch-mlir//:TorchMLIRConversionUtils",
         "@torch-mlir//:TorchMLIRTorchBackendTypeConversion",
         "@torch-mlir//:TorchMLIRTorchConversionDialect",
-        "@llvm-project//mlir:Dialect",
     ],
 )
 
@@ -309,11 +309,11 @@ cc_library(
     deps = [
         ":TcpConversionPasses",
         ":TcpPasses",
-        "@torch-mlir//:TorchMLIRTorchDialect",
         "@llvm-project//mlir:AllExtensions",
         "@llvm-project//mlir:Dialect",
         "@llvm-project//mlir:DialectUtils",
         "@llvm-project//mlir:IR",
+        "@torch-mlir//:TorchMLIRTorchDialect",
     ],
 )
 
@@ -323,13 +323,19 @@ cc_binary(
         "tools/tcp-opt/tcp-opt.cpp",
     ],
     deps = [
-        ":TcpInitAll",
         ":TcpDialect",
+        ":TcpInitAll",
         ":TcpPasses",
-        "@stablehlo//:register",
         "@llvm-project//mlir:AllExtensions",
         "@llvm-project//mlir:AllPassesAndDialects",
         "@llvm-project//mlir:MlirOptLib",
         "@llvm-project//mlir:QuantOps",
+        "@stablehlo//:register",
     ],
+)
+
+load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
+
+buildifier(
+    name = "buildifier",
 )

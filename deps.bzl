@@ -19,12 +19,6 @@ def third_party_deps():
         build_file_content = "# empty",
         strip_prefix = "torch-mlir-" + TORCH_MLIR_COMMIT,
         urls = ["https://github.com/llvm/torch-mlir/archive/{commit}.tar.gz".format(commit = TORCH_MLIR_COMMIT)],
-
-        # This patch file deletes the dependency that Torch-MLIR has on Bazel
-        # build tools.  This cuts the dependency on the Go compiler toolchain,
-        # eliminating significant complexity.
-        patches = ["@//:torch-mlir.patch"],
-        patch_args = ["-p1"],
     )
 
     STABLEHLO_COMMIT = "77a59815a82b34f7b08ed2d42a711d9920682d0e"
@@ -42,8 +36,8 @@ def third_party_deps():
         name = "bazel_skylib",
         sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/{version}/bazel-skylib-{version}.tar.gz".format(version=SKYLIB_VERSION),
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/{version}/bazel-skylib-{version}.tar.gz".format(version=SKYLIB_VERSION),
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/{version}/bazel-skylib-{version}.tar.gz".format(version = SKYLIB_VERSION),
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/{version}/bazel-skylib-{version}.tar.gz".format(version = SKYLIB_VERSION),
         ],
     )
 
