@@ -1,10 +1,10 @@
-name: Bazel Build and Test (TCP)
+name: Bazel Build and Test
 
 on:
   pull_request:
-    branches: [ mlir-tcp ]
+    branches: [ main ]
   push:
-    branches: [ mlir-tcp ]
+    branches: [ main ]
   workflow_dispatch:
 
 # Ensure that only a single job or workflow using the same
@@ -22,16 +22,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Prepare workspace
-      run: |
-        # Clear the workspace directory so that we don't run into errors about
-        # existing lock files.
-        sudo rm -rf $GITHUB_WORKSPACE/*
-
-    - name: Checkout torch-mlir
+    - name: Checkout mlir-tcp
       uses: actions/checkout@v3
-      with:
-        submodules: 'true'
 
     # Continually update cache even if there's a "hit" during
     # restore to avoid the cache going stale over time
@@ -40,9 +32,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.cache/bazel
-        key: torch_mlir-bazel-build-cache-${{ runner.os }}-${{ github.sha }}
+        key: mlir-tcp-bazel-build-cache-${{ runner.os }}-${{ github.sha }}
         restore-keys: |
-          torch_mlir-bazel-build-cache-${{ runner.os }}
+          mlir-tcp-bazel-build-cache-${{ runner.os }}
 
     # Change bazel cache directory to root ownership
     # to allow writing to it from within the docker container.
@@ -56,51 +48,47 @@ jobs:
 
     - name: Build docker image
       run: |
-        docker build -f utils/bazel/docker/Dockerfile \
-                     -t torch-mlir:ci \
+        docker build -f docker/Dockerfile \
+                     -t mlir-tcp:ci \
                      .
 
-    - name: Bazel build torch-mlir
+    - name: Bazel build mlir-tcp
       run: |
         docker run --rm \
-                   -v "$(pwd)":"/opt/src/torch-mlir" \
+                   -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   torch-mlir:ci \
-                   bazel build @torch-mlir//:torch-mlir-opt
+                   mlir-tcp:ci \
+                   bazel build --config=generic_clang //:tcp-opt
 
-    - name: Bazel test torch-mlir (lit tests)
+    - name: Bazel test mlir-tcp (lit tests)
       run: |
         docker run --rm \
-                   -v "$(pwd)":"/opt/src/torch-mlir" \
+                   -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   torch-mlir:ci \
-                   bazel test @torch-mlir//test/...
+                   mlir-tcp:ci \
+                   bazel test --config=generic_clang //test/...
 
-    - name: Bazel build torch-mlir-dialects
+    - name: Verify clang-format was run (cpp lint)
       run: |
         docker run --rm \
-                   -v "$(pwd)":"/opt/src/torch-mlir" \
+                   -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   torch-mlir:ci \
-                   bazel build @torch-mlir//:torch-mlir-dialects-opt
-
-    - name: Bazel test torch-mlir-dialects (lit tests)
-      run: |
-        docker run --rm \
-                   -v "$(pwd)":"/opt/src/torch-mlir" \
-                   -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   torch-mlir:ci \
-                   bazel test @torch-mlir//externals/llvm-external-projects/torch-mlir-dialects/test/...
+                   mlir-tcp:ci \
+                   find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Please run clang-format 'find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i' and commit changes."
+          exit 1
+        fi
 
     - name: Verify buildifier was run (bazel lint)
       run: |
         docker run --rm \
-                   -v "$(pwd)":"/opt/src/torch-mlir" \
+                   -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   torch-mlir:ci \
-                   bazel run @torch-mlir//:buildifier
+                   mlir-tcp:ci \
+                   bazel run --config=generic_clang //:buildifier
         if [ -n "$(git status --porcelain)" ]; then
-          echo "Please 'bazel run @torch-mlir//:buildifier' and commit changes."
+          echo "Please 'bazel run //:buildifier' and commit changes."
           exit 1
         fi
 
