@@ -1,4 +1,4 @@
-workspace(name = "tensor_compute_primitives_ws")
+workspace(name = "mlir_tcp_ws")
 
 load("//:deps.bzl", "third_party_deps")
 

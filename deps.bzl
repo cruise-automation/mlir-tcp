@@ -53,10 +53,10 @@ def third_party_deps():
 
     http_archive(
         name = "llvm_zlib",
-        build_file = "//:zlib.BUILD",
-        sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
-        strip_prefix = "zlib-1.2.13",
+        build_file = "@llvm-raw//utils/bazel/third_party_build:zlib-ng.BUILD",
+        sha256 = "e36bb346c00472a1f9ff2a0a4643e590a254be6379da7cddd9daeb9a7f296731",
+        strip_prefix = "zlib-ng-2.0.7",
         urls = [
-            "https://zlib.net/fossils/zlib-1.2.13.tar.gz",
+            "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.7.zip",
         ],
     )

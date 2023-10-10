@@ -6,7 +6,6 @@
 // Also available under a BSD-style license. See LICENSE.
 //
 //===----------------------------------------------------------------------===//
-#ifdef TORCH_MLIR_ENABLE_TCP
 #include "PassDetail.h"
 
 #include "IR/TcpDialect.h"
@@ -65,4 +64,3 @@ std::unique_ptr<OperationPass<ModuleOp>>
 mlir::torch::TorchConversion::createVerifyTcpBackendContractPass() {
   return std::make_unique<VerifyTcpBackendContractPass>();
 }
-#endif // TORCH_MLIR_ENABLE_TCP
