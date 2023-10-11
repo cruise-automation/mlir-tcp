@@ -1,3 +1,8 @@
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+# Also available under a BSD-style license. See LICENSE.
+
 ###############################################################################
 # Options for "generic_clang" builds: these options should generally apply to
 # builds using a Clang-based compiler, and default to the `clang` executable on
