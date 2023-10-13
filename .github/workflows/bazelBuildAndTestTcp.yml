@@ -63,7 +63,7 @@ jobs:
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
                    mlir-tcp:ci \
-                   bazel build --config=generic_clang //:tcp-opt
+                   bazel build --config=clang_linux //:tcp-opt
 
     - name: Bazel test mlir-tcp (lit tests)
       run: |
@@ -71,7 +71,7 @@ jobs:
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
                    mlir-tcp:ci \
-                   bazel test --config=generic_clang //test/...
+                   bazel test --config=clang_linux //test/...
 
     - name: Verify clang-format was run (cpp lint)
       run: |
@@ -91,7 +91,7 @@ jobs:
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
                    mlir-tcp:ci \
-                   bazel run --config=generic_clang //:buildifier
+                   bazel run --config=clang_linux //:buildifier
         if [ -n "$(git status --porcelain)" ]; then
           echo "Please 'bazel run //:buildifier' and commit changes."
           exit 1
