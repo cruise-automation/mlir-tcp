@@ -322,12 +322,29 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "Pipeline",
+    srcs = [
+        "lib/Pipeline/Pipeline.cpp",
+    ],
+    hdrs = [
+        "include/Pipeline/Pipeline.h",
+    ],
+    strip_include_prefix = "include",
+    deps = [
+        ":TcpConversionPasses",
+        "@llvm-project//mlir:ConversionPasses",
+        "@llvm-project//mlir:Pass",
+    ],
+)
+
 cc_binary(
     name = "tcp-opt",
     srcs = [
         "tools/tcp-opt/tcp-opt.cpp",
     ],
     deps = [
+        ":Pipeline",
         ":TcpDialect",
         ":TcpInitAll",
         ":TcpPasses",

@@ -60,3 +60,10 @@ def third_party_deps():
             "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.7.zip",
         ],
     )
+
+    http_archive(
+        name = "googletest",
+        urls = ["https://github.com/google/googletest/archive/f8d7d77c06936315286eb55f8de22cd23c188571.zip"],
+        strip_prefix = "googletest-f8d7d77c06936315286eb55f8de22cd23c188571",
+    )
+

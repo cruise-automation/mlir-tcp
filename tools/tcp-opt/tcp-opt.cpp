@@ -14,6 +14,8 @@
 
 #include "InitAll.h"
 
+#include "Pipeline/Pipeline.h"
+
 #include "stablehlo/dialect/Register.h"
 
 using namespace mlir;
@@ -28,6 +30,8 @@ int main(int argc, char **argv) {
   mlir::tcp::registerAllDialects(registry);
 
   mlir::stablehlo::registerAllDialects(registry);
+
+  mlir::tcp::registerTcpPipelines();
 
   return mlir::asMainReturnCode(mlir::MlirOptMain(
       argc, argv, "MLIR modular optimizer driver\n", registry));
