@@ -42,10 +42,13 @@ filegroup(
             "//test:lit_data",
         ],
     )
-    for src in glob(["**/*.mlir"])
+    for src in glob(["Conversion/**/*.mlir", "Dialect/**/*.mlir"])
 ]
 
-aot_compile("basic_tcp_ops", "basic_tcp_ops.mlir")
+aot_compile(
+    name = "basic_tcp_ops",
+    tcp_source = "basic_tcp_ops.mlir",
+)
 
 cc_test(
     name = "test_aot_compiled_basic_tcp_ops",
