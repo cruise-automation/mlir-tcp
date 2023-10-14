@@ -57,22 +57,6 @@ jobs:
                      -t mlir-tcp:ci \
                      .
 
-    - name: Bazel build mlir-tcp
-      run: |
-        docker run --rm \
-                   -v "$(pwd)":"/opt/src/mlir-tcp" \
-                   -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   mlir-tcp:ci \
-                   bazel build --config=clang_linux //:tcp-opt
-
-    - name: Bazel test mlir-tcp (lit tests)
-      run: |
-        docker run --rm \
-                   -v "$(pwd)":"/opt/src/mlir-tcp" \
-                   -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   mlir-tcp:ci \
-                   bazel test --config=clang_linux //test/...
-
     - name: Verify clang-format was run (cpp lint)
       run: |
         docker run --rm \
@@ -96,6 +80,22 @@ jobs:
           echo "Please 'bazel run //:buildifier' and commit changes."
           exit 1
         fi
+
+    - name: Bazel build mlir-tcp
+      run: |
+        docker run --rm \
+                   -v "$(pwd)":"/opt/src/mlir-tcp" \
+                   -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
+                   mlir-tcp:ci \
+                   bazel build --config=clang_linux //:tcp-opt
+
+    - name: Bazel test mlir-tcp (lit tests, aot compile tests)
+      run: |
+        docker run --rm \
+                   -v "$(pwd)":"/opt/src/mlir-tcp" \
+                   -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
+                   mlir-tcp:ci \
+                   bazel test --config=clang_linux //test/...
 
     # Switch back bazel cache directory to user ownership
     # to allow GHA post-cache step to save cache without
