@@ -12,4 +12,4 @@
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/OpDefinition.h"
 
-#include "IR/TcpDialect.h.inc"
+#include "Dialect/IR/TcpDialect.h.inc"

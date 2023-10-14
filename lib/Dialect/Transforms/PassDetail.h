@@ -7,15 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Transforms/Passes.h"
-#include "Transforms/FuseTcpOpsPass.h"
-#include "Transforms/IsolateGroupOpsPass.h"
+#pragma once
+
 #include "mlir/Pass/Pass.h"
-#include <memory>
 
-namespace {
-#define GEN_PASS_REGISTRATION
-#include "Transforms/Passes.h.inc"
-} // end namespace
+#include "Dialect/IR/TcpOps.h"
 
-void mlir::tcp::registerTcpPasses() { ::registerPasses(); }
+namespace mlir::tcp {
+
+using namespace mlir;
+#define GEN_PASS_CLASSES
+#include "Dialect/Transforms/Passes.h.inc"
+
+} // end namespace mlir::tcp
