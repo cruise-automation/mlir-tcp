@@ -42,7 +42,10 @@ filegroup(
             "//test:lit_data",
         ],
     )
-    for src in glob(["Conversion/**/*.mlir", "Dialect/**/*.mlir"])
+    for src in glob([
+        "Conversion/**/*.mlir",
+        "Dialect/**/*.mlir",
+    ])
 ]
 
 aot_compile(
@@ -52,10 +55,10 @@ aot_compile(
 
 cc_test(
     name = "test_aot_compiled_basic_tcp_ops",
+    srcs = ["test_aot_compiled_basic_tcp_ops.cpp"],
     deps = [
         ":aot_compiled_basic_tcp_ops",
         "//tools/aot:abi",
-        "@googletest//:gtest_main"
+        "@googletest//:gtest_main",
     ],
-    srcs = ["test_aot_compiled_basic_tcp_ops.cpp"]
 )

@@ -13,4 +13,4 @@ namespace mlir {
 namespace tcp {
 void registerTcpPipelines();
 }
-}
+} // namespace mlir

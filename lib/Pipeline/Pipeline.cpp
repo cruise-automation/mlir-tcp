@@ -9,8 +9,8 @@
 
 #include "Pipeline/Pipeline.h"
 
-#include "Conversion/TcpToLinalg/TcpToLinalg.h"
 #include "Conversion/TcpToArith/TcpToArith.h"
+#include "Conversion/TcpToLinalg/TcpToLinalg.h"
 
 #include "mlir/Conversion/FuncToLLVM/ConvertFuncToLLVMPass.h"
 #include "mlir/Conversion/MathToLLVM/MathToLLVM.h"
@@ -19,8 +19,8 @@
 #include "mlir/Conversion/ReconcileUnrealizedCasts/ReconcileUnrealizedCasts.h"
 #include "mlir/Conversion/SCFToControlFlow/SCFToControlFlow.h"
 #include "mlir/Dialect/Bufferization/Transforms/Passes.h"
-#include "mlir/Dialect/Func/Transforms/Passes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/Func/Transforms/Passes.h"
 #include "mlir/Dialect/Linalg/Passes.h"
 #include "mlir/Dialect/MemRef/Transforms/Passes.h"
 #include "mlir/Dialect/Tensor/Transforms/Passes.h"
@@ -35,7 +35,8 @@ static void tcpToLlvmPipelineBuilder(OpPassManager &pm) {
   pm.addPass(func::createFuncBufferizePass());
   pm.addPass(bufferization::createEmptyTensorToAllocTensorPass());
   pm.addNestedPass<func::FuncOp>(tensor::createTensorBufferizePass());
-  pm.addNestedPass<func::FuncOp>(bufferization::createBufferizationBufferizePass());
+  pm.addNestedPass<func::FuncOp>(
+      bufferization::createBufferizationBufferizePass());
   pm.addPass(createLinalgBufferizePass());
   pm.addNestedPass<func::FuncOp>(createConvertLinalgToLoopsPass());
   pm.addPass(createConvertSCFToCFPass());
@@ -52,6 +53,6 @@ static void tcpToLlvmPipelineBuilder(OpPassManager &pm) {
 }
 
 void tcp::registerTcpPipelines() {
-  PassPipelineRegistration<>(
-    "lower-tcp-to-llvm", "Lowers TCP to LLVM", tcpToLlvmPipelineBuilder);
+  PassPipelineRegistration<>("lower-tcp-to-llvm", "Lowers TCP to LLVM",
+                             tcpToLlvmPipelineBuilder);
 }

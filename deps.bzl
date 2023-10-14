@@ -66,4 +66,3 @@ def third_party_deps():
         urls = ["https://github.com/google/googletest/archive/f8d7d77c06936315286eb55f8de22cd23c188571.zip"],
         strip_prefix = "googletest-f8d7d77c06936315286eb55f8de22cd23c188571",
     )
-
