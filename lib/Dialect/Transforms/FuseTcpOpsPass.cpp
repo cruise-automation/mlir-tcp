@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Transforms/FuseTcpOpsPass.h"
+#include "Dialect/Transforms/FuseTcpOpsPass.h"
 #include "./PassDetail.h"
 
-#include "IR/TcpDialect.h"
-#include "IR/TcpOps.h"
-#include "Transforms/Passes.h"
+#include "Dialect/IR/TcpDialect.h"
+#include "Dialect/IR/TcpOps.h"
+#include "Dialect/Transforms/Passes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/OpDefinition.h"

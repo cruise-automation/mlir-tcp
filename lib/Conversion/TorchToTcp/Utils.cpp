@@ -9,8 +9,8 @@
 
 #include "Utils.h"
 
-#include "IR/TcpDialect.h"
-#include "IR/TcpOps.h"
+#include "Dialect/IR/TcpDialect.h"
+#include "Dialect/IR/TcpOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"

@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "IR/TcpDialect.h"
+#include "Dialect/IR/TcpDialect.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Linalg/IR/Linalg.h"

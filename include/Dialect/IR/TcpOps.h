@@ -19,8 +19,8 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/TypeSwitch.h"
 
-#include "IR/TcpEnums.h.inc"
+#include "Dialect/IR/TcpEnums.h.inc"
 #define GET_ATTRDEF_CLASSES
-#include "IR/TcpAttrs.h.inc"
+#include "Dialect/IR/TcpAttrs.h.inc"
 #define GET_OP_CLASSES
-#include "IR/TcpOps.h.inc"
+#include "Dialect/IR/TcpOps.h.inc"

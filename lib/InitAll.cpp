@@ -10,8 +10,8 @@
 #include "InitAll.h"
 
 #include "Conversion/Passes.h"
-#include "IR/TcpDialect.h"
-#include "Transforms/Passes.h"
+#include "Dialect/IR/TcpDialect.h"
+#include "Dialect/Transforms/Passes.h"
 #include "mlir/Dialect/Func/Extensions/InlinerExtension.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Dialect.h"

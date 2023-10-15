@@ -9,8 +9,8 @@
 
 #include "Conversion/TorchToTcp/TorchToTcp.h"
 
-#include "IR/TcpDialect.h"
-#include "IR/TcpOps.h"
+#include "Dialect/IR/TcpDialect.h"
+#include "Dialect/IR/TcpOps.h"
 #include "PopulatePatterns.h"
 #include "Utils.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"

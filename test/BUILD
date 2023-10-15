@@ -6,6 +6,7 @@
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@llvm-project//llvm:lit_test.bzl", "lit_test")
 load("@//tools/aot:aot_compile.bzl", "aot_compile")
+load("@rules_cc//cc:defs.bzl", "cc_test")
 
 expand_template(
     name = "lit_site_cfg_py",
