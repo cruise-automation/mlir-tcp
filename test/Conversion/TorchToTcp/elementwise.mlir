@@ -1,4 +1,4 @@
-// RUN: tcp-opt <%s -convert-torch-to-tcp -split-input-file -verify-diagnostics | FileCheck %s
+// RUN: tcp-opt %s -convert-torch-to-tcp -split-input-file -verify-diagnostics | FileCheck %s
 
 // CHECK-LABEL:  func.func @torch.aten.sigmoid(
 // CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],f32> {

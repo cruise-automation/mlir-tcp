@@ -149,23 +149,26 @@ gentbl_cc_library(
 )
 
 cc_library(
-    name = "TcpPasses",
+    name = "TcpDialectPasses",
     srcs = [
         "lib/Dialect/Transforms/FuseTcpOpsPass.cpp",
         "lib/Dialect/Transforms/IsolateGroupOpsPass.cpp",
         "lib/Dialect/Transforms/PassDetail.h",
         "lib/Dialect/Transforms/Passes.cpp",
+        "lib/Dialect/Transforms/VerifyTcpBackendContractPass.cpp",
     ],
     hdrs = [
         "include/Dialect/Transforms/FuseTcpOpsPass.h",
         "include/Dialect/Transforms/IsolateGroupOpsPass.h",
         "include/Dialect/Transforms/Passes.h",
+        "include/Dialect/Transforms/VerifyTcpBackendContractPass.h",
     ],
     strip_include_prefix = "include",
     deps = [
         ":TcpDialect",
         ":TcpTransformsPassesIncGen",
         "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:TensorDialect",
         "@llvm-project//mlir:Transforms",
     ],
 )
@@ -313,7 +316,7 @@ cc_library(
     strip_include_prefix = "include",
     deps = [
         ":TcpConversionPasses",
-        ":TcpPasses",
+        ":TcpDialectPasses",
         "@llvm-project//mlir:AllExtensions",
         "@llvm-project//mlir:Dialect",
         "@llvm-project//mlir:DialectUtils",
@@ -333,8 +336,10 @@ cc_library(
     strip_include_prefix = "include",
     deps = [
         ":TcpConversionPasses",
+        ":TcpDialectPasses",
         "@llvm-project//mlir:ConversionPasses",
         "@llvm-project//mlir:Pass",
+        "@torch-mlir//:TorchMLIRTorchConversionPasses",
     ],
 )
 
@@ -346,8 +351,8 @@ cc_binary(
     deps = [
         ":Pipeline",
         ":TcpDialect",
+        ":TcpDialectPasses",
         ":TcpInitAll",
-        ":TcpPasses",
         "@llvm-project//mlir:AllExtensions",
         "@llvm-project//mlir:AllPassesAndDialects",
         "@llvm-project//mlir:MlirOptLib",

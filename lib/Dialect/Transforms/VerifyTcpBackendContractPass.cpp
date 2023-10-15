@@ -7,7 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "../PassDetail.h"
+#include "Dialect/Transforms/VerifyTcpBackendContractPass.h"
+#include "./PassDetail.h"
 
 #include "Dialect/IR/TcpDialect.h"
 #include "Dialect/IR/TcpOps.h"
@@ -17,11 +18,10 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/Transforms/DialectConversion.h"
-#include "torch-mlir/Dialect/TorchConversion/Transforms/Passes.h"
 
 using namespace mlir;
-using namespace mlir::torch;
-using namespace mlir::torch::TorchConversion;
+
+namespace mlir::tcp {
 
 namespace {
 class VerifyTcpBackendContractPass
@@ -61,7 +61,8 @@ class VerifyTcpBackendContractPass
 };
 } // namespace
 
-std::unique_ptr<OperationPass<ModuleOp>>
-mlir::torch::TorchConversion::createVerifyTcpBackendContractPass() {
+std::unique_ptr<OperationPass<ModuleOp>> createVerifyTcpBackendContractPass() {
   return std::make_unique<VerifyTcpBackendContractPass>();
 }
+
+} // namespace mlir::tcp

@@ -1,4 +1,4 @@
-// RUN: tcp-opt <%s -convert-torch-to-tcp -split-input-file -verify-diagnostics | FileCheck %s
+// RUN: tcp-opt %s -convert-torch-to-tcp -split-input-file -verify-diagnostics | FileCheck %s
 
 // CHECK-LABEL: @torch.aten.cat
 //   CHECK-SAME:   %[[ARG0:.+]]: !torch.vtensor<[?,?],f32>, %[[ARG1:.+]]: !torch.vtensor<[?,?],f32>

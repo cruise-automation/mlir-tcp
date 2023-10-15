@@ -11,7 +11,7 @@ def aot_compile(name, tcp_source):
         name = "_internal_gen_asm_" + name,
         srcs = [tcp_source],
         outs = ["_internal_" + name + ".S"],
-        cmd = "./$(location //:tcp-opt) -lower-tcp-to-llvm $(SRCS) | ./$(location @llvm-project//mlir:mlir-translate) -mlir-to-llvmir | ./$(location @llvm-project//llvm:llc) -O3 > \"$@\"",
+        cmd = "./$(location //:tcp-opt) -tcp-to-llvm-pipeline $(SRCS) | ./$(location @llvm-project//mlir:mlir-translate) -mlir-to-llvmir | ./$(location @llvm-project//llvm:llc) -O3 > \"$@\"",
         tools = [
             "//:tcp-opt",
             "@llvm-project//mlir:mlir-translate",

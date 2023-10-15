@@ -9,8 +9,11 @@
 
 #include "Pipeline/Pipeline.h"
 
+#include "Dialect/Transforms/VerifyTcpBackendContractPass.h"
+
 #include "Conversion/TcpToArith/TcpToArith.h"
 #include "Conversion/TcpToLinalg/TcpToLinalg.h"
+#include "Conversion/TorchToTcp/TorchToTcp.h"
 
 #include "mlir/Conversion/FuncToLLVM/ConvertFuncToLLVMPass.h"
 #include "mlir/Conversion/MathToLLVM/MathToLLVM.h"
@@ -27,9 +30,32 @@
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Transforms/Passes.h"
 
+#include "torch-mlir/Dialect/TorchConversion/Transforms/Passes.h"
+
 using namespace mlir;
 
-static void tcpToLlvmPipelineBuilder(OpPassManager &pm) {
+static void createTorchBackendToTcpBackendPipeline(OpPassManager &pm) {
+  pm.addNestedPass<func::FuncOp>(tcp::createConvertTorchToTcpPass());
+
+  // Clean up any non-canonical code introduced above.
+  pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
+  // The resolution of `dim` ops tends to create identical ops. CSE them.
+  pm.addNestedPass<func::FuncOp>(createCSEPass());
+
+  // Finish the type conversion from `torch` types to the types of the
+  // TCP backend contract.
+  pm.addPass(torch::TorchConversion::createFuncBackendTypeConversionPass());
+  pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
+  pm.addNestedPass<func::FuncOp>(
+      torch::TorchConversion::createFinalizingBackendTypeConversionPass());
+
+  // Verify that we have lowered to the form that TCP backend expects.
+  // This fails compilation (signalPassFailure) if the IR is not in the
+  // correct form.
+  pm.addPass(tcp::createVerifyTcpBackendContractPass());
+}
+
+static void createTcpToLlvmPipeline(OpPassManager &pm) {
   pm.addPass(tcp::createConvertTcpToLinalgPass());
   pm.addPass(tcp::createConvertTcpToArithPass());
   pm.addPass(func::createFuncBufferizePass());
@@ -53,6 +79,11 @@ static void tcpToLlvmPipelineBuilder(OpPassManager &pm) {
 }
 
 void tcp::registerTcpPipelines() {
-  PassPipelineRegistration<>("lower-tcp-to-llvm", "Lowers TCP to LLVM",
-                             tcpToLlvmPipelineBuilder);
+  PassPipelineRegistration<>(
+      "torch-backend-to-tcp-backend-pipeline",
+      "Pipeline lowering torch backend contract to TCP backend contract.",
+      createTorchBackendToTcpBackendPipeline);
+
+  PassPipelineRegistration<>("tcp-to-llvm-pipeline", "Lowers TCP to LLVM",
+                             createTcpToLlvmPipeline);
 }
