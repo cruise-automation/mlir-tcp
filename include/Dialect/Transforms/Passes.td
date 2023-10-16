@@ -24,4 +24,10 @@ def TcpIsolateGroupOps : Pass<"tcp-isolate-group-ops", "ModuleOp"> {
   let constructor = "mlir::tcp::createTcpIsolateGroupOpsPass()";
 }
 
+// \brief This pass verifies conformity to the TCP backend contract.
+def VerifyTcpBackendContract : Pass<"torch-verify-tcp-backend-contract", "ModuleOp"> {
+  let summary = "Verifies conformity to the tcp backend contract";
+  let constructor = "mlir::tcp::createVerifyTcpBackendContractPass()";
+}
+
 #endif // TCP_PASSES

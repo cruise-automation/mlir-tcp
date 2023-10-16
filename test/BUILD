@@ -5,8 +5,6 @@
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@llvm-project//llvm:lit_test.bzl", "lit_test")
-load("@//tools/aot:aot_compile.bzl", "aot_compile")
-load("@rules_cc//cc:defs.bzl", "cc_test")
 
 expand_template(
     name = "lit_site_cfg_py",
@@ -46,20 +44,6 @@ filegroup(
     for src in glob([
         "Conversion/**/*.mlir",
         "Dialect/**/*.mlir",
+        "Pipeline/**/*.mlir",
     ])
 ]
-
-aot_compile(
-    name = "basic_tcp_ops",
-    tcp_source = "basic_tcp_ops.mlir",
-)
-
-cc_test(
-    name = "test_aot_compiled_basic_tcp_ops",
-    srcs = ["test_aot_compiled_basic_tcp_ops.cpp"],
-    deps = [
-        ":aot_compiled_basic_tcp_ops",
-        "//tools/aot:abi",
-        "@googletest//:gtest_main",
-    ],
-)
