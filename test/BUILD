@@ -5,6 +5,8 @@
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@llvm-project//llvm:lit_test.bzl", "lit_test")
+load("//tools/aot:aot_compile.bzl", "aot_compile")
+load("@rules_cc//cc:defs.bzl", "cc_test")
 
 expand_template(
     name = "lit_site_cfg_py",
@@ -40,6 +42,7 @@ filegroup(
             "//:tcp-opt",
             "//test:lit_data",
         ],
+        tags = ["lit_tests"],
     )
     for src in glob([
         "Conversion/**/*.mlir",
@@ -47,3 +50,37 @@ filegroup(
         "Pipeline/**/*.mlir",
     ])
 ]
+
+aot_compile(
+    name = "basic_tcp_ops",
+    tcp_source = "AotCompile/basic_tcp_ops.mlir",
+)
+
+cc_test(
+    name = "AotCompile/test_aot_compiled_basic_tcp_ops",
+    srcs = ["AotCompile/test_aot_compiled_basic_tcp_ops.cpp"],
+    tags = ["aot_tests"],
+    deps = [
+        ":aot_compiled_basic_tcp_ops",
+        "//tools/aot:abi",
+        "@googletest//:gtest_main",
+    ],
+)
+
+test_suite(
+    name = "lit_tests",
+    tags = ["lit_tests"],
+)
+
+test_suite(
+    name = "aot_tests",
+    tags = ["aot_tests"],
+)
+
+test_suite(
+    name = "all_tests",
+    tests = [
+        "//test:aot_tests",
+        "//test:lit_tests",
+    ],
+)
