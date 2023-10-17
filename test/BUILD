@@ -63,7 +63,7 @@ cc_test(
     deps = [
         ":aot_compiled_basic_tcp_ops",
         "//tools/aot:abi",
-        "@googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
