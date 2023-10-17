@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Also available under a BSD-style license. See LICENSE.
 
-workspace(name = "mlir_tcp_ws")
+workspace(name = "mlir-tcp")
 
 load("//:deps.bzl", "third_party_deps")
 
