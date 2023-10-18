@@ -21,13 +21,16 @@ def third_party_deps():
         urls = ["https://github.com/llvm/torch-mlir/archive/{commit}.tar.gz".format(commit = TORCH_MLIR_COMMIT)],
     )
 
-    STABLEHLO_COMMIT = "77a59815a82b34f7b08ed2d42a711d9920682d0e"
-    STABLEHLO_SHA256 = "367ac567bc9a543ec3c9bbf16e1304a174b1d42bdb7bdeab2ce8b20134ed68d2"
+    STABLEHLO_COMMIT = "5a8bb985f50a679721292b14f97f270344ac64a3"
+    STABLEHLO_SHA256 = "abda3e8e029c1409b53b1eea080e5cfb4c4ef6705064d7cd954d8272d059567a"
     http_archive(
         name = "stablehlo",
         sha256 = STABLEHLO_SHA256,
         strip_prefix = "stablehlo-" + STABLEHLO_COMMIT,
         urls = ["https://github.com/openxla/stablehlo/archive/{commit}.tar.gz".format(commit = STABLEHLO_COMMIT)],
+        # This patch allows testing stablehlo from mlir-tcp
+        patches = ["@//:stablehlo.patch"],
+        patch_args = ["-p1"],
     )
 
     SKYLIB_VERSION = "1.3.0"
