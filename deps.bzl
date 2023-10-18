@@ -1,8 +1,8 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def third_party_deps():
-    LLVM_COMMIT = "4acc3ffbb0af5631bc7916aeff3570f448899647"
-    LLVM_SHA256 = "7c5a640383e220dcf16e41a717b5e7d589c29598d31ae304ebc81b73b3be5fd2"
+    LLVM_COMMIT = "28b27c1b10ae8d1f5b4fb9df691e8cf0da9be3f6"
+    LLVM_SHA256 = "1f7a7ca5983801d671901644659c32d028e5e7316418fabcb6159454249aefa3"
     http_archive(
         name = "llvm-raw",
         build_file_content = "# empty",
@@ -11,8 +11,8 @@ def third_party_deps():
         urls = ["https://github.com/llvm/llvm-project/archive/{commit}.tar.gz".format(commit = LLVM_COMMIT)],
     )
 
-    TORCH_MLIR_COMMIT = "3d974ed9883eac4c3651ac7799a49da5ad9c597b"
-    TORCH_MLIR_SHA256 = "71aec7c30d72604325ffe275f36bef8df2476dd11d7bf502aaf14f72011ea7f9"
+    TORCH_MLIR_COMMIT = "52abae1526e51ae8c415ca98ce4a56b00782b68b"
+    TORCH_MLIR_SHA256 = "f9973f3519b4ba98475917eb700f447b65fee88e9dd60c61f174ce38335ccb3b"
     http_archive(
         name = "torch-mlir-raw",
         sha256 = TORCH_MLIR_SHA256,
