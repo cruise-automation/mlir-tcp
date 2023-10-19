@@ -5,11 +5,18 @@
 
 name: Bazel Build and Test (stablehlo)
 
+# Only run when stablehlo hash changes (deps.bzl)
 on:
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - 'deps.bzl'
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - 'deps.bzl'
   workflow_dispatch:
 
 # Ensure that only a single job or workflow using the same
@@ -32,7 +39,7 @@ jobs:
 
     # Continually update cache even if there's a "hit" during
     # restore to avoid the cache going stale over time
-    # https://github.com/actions/cache/blob/main/workarounds.md#update-a-cache
+    # https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
     - name: Setup cache for bazel
       uses: actions/cache@v3
       with:
