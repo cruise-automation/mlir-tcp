@@ -3,8 +3,4 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Also available under a BSD-style license. See LICENSE.
 
-bazel-bin
-bazel-out
-bazel-mlir-tcp
-bazel-testlogs
 third_party/
