@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   ubuntu-build:
-    name: ubuntu-x86_64
+    name: ubuntu-x86_64 / mlir-tcp
     runs-on: ubuntu-latest
 
     steps:
