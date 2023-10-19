@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Also available under a BSD-style license. See LICENSE.
 
-name: Bazel Build and Test (mlir-tcp)
+name: Bazel Build and Test (stablehlo)
 
 on:
   pull_request:
@@ -37,9 +37,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.cache/bazel
-        key: mlir-tcp-bazel-build-cache-${{ runner.os }}-${{ github.sha }}
+        key: stablehlo-bazel-build-cache-${{ runner.os }}-${{ github.sha }}
         restore-keys: |
-          mlir-tcp-bazel-build-cache-${{ runner.os }}
+          stablehlo-bazel-build-cache-${{ runner.os }}
 
     # Change bazel cache directory to root ownership
     # to allow writing to it from within the docker container.
@@ -57,45 +57,13 @@ jobs:
                      -t mlir-tcp:ci \
                      .
 
-    - name: Verify clang-format was run (cpp lint)
+    - name: Bazel build and test stablehlo
       run: |
         docker run --rm \
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
                    mlir-tcp:ci \
-                   find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "Please run clang-format 'find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i' and commit changes."
-          exit 1
-        fi
-
-    - name: Verify buildifier was run (bazel lint)
-      run: |
-        docker run --rm \
-                   -v "$(pwd)":"/opt/src/mlir-tcp" \
-                   -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   mlir-tcp:ci \
-                   bazel run --config=clang_linux //:buildifier
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "Please 'bazel run //:buildifier' and commit changes."
-          exit 1
-        fi
-
-    - name: Bazel build mlir-tcp
-      run: |
-        docker run --rm \
-                   -v "$(pwd)":"/opt/src/mlir-tcp" \
-                   -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   mlir-tcp:ci \
-                   bazel build --config=clang_linux //:tcp-opt
-
-    - name: Bazel test mlir-tcp (lit tests, aot compile tests)
-      run: |
-        docker run --rm \
-                   -v "$(pwd)":"/opt/src/mlir-tcp" \
-                   -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-                   mlir-tcp:ci \
-                   bazel test --config=clang_linux //test/...
+                   bazel test --config=clang_linux @stablehlo//...
 
     # Switch back bazel cache directory to user ownership
     # to allow GHA post-cache step to save cache without
