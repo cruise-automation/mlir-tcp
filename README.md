@@ -3,7 +3,9 @@ Tensor Compute Primitives
 
 Mid-level intermediate representation for machine learning programs.
 
-![Bazel Build](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestTcp.yml/badge.svg)
+[![Bazel Build and Test (mlir-tcp)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestTcp.yml/badge.svg)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestTcp.yml)
+[![Bazel Build and Test (stablehlo)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestStablehlo.yml/badge.svg)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestStablehlo.yml)
+[![Bazel Build and Test (torch-mlir)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestTorchmlir.yml/badge.svg)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestTorchmlir.yml)
 
 :construction: **This project is under active development (WIP).**
 
@@ -39,4 +41,11 @@ find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
 
 # buildifer
 bazel run --config=clang_linux //:buildifier
+```
+
+When bumping upstream dependencies (LLVM, Torch-MLIR, StableHLO), you may validate the combination of "green commits" by running corresponding 3p tests:
+```shell
+bazel test --config=clang_linux @llvm-project//mlir/...
+bazel test --config=clang_linux @torch-mlir//...
+bazel test --config=clang_linux @stablehlo//...
 ```
