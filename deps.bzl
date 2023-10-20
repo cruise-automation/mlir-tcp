@@ -62,7 +62,8 @@ def third_party_deps():
             sha256 = STABLEHLO_SHA256,
             strip_prefix = "stablehlo-" + STABLEHLO_COMMIT,
             urls = ["https://github.com/openxla/stablehlo/archive/{commit}.tar.gz".format(commit = STABLEHLO_COMMIT)],
-            # This patch allows testing stablehlo from mlir-tcp
+            # Note: This patch allows testing stablehlo from mlir-tcp
+            # TODO: Remove after https://github.com/openxla/stablehlo/pull/1810 lands
             patches = ["@//:stablehlo.patch"],
             patch_args = ["-p1"],
         )
