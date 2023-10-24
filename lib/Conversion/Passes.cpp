@@ -25,13 +25,4 @@ namespace {
 
 void mlir::tcp::registerConversionPasses() {
   ::registerPasses();
-  ::mlir::registerPass([]() -> std::unique_ptr<::mlir::Pass> {
-    return mlir::tcp::createConvertStablehloToTcpPass();
-  });
-  ::mlir::registerPass([]() -> std::unique_ptr<::mlir::Pass> {
-    return mlir::tcp::createConvertTcpToLinalgPass();
-  });
-  ::mlir::registerPass([]() -> std::unique_ptr<::mlir::Pass> {
-    return mlir::tcp::createConvertTcpToArithPass();
-  });
 }

@@ -13,6 +13,10 @@
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
+
+#define GEN_PASS_DECL_CONVERTTORCHTOTCP
+#include "Conversion/Passes.h.inc"
+
 namespace tcp {
 
 std::unique_ptr<OperationPass<func::FuncOp>> createConvertTorchToTcpPass();

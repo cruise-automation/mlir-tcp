@@ -12,6 +12,10 @@
 
 include "mlir/Pass/PassBase.td"
 
+//===----------------------------------------------------------------------===//
+// TorchToTcp
+//===----------------------------------------------------------------------===//
+
 def ConvertTorchToTcp : Pass<"convert-torch-to-tcp", "func::FuncOp"> {
   let summary = "Convert Torch ops to Tcp ops";
   let description = [{
