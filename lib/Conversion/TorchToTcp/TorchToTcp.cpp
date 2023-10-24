@@ -7,11 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Conversion/TorchToTcp/TorchToTcp.h"
+#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
+
+#include "mlir-tcp/Dialect/IR/TcpDialect.h"
+#include "mlir-tcp/Dialect/IR/TcpOps.h"
 
 #include "../PassDetail.h"
-#include "Dialect/IR/TcpDialect.h"
-#include "Dialect/IR/TcpOps.h"
 #include "PopulatePatterns.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
@@ -29,7 +30,15 @@ using namespace mlir;
 using namespace mlir::torch;
 using namespace mlir::torch::Torch;
 
+namespace mlir {
+
+#define GEN_PASS_DEF_CONVERTTORCHTOTCP
+#include "mlir-tcp/Conversion/Passes.h.inc"
+
+namespace tcp {
+
 namespace {
+
 class ConvertTorchToTcp : public ConvertTorchToTcpBase<ConvertTorchToTcp> {
 public:
   void getDependentDialects(DialectRegistry &registry) const override {
@@ -70,3 +79,6 @@ std::unique_ptr<OperationPass<func::FuncOp>>
 mlir::tcp::createConvertTorchToTcpPass() {
   return std::make_unique<ConvertTorchToTcp>();
 }
+
+} // namespace tcp
+} // namespace mlir

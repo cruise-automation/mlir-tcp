@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Conversion/Passes.h"
+#include "mlir-tcp/Conversion/Passes.h"
 
-#include "Conversion/StablehloToTcp/StablehloToTcp.h"
-#include "Conversion/TcpToArith/TcpToArith.h"
-#include "Conversion/TcpToLinalg/TcpToLinalg.h"
-#include "Conversion/TorchToTcp/TorchToTcp.h"
+#include "mlir-tcp/Conversion/StablehloToTcp/StablehloToTcp.h"
+#include "mlir-tcp/Conversion/TcpToArith/TcpToArith.h"
+#include "mlir-tcp/Conversion/TcpToLinalg/TcpToLinalg.h"
+#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
 
 //===----------------------------------------------------------------------===//
 // Pass registration
@@ -20,18 +20,7 @@
 
 namespace {
 #define GEN_PASS_REGISTRATION
-#include "Conversion/Passes.h.inc"
+#include "mlir-tcp/Conversion/Passes.h.inc"
 } // end namespace
 
-void mlir::tcp::registerConversionPasses() {
-  ::registerPasses();
-  ::mlir::registerPass([]() -> std::unique_ptr<::mlir::Pass> {
-    return mlir::tcp::createConvertStablehloToTcpPass();
-  });
-  ::mlir::registerPass([]() -> std::unique_ptr<::mlir::Pass> {
-    return mlir::tcp::createConvertTcpToLinalgPass();
-  });
-  ::mlir::registerPass([]() -> std::unique_ptr<::mlir::Pass> {
-    return mlir::tcp::createConvertTcpToArithPass();
-  });
-}
+void mlir::tcp::registerConversionPasses() { ::registerPasses(); }

@@ -7,11 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Dialect/Transforms/VerifyTcpBackendContractPass.h"
+#include "mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h"
+
+#include "mlir-tcp/Dialect/IR/TcpDialect.h"
+#include "mlir-tcp/Dialect/IR/TcpOps.h"
+
 #include "./PassDetail.h"
 
-#include "Dialect/IR/TcpDialect.h"
-#include "Dialect/IR/TcpOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"

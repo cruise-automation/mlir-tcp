@@ -12,9 +12,8 @@
 #include "mlir/InitAllPasses.h"
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
 
-#include "InitAll.h"
-
-#include "Pipeline/Pipeline.h"
+#include "mlir-tcp/InitAll.h"
+#include "mlir-tcp/Pipeline/Pipeline.h"
 
 #include "stablehlo/dialect/Register.h"
 
