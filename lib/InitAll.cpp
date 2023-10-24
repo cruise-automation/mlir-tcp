@@ -7,11 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "InitAll.h"
+#include "mlir-tcp/InitAll.h"
 
-#include "Conversion/Passes.h"
-#include "Dialect/IR/TcpDialect.h"
-#include "Dialect/Transforms/Passes.h"
+#include "mlir-tcp/Conversion/Passes.h"
+#include "mlir-tcp/Dialect/IR/TcpDialect.h"
+#include "mlir-tcp/Dialect/Transforms/Passes.h"
+
 #include "mlir/Dialect/Func/Extensions/InlinerExtension.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Dialect.h"

@@ -10,8 +10,8 @@
 #ifndef TCP_OPS
 #define TCP_OPS
 
-include "Dialect/IR/TcpBase.td"
-include "Dialect/IR/TcpEnums.td"
+include "mlir-tcp/Dialect/IR/TcpBase.td"
+include "mlir-tcp/Dialect/IR/TcpEnums.td"
 
 include "mlir/IR/OpBase.td"
 

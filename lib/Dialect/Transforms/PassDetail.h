@@ -11,12 +11,12 @@
 
 #include "mlir/Pass/Pass.h"
 
-#include "Dialect/IR/TcpOps.h"
+#include "mlir-tcp/Dialect/IR/TcpOps.h"
 
 namespace mlir::tcp {
 
 using namespace mlir;
 #define GEN_PASS_CLASSES
-#include "Dialect/Transforms/Passes.h.inc"
+#include "mlir-tcp/Dialect/Transforms/Passes.h.inc"
 
 } // end namespace mlir::tcp

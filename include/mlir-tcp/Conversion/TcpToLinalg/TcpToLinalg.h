@@ -14,7 +14,7 @@
 namespace mlir {
 
 #define GEN_PASS_DECL_CONVERTTCPTOLINALG
-#include "Conversion/Passes.h.inc"
+#include "mlir-tcp/Conversion/Passes.h.inc"
 
 namespace tcp {
 

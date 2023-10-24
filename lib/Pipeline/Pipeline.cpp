@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Pipeline/Pipeline.h"
+#include "mlir-tcp/Pipeline/Pipeline.h"
 
-#include "Dialect/Transforms/VerifyTcpBackendContractPass.h"
+#include "mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h"
 
-#include "Conversion/TcpToArith/TcpToArith.h"
-#include "Conversion/TcpToLinalg/TcpToLinalg.h"
-#include "Conversion/TorchToTcp/TorchToTcp.h"
+#include "mlir-tcp/Conversion/TcpToArith/TcpToArith.h"
+#include "mlir-tcp/Conversion/TcpToLinalg/TcpToLinalg.h"
+#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
 
 #include "mlir/Conversion/FuncToLLVM/ConvertFuncToLLVMPass.h"
 #include "mlir/Conversion/MathToLLVM/MathToLLVM.h"

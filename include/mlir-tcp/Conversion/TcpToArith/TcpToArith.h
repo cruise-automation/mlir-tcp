@@ -13,12 +13,12 @@
 
 namespace mlir {
 
-#define GEN_PASS_DECL_CONVERTSTABLEHLOTOTCP
-#include "Conversion/Passes.h.inc"
+#define GEN_PASS_DECL_CONVERTTCPTOARITH
+#include "mlir-tcp/Conversion/Passes.h.inc"
 
 namespace tcp {
 
-std::unique_ptr<Pass> createConvertStablehloToTcpPass();
+std::unique_ptr<Pass> createConvertTcpToArithPass();
 
 } // namespace tcp
 } // namespace mlir

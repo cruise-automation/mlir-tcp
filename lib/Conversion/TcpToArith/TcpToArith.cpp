@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Conversion/TcpToArith/TcpToArith.h"
+#include "mlir-tcp/Conversion/TcpToArith/TcpToArith.h"
 
-#include "Dialect/IR/TcpDialect.h"
-#include "Dialect/IR/TcpOps.h"
+#include "mlir-tcp/Dialect/IR/TcpDialect.h"
+#include "mlir-tcp/Dialect/IR/TcpOps.h"
 
 #include "../PassDetail.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
@@ -23,7 +23,7 @@
 namespace mlir {
 
 #define GEN_PASS_DEF_CONVERTTCPTOLINALG
-#include "Conversion/Passes.h.inc"
+#include "mlir-tcp/Conversion/Passes.h.inc"
 
 namespace tcp {
 

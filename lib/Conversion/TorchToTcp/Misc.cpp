@@ -7,10 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Conversion/TorchToTcp/TorchToTcp.h"
+#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
 
-#include "Dialect/IR/TcpDialect.h"
-#include "Dialect/IR/TcpOps.h"
+#include "mlir-tcp/Dialect/IR/TcpDialect.h"
+#include "mlir-tcp/Dialect/IR/TcpOps.h"
+
 #include "PopulatePatterns.h"
 #include "Utils.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
