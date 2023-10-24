@@ -23,6 +23,4 @@ namespace {
 #include "mlir-tcp/Conversion/Passes.h.inc"
 } // end namespace
 
-void mlir::tcp::registerConversionPasses() {
-  ::registerPasses();
-}
+void mlir::tcp::registerConversionPasses() { ::registerPasses(); }
