@@ -13,7 +13,11 @@ package(
 
 td_library(
     name = "TcpDialectTdFiles",
-    srcs = glob(["include/mlir-tcp/Dialect/IR/*.td"]),
+    srcs = [
+        "include/mlir-tcp/Dialect/IR/TcpBase.td",
+        "include/mlir-tcp/Dialect/IR/TcpEnums.td",
+        "include/mlir-tcp/Dialect/IR/TcpOps.td",
+    ],
     includes = ["include"],
     deps = [
         "@llvm-project//mlir:OpBaseTdFiles",
@@ -71,8 +75,14 @@ gentbl_cc_library(
 
 cc_library(
     name = "TcpDialect",
-    srcs = glob(["lib/Dialect/IR/*.cpp"]),
-    hdrs = glob(["include/mlir-tcp/Dialect/IR/*.h"]),
+    srcs = [
+        "lib/Dialect/IR/TcpDialect.cpp",
+        "lib/Dialect/IR/TcpOps.cpp",
+    ],
+    hdrs = [
+        "include/mlir-tcp/Dialect/IR/TcpDialect.h",
+        "include/mlir-tcp/Dialect/IR/TcpOps.h",
+    ],
     strip_include_prefix = "include",
     deps = [
         ":TcpOpsIncGen",
@@ -102,11 +112,19 @@ gentbl_cc_library(
 
 cc_library(
     name = "TcpDialectPasses",
-    srcs = glob([
-        "lib/Dialect/Transforms/*.cpp",
-        "lib/Dialect/Transforms/*.h",
-    ]),
-    hdrs = glob(["include/mlir-tcp/Dialect/Transforms/*.h"]),
+    srcs = [
+        "lib/Dialect/Transforms/FuseTcpOpsPass.cpp",
+        "lib/Dialect/Transforms/IsolateGroupOpsPass.cpp",
+        "lib/Dialect/Transforms/PassDetail.h",
+        "lib/Dialect/Transforms/Passes.cpp",
+        "lib/Dialect/Transforms/VerifyTcpBackendContractPass.cpp",
+    ],
+    hdrs = [
+        "include/mlir-tcp/Dialect/Transforms/FuseTcpOpsPass.h",
+        "include/mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h",
+        "include/mlir-tcp/Dialect/Transforms/Passes.h",
+        "include/mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h",
+    ],
     strip_include_prefix = "include",
     deps = [
         ":TcpDialect",
@@ -146,12 +164,17 @@ cc_library(
 
 cc_library(
     name = "TorchToTcp",
-    srcs = glob([
-        "lib/Conversion/TorchToTcp/*.h",
-        "lib/Conversion/TorchToTcp/*.cpp",
-        "lib/Conversion/*.h",
-    ]),
-    hdrs = glob(["include/mlir-tcp/Conversion/TorchToTcp/*.h"]),
+    srcs = [
+        "lib/Conversion/PassDetail.h",
+        "lib/Conversion/TorchToTcp/DataMovement.cpp",
+        "lib/Conversion/TorchToTcp/Elementwise.cpp",
+        "lib/Conversion/TorchToTcp/Misc.cpp",
+        "lib/Conversion/TorchToTcp/PopulatePatterns.h",
+        "lib/Conversion/TorchToTcp/TorchToTcp.cpp",
+        "lib/Conversion/TorchToTcp/Utils.cpp",
+        "lib/Conversion/TorchToTcp/Utils.h",
+    ],
+    hdrs = ["include/mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"],
     strip_include_prefix = "include",
     deps = [
         ":TcpConversionPassesIncGen",
@@ -184,11 +207,13 @@ cc_library(
 
 cc_library(
     name = "TcpToLinalg",
-    srcs = glob([
-        "lib/Conversion/TcpToLinalg/*.h",
-        "lib/Conversion/TcpToLinalg/*.cpp",
-        "lib/Conversion/*.h",
-    ]),
+    srcs = [
+        "lib/Conversion/PassDetail.h",
+        "lib/Conversion/TcpToLinalg/Elementwise.cpp",
+        "lib/Conversion/TcpToLinalg/Misc.cpp",
+        "lib/Conversion/TcpToLinalg/PopulatePatterns.h",
+        "lib/Conversion/TcpToLinalg/TcpToLinalg.cpp",
+    ],
     hdrs = ["include/mlir-tcp/Conversion/TcpToLinalg/TcpToLinalg.h"],
     strip_include_prefix = "include",
     deps = [
