@@ -42,7 +42,7 @@ def Tcp_Dialect : Dialect {
 // Param tuple is: [bitwidth, zeropt, smantissa, sexp, low_end, high_end].
 // Where low and high ends are 0,255 when unsigned, -128,127 when signed, for
 // the 8-bit case.
-class TCP_QuantizedType<string n, list<int> params, bit signed>
+class Tcp_QuantizedType<string n, list<int> params, bit signed>
   : Type<And<[CPred<"$_self.isa<mlir::quant::QuantizedType>()">,
               CPred<"$_self.cast<mlir::quant::QuantizedType>()" #
                     ".getStorageTypeIntegralWidth() == " # !head(params)>]>,
@@ -63,12 +63,12 @@ class TCP_QuantizedType<string n, list<int> params, bit signed>
 // q8ss  : symmetric          signed
 // q16ss : symmetric          signed
 //===----------------------------------------------------------------------===//
-def TCP_QuantizedInt	: AnyTypeOf<[ TCP_QuantizedType<"q8ua", [8], 0>,
-                                     TCP_QuantizedType<"q8sa", [8], 1>,
-                                     TCP_QuantizedType<"q8ss", [8, 0], 1>,
-                                     TCP_QuantizedType<"q16ss", [16, 0], 1>]>;
+def Tcp_QuantizedInt	: AnyTypeOf<[Tcp_QuantizedType<"q8ua", [8], 0>,
+                                     Tcp_QuantizedType<"q8sa", [8], 1>,
+                                     Tcp_QuantizedType<"q8ss", [8, 0], 1>,
+                                     Tcp_QuantizedType<"q16ss", [16, 0], 1>]>;
 
-def Tcp_Scalar : AnyTypeOf<[AnyFloat, AnySignlessInteger, TCP_QuantizedInt]>;
+def Tcp_Scalar : AnyTypeOf<[AnyFloat, AnySignlessInteger, Tcp_QuantizedInt]>;
 def Tcp_Tensor : RankedTensorOf<[Tcp_Scalar]>;
 def Tcp_TensorOrScalar : AnyTypeOf<[Tcp_Tensor, Tcp_Scalar]>;
 
