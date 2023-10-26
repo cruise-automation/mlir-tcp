@@ -10,10 +10,11 @@
 #ifndef TCP_OPS
 #define TCP_OPS
 
+include "mlir/IR/OpBase.td"
+
 include "mlir-tcp/Dialect/IR/TcpBase.td"
 include "mlir-tcp/Dialect/IR/TcpEnums.td"
-
-include "mlir/IR/OpBase.td"
+include "mlir-tcp/Dialect/IR/TcpTypes.td"
 
 def Tcp_TanhOp : Tcp_UnaryElementwiseOp<"tanh", [SameOperandsAndResultElementType]> {
   let summary = "Computes tanh of input, elementwise";

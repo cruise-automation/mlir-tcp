@@ -21,17 +21,25 @@ using namespace mlir;
 using namespace mlir::tcp;
 
 void TcpDialect::initialize() {
-#define GET_OP_LIST
   addOperations<
+#define GET_OP_LIST
 #include "mlir-tcp/Dialect/IR/TcpOps.cpp.inc"
       >();
-#define GET_ATTRDEF_LIST
+  addTypes<
+#define GET_TYPEDEF_LIST
+#include "mlir-tcp/Dialect/IR/TcpTypes.cpp.inc"
+      >();
   addAttributes<
+#define GET_ATTRDEF_LIST
 #include "mlir-tcp/Dialect/IR/TcpAttrs.cpp.inc"
       >();
 }
 
 #include "mlir-tcp/Dialect/IR/TcpEnums.cpp.inc"
+
+#define GET_TYPEDEF_CLASSES
+#include "mlir-tcp/Dialect/IR/TcpTypes.cpp.inc"
+
 #define GET_ATTRDEF_CLASSES
 #include "mlir-tcp/Dialect/IR/TcpAttrs.cpp.inc"
 

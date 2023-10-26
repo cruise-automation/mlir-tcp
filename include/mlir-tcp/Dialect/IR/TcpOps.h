@@ -20,7 +20,12 @@
 #include "llvm/ADT/TypeSwitch.h"
 
 #include "mlir-tcp/Dialect/IR/TcpEnums.h.inc"
+
+#define GET_TYPEDEF_CLASSES
+#include "mlir-tcp/Dialect/IR/TcpTypes.h.inc"
+
 #define GET_ATTRDEF_CLASSES
 #include "mlir-tcp/Dialect/IR/TcpAttrs.h.inc"
+
 #define GET_OP_CLASSES
 #include "mlir-tcp/Dialect/IR/TcpOps.h.inc"
