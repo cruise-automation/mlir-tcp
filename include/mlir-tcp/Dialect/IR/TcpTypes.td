@@ -15,18 +15,10 @@ include "mlir/IR/DialectBase.td"
 
 include "mlir-tcp/Dialect/IR/TcpBase.td"
 
-//===----------------------------------------------------------------------===//
-// Tcp Type Definitions
-//===----------------------------------------------------------------------===//
-
-def Tcp_IndexArrayType : Tcp_Type<"IndexArray", "index_array"> {
-    let summary = "IndexArray TCP type, to holds a list of index builtin type to represent shape";
-}
 
 //===----------------------------------------------------------------------===//
 // Tcp Quantized Types
 //===----------------------------------------------------------------------===//
-
 // The base class of a quantized type.
 // Param tuple is: [bitwidth, zero_pt, s_mantissa, s_exp, low_end, high_end].
 // Where low and high ends are 0,255 when unsigned, -128,127 when signed, for
@@ -40,7 +32,6 @@ class Tcp_QuantizedType<string n, list<int> params, bit signed>
   string asTraitArgsStr = !interleave(params, ", ") #
                           !if(signed, ", true", ", false");
 }
-
 //===----------------------------------------------------------------------===//
 // Name    Symmetry           Sign
 //===----------------------------------------------------------------------===//
@@ -54,8 +45,9 @@ def Tcp_QuantizedInt	: AnyTypeOf<[Tcp_QuantizedType<"q8ua", [8], 0>,
                                      Tcp_QuantizedType<"q8ss", [8, 0], 1>,
                                      Tcp_QuantizedType<"q16ss", [16, 0], 1>]>;
 
+
 //===----------------------------------------------------------------------===//
-// Tcp Container Types
+// Tcp Basic Types
 //===----------------------------------------------------------------------===//
 
 def Tcp_Scalar : AnyTypeOf<[AnyFloat, AnySignlessInteger, Tcp_QuantizedInt]>;
@@ -64,5 +56,14 @@ def Tcp_TensorOrScalar : AnyTypeOf<[Tcp_Tensor, Tcp_Scalar]>;
 
 def Tcp_FloatTensor : RankedTensorOf<[AnyFloat]>;
 def Tcp_FloatOrIntTensor : RankedTensorOf<[AnyFloat, AnySignlessInteger]>;
+
+
+//===----------------------------------------------------------------------===//
+// Tcp Custom Types
+//===----------------------------------------------------------------------===//
+
+def Tcp_IndexArrayType : Tcp_Type<"IndexArray", "index_array"> {
+    let summary = "IndexArray TCP type, to holds a list of index builtin type to represent shape";
+}
 
 #endif // TCP_TYPES
