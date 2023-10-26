@@ -17,6 +17,7 @@ td_library(
         "include/mlir-tcp/Dialect/IR/TcpBase.td",
         "include/mlir-tcp/Dialect/IR/TcpEnums.td",
         "include/mlir-tcp/Dialect/IR/TcpOps.td",
+        "include/mlir-tcp/Dialect/IR/TcpTypes.td",
     ],
     includes = ["include"],
     deps = [
@@ -73,6 +74,24 @@ gentbl_cc_library(
     deps = [":TcpDialectTdFiles"],
 )
 
+gentbl_cc_library(
+    name = "TcpTypesIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-typedef-decls"],
+            "include/mlir-tcp/Dialect/IR/TcpTypes.h.inc",
+        ),
+        (
+            ["-gen-typedef-defs"],
+            "include/mlir-tcp/Dialect/IR/TcpTypes.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/mlir-tcp/Dialect/IR/TcpTypes.td",
+    deps = [":TcpDialectTdFiles"],
+)
+
 cc_library(
     name = "TcpDialect",
     srcs = [
@@ -86,6 +105,7 @@ cc_library(
     strip_include_prefix = "include",
     deps = [
         ":TcpOpsIncGen",
+        ":TcpTypesIncGen",
         "@llvm-project//mlir:Dialect",
         "@llvm-project//mlir:DialectUtils",
         "@llvm-project//mlir:FuncDialect",
