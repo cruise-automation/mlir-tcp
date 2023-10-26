@@ -239,7 +239,6 @@ def Tcp_YieldOp : Tcp_Op<"yield", [Terminator, Pure]> {
 
 def Tcp_GroupOp : Tcp_Op<"group", [
           AffineScope,
-          ParentOneOf<["func::FuncOp", "tcp::GroupOp", "tcp::IsolatedGroupOp"]>,
           SingleBlockImplicitTerminator<"tcp::YieldOp">]> {
   let summary = "Groups ops into a region that is not isolated from above";
 
@@ -275,7 +274,6 @@ def Tcp_GroupOp : Tcp_Op<"group", [
 def Tcp_IsolatedGroupOp : Tcp_Op<"isolated_group", [
           AffineScope,
           IsolatedFromAbove,
-          ParentOneOf<["func::FuncOp", "tcp::GroupOp", "tcp::IsolatedGroupOp"]>,
           SingleBlockImplicitTerminator<"tcp::YieldOp">]> {
   let summary = "Groups ops into a region that is isolated from above";
 
