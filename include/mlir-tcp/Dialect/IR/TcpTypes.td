@@ -16,11 +16,19 @@ include "mlir/IR/DialectBase.td"
 include "mlir-tcp/Dialect/IR/TcpBase.td"
 
 //===----------------------------------------------------------------------===//
-// Tcp Type Definitions.
+// Tcp Type Definitions
+//===----------------------------------------------------------------------===//
+
+def Tcp_IndexArrayType : Tcp_Type<"IndexArray", "index_array"> {
+    let summary = "IndexArray TCP type, to holds a list of index builtin type to represent shape";
+}
+
+//===----------------------------------------------------------------------===//
+// Tcp Quantized Types
 //===----------------------------------------------------------------------===//
 
 // The base class of a quantized type.
-// Param tuple is: [bitwidth, zeropt, smantissa, sexp, low_end, high_end].
+// Param tuple is: [bitwidth, zero_pt, s_mantissa, s_exp, low_end, high_end].
 // Where low and high ends are 0,255 when unsigned, -128,127 when signed, for
 // the 8-bit case.
 class Tcp_QuantizedType<string n, list<int> params, bit signed>
@@ -34,9 +42,6 @@ class Tcp_QuantizedType<string n, list<int> params, bit signed>
 }
 
 //===----------------------------------------------------------------------===//
-// Quantized Integer Types.
-//===----------------------------------------------------------------------===//
-//===----------------------------------------------------------------------===//
 // Name    Symmetry           Sign
 //===----------------------------------------------------------------------===//
 // q8ua  : asymmetric         unsigned
@@ -48,6 +53,10 @@ def Tcp_QuantizedInt	: AnyTypeOf<[Tcp_QuantizedType<"q8ua", [8], 0>,
                                      Tcp_QuantizedType<"q8sa", [8], 1>,
                                      Tcp_QuantizedType<"q8ss", [8, 0], 1>,
                                      Tcp_QuantizedType<"q16ss", [16, 0], 1>]>;
+
+//===----------------------------------------------------------------------===//
+// Tcp Container Types
+//===----------------------------------------------------------------------===//
 
 def Tcp_Scalar : AnyTypeOf<[AnyFloat, AnySignlessInteger, Tcp_QuantizedInt]>;
 def Tcp_Tensor : RankedTensorOf<[Tcp_Scalar]>;
