@@ -19,4 +19,4 @@ namespace {
 #include "mlir-tcp/Dialect/Transforms/Passes.h.inc"
 } // end namespace
 
-void mlir::tcp::registerTcpPasses() { ::registerPasses(); }
+void mlir::tcp::registerTcpDialectPasses() { ::registerPasses(); }

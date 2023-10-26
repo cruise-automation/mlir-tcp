@@ -12,7 +12,7 @@
 namespace mlir {
 namespace tcp {
 
-void registerConversionPasses();
+void registerTcpConversionPasses();
 
 } // namespace tcp
 } // namespace mlir

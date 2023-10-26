@@ -15,6 +15,6 @@
 namespace mlir::tcp {
 
 /// Registers all Tcp related passes.
-void registerTcpPasses();
+void registerTcpDialectPasses();
 
 } // namespace mlir::tcp

@@ -35,6 +35,8 @@ def Tcp_Dialect : Dialect {
   }]; 
 
   let dependentDialects = [];
+
+  let useDefaultTypePrinterParser = 1;
 }
 
 //===----------------------------------------------------------------------===//

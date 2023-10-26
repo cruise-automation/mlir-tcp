@@ -25,6 +25,6 @@ void mlir::tcp::registerAllDialects(mlir::DialectRegistry &registry) {
 }
 
 void mlir::tcp::registerAllPasses() {
-  mlir::tcp::registerConversionPasses();
-  mlir::tcp::registerTcpPasses();
+  mlir::tcp::registerTcpConversionPasses();
+  mlir::tcp::registerTcpDialectPasses();
 }
