@@ -18,6 +18,7 @@ td_library(
         "include/mlir-tcp/Dialect/IR/TcpEnums.td",
         "include/mlir-tcp/Dialect/IR/TcpOps.td",
         "include/mlir-tcp/Dialect/IR/TcpTypes.td",
+        "include/mlir-tcp/Dialect/IR/TcpOpsCruiseInternal.td",
     ],
     includes = ["include"],
     deps = [
@@ -191,10 +192,15 @@ cc_library(
         "lib/Conversion/TorchToTcp/Misc.cpp",
         "lib/Conversion/TorchToTcp/PopulatePatterns.h",
         "lib/Conversion/TorchToTcp/TorchToTcp.cpp",
+        "lib/Conversion/TorchToTcp/TorchToTcpCruiseInternal.cpp",
+        "lib/Conversion/TorchToTcp/CruiseInternalPatterns.cpp",
         "lib/Conversion/TorchToTcp/Utils.cpp",
         "lib/Conversion/TorchToTcp/Utils.h",
     ],
-    hdrs = ["include/mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"],
+    hdrs = [
+        "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h",
+        "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcpCruiseInternal.h",
+    ],
     strip_include_prefix = "include",
     deps = [
         ":TcpConversionPassesIncGen",

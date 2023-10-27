@@ -23,5 +23,11 @@ void populateDataMovementPatternsAndLegality(TypeConverter &typeConverter,
                                              RewritePatternSet &patterns,
                                              ConversionTarget &target);
 
+namespace cruise {
+void populateCruiseInternalPatternsAndLegality(TypeConverter &typeConverter,
+                                               RewritePatternSet &patterns,
+                                               ConversionTarget &target);
+} // namespace cruise
+
 } // namespace torch_to_tcp
 } // namespace mlir

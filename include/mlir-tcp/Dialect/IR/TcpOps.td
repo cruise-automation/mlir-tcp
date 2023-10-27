@@ -16,6 +16,9 @@ include "mlir-tcp/Dialect/IR/TcpBase.td"
 include "mlir-tcp/Dialect/IR/TcpEnums.td"
 include "mlir-tcp/Dialect/IR/TcpTypes.td"
 
+// Import cruise specific ops
+include "mlir-tcp/Dialect/IR/TcpOpsCruiseInternal.td"
+
 def Tcp_TanhOp : Tcp_UnaryElementwiseOp<"tanh", [SameOperandsAndResultElementType]> {
   let summary = "Computes tanh of input, elementwise";
 

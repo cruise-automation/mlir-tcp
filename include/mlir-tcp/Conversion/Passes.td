@@ -25,6 +25,18 @@ def ConvertTorchToTcp : Pass<"convert-torch-to-tcp", "func::FuncOp"> {
 }
 
 //===----------------------------------------------------------------------===//
+// TorchToTcpCruiseInternal
+//===----------------------------------------------------------------------===//
+
+def ConvertTorchToTcpCruiseInternal : Pass<"convert-torch-to-tcp-cruise-internal", "func::FuncOp"> {
+  let summary = "Convert Torch ops to Tcp ops with cruise internal patterns only";
+  let description = [{
+    Convert Torch ops to Tcp ops with cruise internal patterns only.
+  }];
+  let constructor = "mlir::tcp::createConvertTorchToTcpCruiseInternalPass()";
+}
+
+//===----------------------------------------------------------------------===//
 // StablehloToTcp
 //===----------------------------------------------------------------------===//
 
