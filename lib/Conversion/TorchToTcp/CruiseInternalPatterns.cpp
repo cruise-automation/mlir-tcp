@@ -16,6 +16,7 @@
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
+#include "torch-mlir/Conversion/Utils/Utils.h"
 
 // Conversion patterns in this file are part of internal we use in cruise_main
 // and c/c Code added here can either move outside and upstream or stay (e.g
@@ -65,6 +66,47 @@ public:
     auto newOp = rewriter.replaceOpWithNewOp<tcp::CustomOp>(
         op, resultTypes, ValueRange{adaptor.getSelf(), adaptor.getIndex()},
         indexAttr);
+    newOp.setOpName(op->getName().getStringRef());
+    return success();
+  }
+};
+
+class ConvertAtenIndexTensorHackedTwinOp : public OpConversionPattern<AtenIndexTensorHackedTwinOp> {
+public:
+  using OpConversionPattern<AtenIndexTensorHackedTwinOp>::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenIndexTensorHackedTwinOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    SmallVector<Type> resultTypes;
+    if (failed(
+            OpConversionPattern<AtenIndexTensorHackedTwinOp>::getTypeConverter()->convertTypes(
+                op->getResultTypes(), resultTypes))) {
+      return failure();
+    }
+
+    SmallVector<Value> tensorOperands;
+    Value input = adaptor.getSelf();
+    auto inputTensorType = input.getType().dyn_cast<RankedTensorType>();
+    // Check input is a tensor type.
+    if (!inputTensorType)
+      return rewriter.notifyMatchFailure(
+          op, "Only tensor types input are currently supported");
+    tensorOperands.push_back(input);
+
+    // Deal with torch.prim.ListConstruct of non const value to get the index
+    Value indexList = op.getIndices();
+    SmallVector<Value> indicesTorchType;
+    if (!getListConstructElements(indexList, indicesTorchType))
+      return op.emitError(
+          "unimplemented: the tensor list is not from list construct");
+    SmallVector<Value> indexTensors = getTypeConvertedValues(rewriter, op->getLoc(), getTypeConverter(),
+                                             indicesTorchType);
+
+    tensorOperands.append(indexTensors.begin(), indexTensors.end());
+
+    auto newOp = rewriter.replaceOpWithNewOp<tcp::CustomOp>(
+        op, resultTypes, tensorOperands);
     newOp.setOpName(op->getName().getStringRef());
     return success();
   }
@@ -381,6 +423,7 @@ void torch_to_tcp::cruise::populateCruiseInternalPatternsAndLegality(TypeConvert
   target.addIllegalOp<CasprShapeTensorDimOp>();
   target.addIllegalOp<CasprConstIndexOp>();
   target.addIllegalOp<AtenGatherOp>();
+  target.addIllegalOp<AtenIndexTensorHackedTwinOp>();
 
   patterns.add<ConvertAxisAlignedHardNMS2dOp>(typeConverter, context);
   patterns.add<ConvertTensorDimOp>(typeConverter, context);
@@ -389,6 +432,7 @@ void torch_to_tcp::cruise::populateCruiseInternalPatternsAndLegality(TypeConvert
   patterns.add<ConvertCasprShapeTensorDimOp>(typeConverter, context);
   patterns.add<ConvertCasprConstIndexOp>(typeConverter, context);
   patterns.add<ConvertAtenGatherOp>(typeConverter, context);
+  patterns.add<ConvertAtenIndexTensorHackedTwinOp>(typeConverter, context);
   patterns.add<ConvertValueTensorLiteralOp>(typeConverter, context);
 
   patterns.add<ConvertTorchOclCasprCustomVariadicOp>(typeConverter, context);

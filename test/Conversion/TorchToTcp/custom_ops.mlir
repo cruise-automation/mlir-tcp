@@ -33,6 +33,7 @@ func.func @fused_gather_submanifold_conv3d(%arg0: !torch.vtensor<[1024,27],si32>
 }
 
 // -----
+
 // CHECK-LABEL: sparse_array_to_dense_map
 //       CHECK:   tcp.custom_op("torch.cuda_gems_sparse_conv.sparse_array_to_dense_map_op")
 //       CHECK:   angle = 360 : i32
@@ -45,6 +46,7 @@ func.func @sparse_array_to_dense_map(%arg0: !torch.vtensor<[?],si32>) -> !torch.
 }
 
 // -----
+
 // CHECK-LABEL: build_neighbor_map_op
 //       CHECK: tcp.custom_op("torch.cuda_gems_sparse_conv.build_neighbor_map_op")
 //  CHECK-SAME: circular_padding = false
@@ -68,6 +70,7 @@ func.func @build_neighbor_map_op(%arg0: !torch.vtensor<[32,360,480],si32>, %arg1
 }
 
 // -----
+
 // CHECK-LABEL: gather_op
 //       CHECK: tcp.custom_op("torch.aten.gather")
 //  CHECK-SAME: axis = 1 : i64
@@ -76,4 +79,14 @@ func.func @gather_op(%arg0: !torch.vtensor<[2,2],si64>, %arg1: !torch.vtensor<[2
     %int1 = torch.constant.int 1
     %0 = torch.aten.gather %arg1, %int1, %arg0, %false : !torch.vtensor<[2,2],f32>, !torch.int, !torch.vtensor<[2,2],si64>, !torch.bool -> !torch.vtensor<[2,2],f32>
     return %0 : !torch.vtensor<[2,2],f32>
+  }
+
+// -----
+
+// CHECK-LABEL: index_hacked_twin_op
+//       CHECK: tcp.custom_op("torch.aten.index.Tensor_hacked_twin")
+func.func @index_hacked_twin_op(%arg0: !torch.vtensor<[1,30,19,41],f32>, %arg1: !torch.vtensor<[1,1,1,1],si64>, %arg2: !torch.vtensor<[30,1,1],si64>, %arg3: !torch.vtensor<[19,1],si64>, %arg4: !torch.vtensor<[3],si64>) -> !torch.vtensor<[1,30,19,3],f32> {
+    %0 = torch.prim.ListConstruct %arg1, %arg2, %arg3, %arg4 : (!torch.vtensor<[1,1,1,1],si64>, !torch.vtensor<[30,1,1],si64>, !torch.vtensor<[19,1],si64>, !torch.vtensor<[3],si64>) -> !torch.list<vtensor>
+    %1 = torch.aten.index.Tensor_hacked_twin %arg0, %0 : !torch.vtensor<[1,30,19,41],f32>, !torch.list<vtensor> -> !torch.vtensor<[1,30,19,3],f32>
+    return %1 : !torch.vtensor<[1,30,19,3],f32>
   }
