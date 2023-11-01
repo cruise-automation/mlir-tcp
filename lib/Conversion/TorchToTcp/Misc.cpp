@@ -134,7 +134,7 @@ public:
 };
 
 template <typename AtenOpT, int fillVal>
-class ConvertAtenZerosOnesPatternOp : public OpConversionPattern<AtenOpT> {
+class ConvertAtenZerosOnesOp : public OpConversionPattern<AtenOpT> {
 public:
   using OpConversionPattern<AtenOpT>::OpConversionPattern;
   using OpAdaptor = typename AtenOpT::Adaptor;
@@ -180,7 +180,7 @@ public:
 };
 
 template <typename AtenOpT, int fillVal>
-class ConvertAtenZerosOnesLikePatternOp : public OpConversionPattern<AtenOpT> {
+class ConvertAtenZerosOnesLikeOp : public OpConversionPattern<AtenOpT> {
 public:
   using OpConversionPattern<AtenOpT>::OpConversionPattern;
   using OpAdaptor = typename AtenOpT::Adaptor;
@@ -220,28 +220,27 @@ public:
 
 } // namespace
 
-void torch_to_tcp::populateMiscPatternsAndLegality(TypeConverter &typeConverter,
-                                                   RewritePatternSet &patterns,
-                                                   ConversionTarget &target) {
-  MLIRContext *context = patterns.getContext();
+void torch_to_tcp::populateMiscPatternsAndLegality(
+    TypeConverter &typeConverter, RewritePatternSet &patterns,
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet) {
 
-  target.addIllegalOp<AtenBroadcastToOp>();
-  patterns.add<ConvertAtenBroadcastToOp>(typeConverter, context);
+#define INSERT_ATEN_MISC_OP_PATTERN(ConvertAtenOpPattern, AtenOp)              \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenOpPattern,       \
+                                                   AtenOp>(                    \
+      typeConverter, patterns, target, convertTorchOpsSet)
+  INSERT_ATEN_MISC_OP_PATTERN(ConvertAtenBroadcastToOp, AtenBroadcastToOp);
+  INSERT_ATEN_MISC_OP_PATTERN(ConvertValueTensorLiteralOp,
+                              ValueTensorLiteralOp);
+#undef INSERT_ATEN_MISC_OP_PATTERN
 
-  target.addIllegalOp<ValueTensorLiteralOp>();
-  patterns.add<ConvertValueTensorLiteralOp>(typeConverter, context);
-
-  target.addIllegalOp<AtenZerosOp>();
-  patterns.add<ConvertAtenZerosOnesPatternOp<AtenZerosOp, 0>>(typeConverter,
-                                                              context);
-  target.addIllegalOp<AtenOnesOp>();
-  patterns.add<ConvertAtenZerosOnesPatternOp<AtenOnesOp, 1>>(typeConverter,
-                                                             context);
-
-  target.addIllegalOp<AtenZerosLikeOp>();
-  patterns.add<ConvertAtenZerosOnesLikePatternOp<AtenZerosLikeOp, 0>>(
-      typeConverter, context);
-  target.addIllegalOp<AtenOnesLikeOp>();
-  patterns.add<ConvertAtenZerosOnesLikePatternOp<AtenOnesLikeOp, 1>>(
-      typeConverter, context);
+#define INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenOpPattern, AtenOp, Val)      \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
+      ConvertAtenOpPattern<AtenOp, Val>, AtenOp>(typeConverter, patterns,      \
+                                                 target, convertTorchOpsSet)
+  INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenZerosOnesOp, AtenZerosOp, 0);
+  INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenZerosOnesOp, AtenOnesOp, 1);
+  INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenZerosOnesLikeOp, AtenZerosLikeOp,
+                                 0);
+  INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenZerosOnesLikeOp, AtenOnesLikeOp, 1);
+#undef INSERT_ATEN_ZEROS_ONES_PATTERN
 }

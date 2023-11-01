@@ -9,6 +9,10 @@
 
 #include "mlir/Transforms/DialectConversion.h"
 
+#include "torch-mlir/Dialect/Torch/Transforms/Passes.h"
+
+#include "llvm/ADT/StringSet.h"
+
 namespace mlir {
 namespace torch_to_tcp {
 
@@ -70,6 +74,26 @@ std::optional<Value> getConstTensor(PatternRewriter &rewriter, Operation *op,
 // Utility function to create a tcp.const op with given type info.
 bool getConstTensorWithType(ConversionPatternRewriter &rewriter, Operation *op,
                             Value &constOp, Type resultType, int fillVal);
+
+// Utility function to selectively add a torch->tcp pattern if whitelist op is
+// provided
+template <typename TorchToTcpPattern, typename AtenOp>
+inline void addPatternIfOpInConvertTorchOpsSet(
+    TypeConverter &typeConverter, RewritePatternSet &patterns,
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet) {
+  MLIRContext *context = patterns.getContext();
+  std::optional<OperationName> opName =
+      TorchToTcpPattern(context).getRootKind();
+  assert(opName && "All TorchToTcp patterns must target a single op");
+  // When no ops are specified, convert all.
+  // When ops are specified, convert those ops only.
+  if (convertTorchOpsSet.empty() ||
+      convertTorchOpsSet.contains(
+          opName->getStringRef().ltrim(torch::Torch::kTorchOpPrefix))) {
+    target.addIllegalOp<AtenOp>();
+    patterns.add<TorchToTcpPattern>(typeConverter, context);
+  }
+}
 
 namespace impl {
 template <typename T>

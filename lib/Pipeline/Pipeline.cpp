@@ -35,7 +35,10 @@
 using namespace mlir;
 
 static void createTorchBackendToTcpBackendPipeline(OpPassManager &pm) {
-  pm.addNestedPass<func::FuncOp>(tcp::createConvertTorchToTcpPass());
+  ArrayRef<std::string> emptyArrayRef;
+
+  pm.addNestedPass<func::FuncOp>(
+      tcp::createConvertTorchToTcpPass(emptyArrayRef));
 
   // Clean up any non-canonical code introduced above.
   pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());

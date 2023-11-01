@@ -18,6 +18,8 @@
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
 
+#include "llvm/ADT/StringSet.h"
+
 using namespace mlir;
 using namespace mlir::tcp;
 using namespace mlir::torch;
@@ -60,8 +62,7 @@ public:
 
 void torch_to_tcp::populateDataMovementPatternsAndLegality(
     TypeConverter &typeConverter, RewritePatternSet &patterns,
-    ConversionTarget &target) {
-  MLIRContext *context = patterns.getContext();
-  target.addIllegalOp<AtenCatOp>();
-  patterns.add<ConvertAtenCatOp>(typeConverter, context);
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet) {
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenCatOp, AtenCatOp>(
+      typeConverter, patterns, target, convertTorchOpsSet);
 }
