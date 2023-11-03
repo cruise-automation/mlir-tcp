@@ -315,8 +315,9 @@ def Tcp_CustomOp : Tcp_Op<"custom_op", []> {
 
     let description = [{
         Custom opaque operations fill the gap in lowering operations that have tensor inputs and outputs,
-        but lack a clear operational semantics or have an operational semantic that isn't defined by Tcp;
-        e.g user defined custom operations.
+        but (1) lack a clear operational semantics or (2) have an operational semantic that isn't defined
+        by Tcp (e.g user defined custom operations) or (3) need to "flow through" the middle-end because
+        they target existing pre-written kernels available in the backend.
     }];
 
     let arguments = (ins
