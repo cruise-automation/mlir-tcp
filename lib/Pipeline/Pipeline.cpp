@@ -35,7 +35,7 @@
 using namespace mlir;
 
 static void createTorchBackendToTcpBackendPipeline(OpPassManager &pm) {
-  pm.addNestedPass<func::FuncOp>(tcp::createConvertTorchToTcpPass());
+  pm.addNestedPass<func::FuncOp>(tcp::createConvertTorchToTcpPass({}));
 
   // Clean up any non-canonical code introduced above.
   pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());

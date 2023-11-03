@@ -650,78 +650,58 @@ public:
 
 void torch_to_tcp::populateElementwisePatternsAndLegality(
     TypeConverter &typeConverter, RewritePatternSet &patterns,
-    ConversionTarget &target) {
-  MLIRContext *context = patterns.getContext();
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet) {
 
-  target.addIllegalOp<AtenToDtypeOp>();
-  patterns.add<ConvertAtenToDtypeOp>(typeConverter, context);
+#define INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenOp)                             \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<Convert##AtenOp, AtenOp>(   \
+      typeConverter, patterns, target, convertTorchOpsSet)
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenToDtypeOp);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenClampOp);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenReluOp);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenBatchNormOp);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenAtan2Op);
+#undef INSERT_ATEN_ELEMENTWISE_OP_PATTERN
 
-  target.addIllegalOp<AtenClampOp>();
-  patterns.add<ConvertAtenClampOp>(typeConverter, context);
-  target.addIllegalOp<AtenReluOp>();
-  patterns.add<ConvertAtenReluOp>(typeConverter, context);
+#define INSERT_ATEN_ELEMENTWISE_ADD_SUB_PATTERN(AtenOp, TcpOp)                 \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
+      ConvertAtenAddSubOp<AtenOp, TcpOp>, AtenOp>(typeConverter, patterns,     \
+                                                  target, convertTorchOpsSet)
+  INSERT_ATEN_ELEMENTWISE_ADD_SUB_PATTERN(AtenAddTensorOp, tcp::AddOp);
+  INSERT_ATEN_ELEMENTWISE_ADD_SUB_PATTERN(AtenSubTensorOp, tcp::SubOp);
+  INSERT_ATEN_ELEMENTWISE_ADD_SUB_PATTERN(AtenAddScalarOp, tcp::AddOp);
+  INSERT_ATEN_ELEMENTWISE_ADD_SUB_PATTERN(AtenSubScalarOp, tcp::SubOp);
+#undef INSERT_ATEN_ELEMENTWISE_ADD_SUB_PATTERN
 
-  target.addIllegalOp<AtenAddTensorOp>();
-  target.addIllegalOp<AtenSubTensorOp>();
-  target.addIllegalOp<AtenAddScalarOp>();
-  target.addIllegalOp<AtenSubScalarOp>();
-  patterns.add<ConvertAtenAddSubOp<AtenAddTensorOp, tcp::AddOp>>(typeConverter,
-                                                                 context);
-  patterns.add<ConvertAtenAddSubOp<AtenSubTensorOp, tcp::SubOp>>(typeConverter,
-                                                                 context);
-  patterns.add<ConvertAtenAddSubOp<AtenAddScalarOp, tcp::AddOp>>(typeConverter,
-                                                                 context);
-  patterns.add<ConvertAtenAddSubOp<AtenSubScalarOp, tcp::SubOp>>(typeConverter,
-                                                                 context);
+#define INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN(ConvertAtenOpPattern, AtenOp)  \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
+      ConvertAtenOpPattern<AtenOp>, AtenOp>(typeConverter, patterns, target,   \
+                                            convertTorchOpsSet)
+  INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN(ConvertAtenMulOp, AtenMulTensorOp);
+  INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN(ConvertAtenMulOp, AtenMulScalarOp);
+  INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN(ConvertAtenDivOp, AtenDivTensorOp);
+  INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN(ConvertAtenDivOp, AtenDivScalarOp);
+#undef INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN
 
-  target.addIllegalOp<AtenMulTensorOp>();
-  target.addIllegalOp<AtenMulScalarOp>();
-  patterns.add<ConvertAtenMulOp<AtenMulTensorOp>>(typeConverter, context);
-  patterns.add<ConvertAtenMulOp<AtenMulScalarOp>>(typeConverter, context);
+#define INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenOp, TcpOp)                       \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
+      ConvertAtenUnaryFpOnlyOp<AtenOp, TcpOp>, AtenOp>(                        \
+      typeConverter, patterns, target, convertTorchOpsSet)
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenCeilOp, tcp::CeilOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenFloorOp, tcp::FloorOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenSigmoidOp, tcp::SigmoidOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenTanhOp, tcp::TanhOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenSinOp, tcp::SinOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenCosOp, tcp::CosOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenLogOp, tcp::LogOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenNegOp, tcp::NegOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenAtanOp, tcp::AtanOp);
+#undef INSERT_ATEN_UNARY_FP_ONLY_PATTERN
 
-  target.addIllegalOp<AtenDivTensorOp>();
-  target.addIllegalOp<AtenDivScalarOp>();
-  patterns.add<ConvertAtenDivOp<AtenDivTensorOp>>(typeConverter, context);
-  patterns.add<ConvertAtenDivOp<AtenDivScalarOp>>(typeConverter, context);
-
-  target.addIllegalOp<AtenCeilOp>();
-  target.addIllegalOp<AtenFloorOp>();
-  target.addIllegalOp<AtenSigmoidOp>();
-  target.addIllegalOp<AtenTanhOp>();
-  target.addIllegalOp<AtenSinOp>();
-  target.addIllegalOp<AtenCosOp>();
-  target.addIllegalOp<AtenLogOp>();
-  target.addIllegalOp<AtenNegOp>();
-  target.addIllegalOp<AtenAtanOp>();
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenFloorOp, tcp::FloorOp>>(
-      typeConverter, context);
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenCeilOp, tcp::CeilOp>>(typeConverter,
-                                                                  context);
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenSigmoidOp, tcp::SigmoidOp>>(
-      typeConverter, context);
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenTanhOp, tcp::TanhOp>>(typeConverter,
-                                                                  context);
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenSinOp, tcp::SinOp>>(typeConverter,
-                                                                context);
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenCosOp, tcp::CosOp>>(typeConverter,
-                                                                context);
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenLogOp, tcp::LogOp>>(typeConverter,
-                                                                context);
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenNegOp, tcp::NegOp>>(typeConverter,
-                                                                context);
-  patterns.add<ConvertAtenUnaryFpOnlyOp<AtenAtanOp, tcp::AtanOp>>(typeConverter,
-                                                                  context);
-
-  target.addIllegalOp<AtenAbsOp>();
-  target.addIllegalOp<AtenSqrtOp>();
-  patterns.add<ConvertAtenUnaryIntOrFpOp<AtenAbsOp, tcp::AbsOp>>(typeConverter,
-                                                                 context);
-  patterns.add<ConvertAtenUnaryIntOrFpOp<AtenSqrtOp, tcp::SqrtOp>>(
-      typeConverter, context);
-
-  target.addIllegalOp<AtenBatchNormOp>();
-  patterns.add<ConvertAtenBatchNormOp>(typeConverter, context);
-
-  target.addIllegalOp<AtenAtan2Op>();
-  patterns.add<ConvertAtenAtan2Op>(typeConverter, context);
+#define INSERT_ATEN_UNARY_INT_OR_FP_PATTERN(AtenOp, TcpOp)                     \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
+      ConvertAtenUnaryIntOrFpOp<AtenOp, TcpOp>, AtenOp>(                       \
+      typeConverter, patterns, target, convertTorchOpsSet)
+  INSERT_ATEN_UNARY_INT_OR_FP_PATTERN(AtenAbsOp, tcp::AbsOp);
+  INSERT_ATEN_UNARY_INT_OR_FP_PATTERN(AtenSqrtOp, tcp::SqrtOp);
+#undef INSERT_ATEN_UNARY_INT_OR_FP_PATTERN
 }

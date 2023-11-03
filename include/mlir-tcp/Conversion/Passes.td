@@ -21,7 +21,12 @@ def ConvertTorchToTcp : Pass<"convert-torch-to-tcp", "func::FuncOp"> {
   let description = [{
     Convert Torch ops to Tcp ops.
   }];
-  let constructor = "mlir::tcp::createConvertTorchToTcpPass()";
+  let constructor = "mlir::tcp::createConvertTorchToTcpPass(/*convertTorchOps=*/{})";
+  let options = [
+    ListOption<"convertTorchOps", "convert-torch-ops", "std::string",
+               "List of Torch operation names that should be converted to Tcp",
+               "llvm::cl::ZeroOrMore">
+  ];
 }
 
 //===----------------------------------------------------------------------===//

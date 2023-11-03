@@ -26,6 +26,9 @@
 #include "torch-mlir/Dialect/TorchConversion/IR/TorchConversionOps.h"
 #include "torch-mlir/Dialect/TorchConversion/Transforms/BackendTypeConversion.h"
 
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/StringSet.h"
+
 using namespace mlir;
 using namespace mlir::torch;
 using namespace mlir::torch::Torch;
@@ -40,7 +43,15 @@ namespace tcp {
 namespace {
 
 class ConvertTorchToTcp : public ConvertTorchToTcpBase<ConvertTorchToTcp> {
+private:
+  llvm::StringSet<> convertTorchOpsSet;
+
 public:
+  ConvertTorchToTcp() = default;
+  ConvertTorchToTcp(ArrayRef<std::string> convertTorchOps) {
+    this->convertTorchOps = convertTorchOps;
+  }
+
   void getDependentDialects(DialectRegistry &registry) const override {
     registry.insert<tcp::TcpDialect>();
     registry.insert<tensor::TensorDialect>();
@@ -49,6 +60,14 @@ public:
 
   void runOnOperation() override {
     MLIRContext *context = &getContext();
+    RewritePatternSet patterns(context);
+
+    // Usually the default constructor is called which means `convertTorchOps`
+    // is usually unset. Doing this here allows the initialization of
+    // `convertTorchOpsSet` to be be delayed to when `runOnOperation` is called.
+    convertTorchOpsSet.clear();
+    convertTorchOpsSet.insert(convertTorchOps.begin(), convertTorchOps.end());
+
     ConversionTarget target(*context);
     target.addLegalDialect<tcp::TcpDialect, tensor::TensorDialect,
                            arith::ArithDialect>();
@@ -57,14 +76,14 @@ public:
     typeConverter.addConversion([](Type type) { return type; });
     TorchConversion::setupBackendTypeConversion(target, typeConverter);
 
-    RewritePatternSet patterns(context);
+    torch_to_tcp::populateElementwisePatternsAndLegality(
+        typeConverter, patterns, target, convertTorchOpsSet);
 
-    torch_to_tcp::populateElementwisePatternsAndLegality(typeConverter,
-                                                         patterns, target);
     torch_to_tcp::populateMiscPatternsAndLegality(typeConverter, patterns,
-                                                  target);
-    torch_to_tcp::populateDataMovementPatternsAndLegality(typeConverter,
-                                                          patterns, target);
+                                                  target, convertTorchOpsSet);
+
+    torch_to_tcp::populateDataMovementPatternsAndLegality(
+        typeConverter, patterns, target, convertTorchOpsSet);
 
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns)))) {
@@ -75,8 +94,9 @@ public:
 
 } // namespace
 
-std::unique_ptr<OperationPass<func::FuncOp>> createConvertTorchToTcpPass() {
-  return std::make_unique<ConvertTorchToTcp>();
+std::unique_ptr<OperationPass<func::FuncOp>>
+createConvertTorchToTcpPass(llvm::ArrayRef<std::string> convertTorchOps) {
+  return std::make_unique<ConvertTorchToTcp>(convertTorchOps);
 }
 
 } // namespace tcp

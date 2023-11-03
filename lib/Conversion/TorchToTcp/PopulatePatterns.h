@@ -9,19 +9,22 @@
 
 #include "mlir/Transforms/DialectConversion.h"
 
+#include "llvm/ADT/StringSet.h"
+
 namespace mlir {
 namespace torch_to_tcp {
 
-void populateElementwisePatternsAndLegality(TypeConverter &typeConverter,
-                                            RewritePatternSet &patterns,
-                                            ConversionTarget &target);
-void populateMiscPatternsAndLegality(TypeConverter &typeConverter,
-                                     RewritePatternSet &patterns,
-                                     ConversionTarget &target);
+void populateElementwisePatternsAndLegality(
+    TypeConverter &typeConverter, RewritePatternSet &patterns,
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet);
 
-void populateDataMovementPatternsAndLegality(TypeConverter &typeConverter,
-                                             RewritePatternSet &patterns,
-                                             ConversionTarget &target);
+void populateMiscPatternsAndLegality(
+    TypeConverter &typeConverter, RewritePatternSet &patterns,
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet);
+
+void populateDataMovementPatternsAndLegality(
+    TypeConverter &typeConverter, RewritePatternSet &patterns,
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet);
 
 } // namespace torch_to_tcp
 } // namespace mlir
