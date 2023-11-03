@@ -224,13 +224,11 @@ void torch_to_tcp::populateMiscPatternsAndLegality(
     TypeConverter &typeConverter, RewritePatternSet &patterns,
     ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet) {
 
-#define INSERT_ATEN_MISC_OP_PATTERN(ConvertAtenOpPattern, AtenOp)              \
-  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenOpPattern,       \
-                                                   AtenOp>(                    \
+#define INSERT_ATEN_MISC_OP_PATTERN(AtenOp)                                    \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<Convert##AtenOp, AtenOp>(   \
       typeConverter, patterns, target, convertTorchOpsSet)
-  INSERT_ATEN_MISC_OP_PATTERN(ConvertAtenBroadcastToOp, AtenBroadcastToOp);
-  INSERT_ATEN_MISC_OP_PATTERN(ConvertValueTensorLiteralOp,
-                              ValueTensorLiteralOp);
+  INSERT_ATEN_MISC_OP_PATTERN(AtenBroadcastToOp);
+  INSERT_ATEN_MISC_OP_PATTERN(ValueTensorLiteralOp);
 #undef INSERT_ATEN_MISC_OP_PATTERN
 
 #define INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenOpPattern, AtenOp, Val)      \

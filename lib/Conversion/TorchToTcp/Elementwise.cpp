@@ -652,15 +652,14 @@ void torch_to_tcp::populateElementwisePatternsAndLegality(
     TypeConverter &typeConverter, RewritePatternSet &patterns,
     ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet) {
 
-#define INSERT_ATEN_ELEMENTWISE_OP_PATTERN(ConvertAtenOpPattern, AtenOp)       \
-  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenOpPattern,       \
-                                                   AtenOp>(                    \
+#define INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenOp)                             \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<Convert##AtenOp, AtenOp>(   \
       typeConverter, patterns, target, convertTorchOpsSet)
-  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(ConvertAtenToDtypeOp, AtenToDtypeOp);
-  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(ConvertAtenClampOp, AtenClampOp);
-  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(ConvertAtenReluOp, AtenReluOp);
-  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(ConvertAtenBatchNormOp, AtenBatchNormOp);
-  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(ConvertAtenAtan2Op, AtenAtan2Op);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenToDtypeOp);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenClampOp);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenReluOp);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenBatchNormOp);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenAtan2Op);
 #undef INSERT_ATEN_ELEMENTWISE_OP_PATTERN
 
 #define INSERT_ATEN_ELEMENTWISE_ADD_SUB_PATTERN(AtenOp, TcpOp)                 \

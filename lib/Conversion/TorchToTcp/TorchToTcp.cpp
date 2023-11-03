@@ -62,10 +62,9 @@ public:
     MLIRContext *context = &getContext();
     RewritePatternSet patterns(context);
 
-    // The strings in the `convertTorchOps` ArrayRef don't exist during the call
-    // to the constructor `ConvertTorchToTcp`, so the creation of the
-    // `convertTorchOpsSet` must be delayed to when `runOnOperation` gets
-    // called.
+    // Usually the default constructor is called which means `convertTorchOps`
+    // is usually unset. Doing this here allows the initialization of
+    // `convertTorchOpsSet` to be be delayed to when `runOnOperation` is called.
     convertTorchOpsSet.clear();
     convertTorchOpsSet.insert(convertTorchOps.begin(), convertTorchOps.end());
 
