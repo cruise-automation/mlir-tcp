@@ -191,6 +191,7 @@ cc_library(
         "lib/Conversion/TorchToTcp/Elementwise.cpp",
         "lib/Conversion/TorchToTcp/Misc.cpp",
         "lib/Conversion/TorchToTcp/PopulatePatterns.h",
+        "lib/Conversion/TorchToTcp/TcpCustomOp.cpp",
         "lib/Conversion/TorchToTcp/TorchToTcp.cpp",
         "lib/Conversion/TorchToTcp/TorchToTcpCruiseInternal.cpp",
         "lib/Conversion/TorchToTcp/CruiseInternalPatterns.cpp",

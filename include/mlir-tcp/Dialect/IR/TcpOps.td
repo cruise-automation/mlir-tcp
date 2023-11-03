@@ -51,7 +51,6 @@ def Tcp_ClampOp : Tcp_UnaryElementwiseOp<"clamp", [SameOperandsAndResultElementT
        specified.
   }];
 
-  // TODO: Does clamp need to support complex tensors?
   let arguments = (ins
     Tcp_FloatOrIntTensor:$in,
     OptionalAttr<F32Attr>:$min_float,
@@ -312,6 +311,31 @@ def Tcp_IsolatedGroupOp : Tcp_Op<"isolated_group", [
   let assemblyFormat = "$ins attr-dict-with-keyword $body `:` type($ins) `->` type($outs)";
 
   let hasVerifier = 1;
+}
+
+def Tcp_CustomOp : Tcp_Op<"custom_op", []> {
+    let summary = "Custom opaque operation in Tcp dialect";
+
+    let description = [{
+        This is useful to represent and lower custom/opaque operations that have
+        tensor inputs and outputs, but
+          (1) lack a clear operational semantics or
+          (2) have an operational semantic that isn't defined by Tcp (e.g user
+              defined custom operations) or
+          (3) need to "flow through" the middle-end because they target existing
+              pre-written kernels available in the backend.
+    }];
+
+    let arguments = (ins
+        Variadic<AnyType>:$inputs,
+        StrAttr:$op_name
+    );
+
+    let results = (outs
+        Variadic<AnyType>:$outputs
+    );
+
+    let assemblyFormat = "`(`$op_name`)` $inputs attr-dict `:` type($inputs) `->` type($outputs)";
 }
 
 def Tcp_SqrtOp : Tcp_UnaryElementwiseOp<"sqrt"> {
