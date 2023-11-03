@@ -209,6 +209,7 @@ cc_library(
         "@torch-mlir//:TorchMLIRConversionUtils",
         "@torch-mlir//:TorchMLIRTorchBackendTypeConversion",
         "@torch-mlir//:TorchMLIRTorchConversionDialect",
+        "@torch-mlir//:TorchMLIRTorchPasses",
     ],
 )
 
