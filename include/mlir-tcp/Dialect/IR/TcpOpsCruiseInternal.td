@@ -10,28 +10,6 @@
 #ifndef TCP_OPS_CRUISE_INTERNAL
 #define TCP_OPS_CRUISE_INTERNAL
 
-def Tcp_CustomOp : Tcp_Op<"custom_op", []> {
-    let summary = "Custom TCP opqaue operation";
-
-    let description = [{
-        Custom opaque operations fill the gap in lowering operations that have tensor inputs and outputs,
-        but lack a clear operational semantics or have a an operational semantic that isn't define by TCP.
-        e.g user define custom operations.
-    }];
-
-    let arguments = (ins
-        Variadic<AnyType>:$inputs,
-        StrAttr:$op_name
-    );
-
-    let results = (outs
-        Variadic<AnyType>:$outputs
-    );
-
-    let assemblyFormat = "`(`$op_name`)` $inputs attr-dict `:` type($inputs) `->` type($outputs)";
-}
-
-
 def Tcp_CreateIndexArrayOp : Tcp_Op<"create_index_array", []> {
     let summary = "Creates index_arry type given variadic number of input indices";
 
