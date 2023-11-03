@@ -85,6 +85,9 @@ public:
     torch_to_tcp::populateDataMovementPatternsAndLegality(
         typeConverter, patterns, target, convertTorchOpsSet);
 
+    torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
+        typeConverter, patterns, target, convertTorchOpsSet);
+
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns)))) {
       return signalPassFailure();
