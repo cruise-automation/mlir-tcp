@@ -26,5 +26,9 @@ void populateDataMovementPatternsAndLegality(
     TypeConverter &typeConverter, RewritePatternSet &patterns,
     ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet);
 
+void populateTcpCustomOpPatternsAndLegality(
+    TypeConverter &typeConverter, RewritePatternSet &patterns,
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet);
+
 } // namespace torch_to_tcp
 } // namespace mlir
