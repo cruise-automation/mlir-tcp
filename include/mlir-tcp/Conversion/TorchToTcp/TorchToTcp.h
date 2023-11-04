@@ -19,6 +19,7 @@ namespace mlir {
 
 namespace tcp {
 
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertTorchToTcpPass();
 std::unique_ptr<OperationPass<func::FuncOp>>
 createConvertTorchToTcpPass(llvm::ArrayRef<std::string> convertTorchOps);
 
