@@ -30,6 +30,23 @@ def ConvertTorchToTcp : Pass<"convert-torch-to-tcp", "func::FuncOp"> {
 }
 
 //===----------------------------------------------------------------------===//
+// TorchToTcpCustomOp
+//===----------------------------------------------------------------------===//
+
+def ConvertTorchToTcpCustomOp : Pass<"convert-torch-to-tcp-custom-op", "func::FuncOp"> {
+  let summary = "Convert Torch ops to Tcp custom ops";
+  let description = [{
+    Convert Torch ops to Tcp custom ops.
+  }];
+  let constructor = "mlir::tcp::createConvertTorchToTcpCustomOpPass()";
+  let options = [
+    ListOption<"convertTorchOps", "convert-torch-ops", "std::string",
+               "List of Torch operation names that should be converted to Tcp custom op",
+               "llvm::cl::ZeroOrMore">,
+  ];
+}
+
+//===----------------------------------------------------------------------===//
 // StablehloToTcp
 //===----------------------------------------------------------------------===//
 
