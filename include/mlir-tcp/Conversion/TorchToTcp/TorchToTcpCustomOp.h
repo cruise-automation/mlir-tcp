@@ -21,6 +21,7 @@ namespace tcp {
 
 std::unique_ptr<OperationPass<func::FuncOp>>
 createConvertTorchToTcpCustomOpPass();
+
 std::unique_ptr<OperationPass<func::FuncOp>>
 createConvertTorchToTcpCustomOpPass(
     llvm::ArrayRef<std::string> convertTorchOps);
