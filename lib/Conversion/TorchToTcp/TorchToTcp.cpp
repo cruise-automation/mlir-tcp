@@ -97,6 +97,11 @@ public:
 
 } // namespace
 
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertTorchToTcpPass() {
+  llvm::ArrayRef<std::string> emptyArrayRef;
+  return std::make_unique<ConvertTorchToTcp>(/*convertTorchOps=*/emptyArrayRef);
+}
+
 std::unique_ptr<OperationPass<func::FuncOp>>
 createConvertTorchToTcpPass(llvm::ArrayRef<std::string> convertTorchOps) {
   return std::make_unique<ConvertTorchToTcp>(convertTorchOps);
