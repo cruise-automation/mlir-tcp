@@ -195,12 +195,14 @@ cc_library(
         "lib/Conversion/TorchToTcp/TorchToTcp.cpp",
         "lib/Conversion/TorchToTcp/TorchToTcpCruiseInternal.cpp",
         "lib/Conversion/TorchToTcp/CruiseInternalPatterns.cpp",
+        "lib/Conversion/TorchToTcp/TorchToTcpCustomOp.cpp",
         "lib/Conversion/TorchToTcp/Utils.cpp",
         "lib/Conversion/TorchToTcp/Utils.h",
     ],
     hdrs = [
         "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h",
         "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcpCruiseInternal.h",
+        "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h",
     ],
     strip_include_prefix = "include",
     deps = [

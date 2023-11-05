@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
+#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h"
 
 #include "mlir-tcp/Dialect/IR/TcpDialect.h"
 #include "mlir-tcp/Dialect/IR/TcpOps.h"
@@ -35,20 +35,21 @@ using namespace mlir::torch::Torch;
 
 namespace mlir {
 
-#define GEN_PASS_DEF_CONVERTTORCHTOTCP
+#define GEN_PASS_DEF_CONVERTTORCHTOTCPCUSTOMOP
 #include "mlir-tcp/Conversion/Passes.h.inc"
 
 namespace tcp {
 
 namespace {
 
-class ConvertTorchToTcp : public ConvertTorchToTcpBase<ConvertTorchToTcp> {
+class ConvertTorchToTcpCustomOp
+    : public ConvertTorchToTcpCustomOpBase<ConvertTorchToTcpCustomOp> {
 private:
   llvm::StringSet<> convertTorchOpsSet;
 
 public:
-  ConvertTorchToTcp() = default;
-  ConvertTorchToTcp(ArrayRef<std::string> convertTorchOps) {
+  ConvertTorchToTcpCustomOp() = default;
+  ConvertTorchToTcpCustomOp(ArrayRef<std::string> convertTorchOps) {
     this->convertTorchOps = convertTorchOps;
   }
 
@@ -76,13 +77,7 @@ public:
     typeConverter.addConversion([](Type type) { return type; });
     TorchConversion::setupBackendTypeConversion(target, typeConverter);
 
-    torch_to_tcp::populateElementwisePatternsAndLegality(
-        typeConverter, patterns, target, convertTorchOpsSet);
-
-    torch_to_tcp::populateMiscPatternsAndLegality(typeConverter, patterns,
-                                                  target, convertTorchOpsSet);
-
-    torch_to_tcp::populateDataMovementPatternsAndLegality(
+    torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
         typeConverter, patterns, target, convertTorchOpsSet);
 
     if (failed(applyPartialConversion(getOperation(), target,
@@ -94,14 +89,17 @@ public:
 
 } // namespace
 
-std::unique_ptr<OperationPass<func::FuncOp>> createConvertTorchToTcpPass() {
+std::unique_ptr<OperationPass<func::FuncOp>>
+createConvertTorchToTcpCustomOpPass() {
   llvm::ArrayRef<std::string> emptyArrayRef;
-  return std::make_unique<ConvertTorchToTcp>(/*convertTorchOps=*/emptyArrayRef);
+  return std::make_unique<ConvertTorchToTcpCustomOp>(
+      /*convertTorchOps=*/emptyArrayRef);
 }
 
 std::unique_ptr<OperationPass<func::FuncOp>>
-createConvertTorchToTcpPass(llvm::ArrayRef<std::string> convertTorchOps) {
-  return std::make_unique<ConvertTorchToTcp>(convertTorchOps);
+createConvertTorchToTcpCustomOpPass(
+    llvm::ArrayRef<std::string> convertTorchOps) {
+  return std::make_unique<ConvertTorchToTcpCustomOp>(convertTorchOps);
 }
 
 } // namespace tcp

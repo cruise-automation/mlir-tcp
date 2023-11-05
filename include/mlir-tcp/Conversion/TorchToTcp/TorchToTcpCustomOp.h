@@ -14,15 +14,17 @@
 
 namespace mlir {
 
-#define GEN_PASS_DECL_CONVERTTORCHTOTCP
+#define GEN_PASS_DECL_CONVERTTORCHTOTCPCUSTOMOP
 #include "mlir-tcp/Conversion/Passes.h.inc"
 
 namespace tcp {
 
-std::unique_ptr<OperationPass<func::FuncOp>> createConvertTorchToTcpPass();
+std::unique_ptr<OperationPass<func::FuncOp>>
+createConvertTorchToTcpCustomOpPass();
 
 std::unique_ptr<OperationPass<func::FuncOp>>
-createConvertTorchToTcpPass(llvm::ArrayRef<std::string> convertTorchOps);
+createConvertTorchToTcpCustomOpPass(
+    llvm::ArrayRef<std::string> convertTorchOps);
 
 } // namespace tcp
 } // namespace mlir
