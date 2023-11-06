@@ -14,6 +14,7 @@
 #include "mlir-tcp/Conversion/TcpToArith/TcpToArith.h"
 #include "mlir-tcp/Conversion/TcpToLinalg/TcpToLinalg.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
+#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h"
 
 #include "mlir/Conversion/FuncToLLVM/ConvertFuncToLLVMPass.h"
 #include "mlir/Conversion/MathToLLVM/MathToLLVM.h"
@@ -36,6 +37,7 @@ using namespace mlir;
 
 static void createTorchBackendToTcpBackendPipeline(OpPassManager &pm) {
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTorchToTcpPass());
+  pm.addNestedPass<func::FuncOp>(tcp::createConvertTorchToTcpCustomOpPass());
 
   // Clean up any non-canonical code introduced above.
   pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
