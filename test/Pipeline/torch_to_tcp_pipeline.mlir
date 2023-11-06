@@ -113,3 +113,17 @@ func.func @torch.aten.div.Tensor$mixed_type_int(%arg0: !torch.vtensor<[?, ?],si1
   %0 = torch.aten.div.Tensor %arg0, %arg1 : !torch.vtensor<[?, ?],si16>, !torch.vtensor<[?, ?],si32> -> !torch.vtensor<[?, ?],si32>
   return %0 : !torch.vtensor<[?, ?],si32>
 }
+
+// -----
+
+// CHECK-LABEL: torch.aten.gather_op
+// CHECK-SAME: %[[VAL_0:.*]]: tensor<2x2xi64>,
+// CHECK-SAME: %[[VAL_1:.*]]: tensor<2x2xf32>
+// CHECK: %[[VAL_2:.*]] = tcp.custom_op("torch.aten.gather") %[[VAL_1]], %[[VAL_0]] {axis = 1 : i64} : tensor<2x2xf32>, tensor<2x2xi64> -> tensor<2x2xf32>
+// CHECK: return %[[VAL_2]] : tensor<2x2xf32>
+func.func @torch.aten.gather_op(%arg0: !torch.vtensor<[2,2],si64>, %arg1: !torch.vtensor<[2,2],f32>) -> !torch.vtensor<[2,2],f32> {
+  %false = torch.constant.bool false
+  %int1 = torch.constant.int 1
+  %0 = torch.aten.gather %arg1, %int1, %arg0, %false : !torch.vtensor<[2,2],f32>, !torch.int, !torch.vtensor<[2,2],si64>, !torch.bool -> !torch.vtensor<[2,2],f32>
+  return %0 : !torch.vtensor<[2,2],f32>
+}
