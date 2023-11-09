@@ -96,6 +96,56 @@ public:
     return success();
   }
 };
+
+class ConvertAten_IndexPutImplOp
+    : public OpConversionPattern<Aten_IndexPutImplOp> {
+public:
+  using OpConversionPattern<Aten_IndexPutImplOp>::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(Aten_IndexPutImplOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    SmallVector<Type> resultTypes;
+    if (failed(OpConversionPattern<Aten_IndexPutImplOp>::getTypeConverter()
+                   ->convertTypes(op->getResultTypes(), resultTypes))) {
+      return failure();
+    }
+
+    SmallVector<Value> operands;
+    operands.push_back(adaptor.getSelf());
+
+    // Handle indices
+    SmallVector<Value> indicesTorchType;
+    if (!getListConstructElements(adaptor.getIndices(), indicesTorchType))
+      return op.emitError(
+          "unimplemented: the tensor list is not from list construct");
+    SmallVector<Value> indexTensors = getTypeConvertedValues(
+        rewriter, op->getLoc(), getTypeConverter(), indicesTorchType);
+    operands.append(indexTensors.begin(), indexTensors.end());
+
+    operands.push_back(adaptor.getValues());
+
+    bool accumulate;
+    if (!matchPattern(op.getAccumulate(), m_TorchConstantBool(&accumulate)))
+      return op.emitError("expected accumulate operand to be a bool constant");
+    bool unsafe;
+    if (!matchPattern(op.getUnsafe(), m_TorchConstantBool(&unsafe)))
+      return op.emitError("expected unsafe operand to be a bool constant");
+
+    SmallVector<NamedAttribute> attrs;
+    attrs.push_back(
+        rewriter.getNamedAttr("accumulate", rewriter.getBoolAttr(accumulate)));
+    attrs.push_back(
+        rewriter.getNamedAttr("unsafe", rewriter.getBoolAttr(unsafe)));
+    attrs.push_back(rewriter.getNamedAttr(
+        "op_name", rewriter.getStringAttr(op->getName().getStringRef())));
+
+    rewriter.replaceOpWithNewOp<tcp::CustomOp>(op, resultTypes, operands,
+                                               attrs);
+    return success();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
@@ -107,5 +157,6 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
       typeConverter, patterns, target, convertTorchOpsSet)
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenGatherOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenIndexTensorHackedTwinOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(Aten_IndexPutImplOp);
 #undef INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN
 }
