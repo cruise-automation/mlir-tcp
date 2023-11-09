@@ -36,3 +36,24 @@ func.func @torch.aten.index_hacked_twin_op(%arg0: !torch.vtensor<[1,30,19,41],f3
   %1 = torch.aten.index.Tensor_hacked_twin %arg0, %0 : !torch.vtensor<[1,30,19,41],f32>, !torch.list<vtensor> -> !torch.vtensor<[1,30,19,3],f32>
   return %1 : !torch.vtensor<[1,30,19,3],f32>
 }
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.index_put_impl_op(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[25],f32>
+// CHECK-SAME:         %[[ARG1:.*]]: !torch.vtensor<[10],si32>
+// CHECK-SAME:         %[[ARG2:.*]]: !torch.vtensor<[],f32>) -> !torch.vtensor<[25],f32>
+// CHECK:          %[[TO:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[25],f32> -> tensor<25xf32>
+// CHECK:          %[[T1:.*]] = torch_c.to_builtin_tensor %[[ARG2]] : !torch.vtensor<[],f32> -> tensor<f32>
+// CHECK:          %[[T2:.*]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[10],si32> -> tensor<10xi32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten._index_put_impl") %[[T0]], %[[T2]], %[[T1]]
+// CHECK-SAME:                          {accumulate = false, unsafe = false}
+// CHECK-SAME:                          tensor<25xf32>, tensor<10xi32>, tensor<f32> -> tensor<25xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<25xf32> -> !torch.vtensor<[25],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[25],f32>
+func.func @torch.aten.index_put_impl_op(%arg0: !torch.vtensor<[25],f32>, %arg1: !torch.vtensor<[10],si32>, %arg2: !torch.vtensor<[],f32>) -> !torch.vtensor<[25],f32> {
+  %false = torch.constant.bool false
+  %0 = torch.prim.ListConstruct %arg1 : (!torch.vtensor<[10],si32>) -> !torch.list<optional<vtensor>>
+  %1 = torch.aten._index_put_impl %arg0, %0, %arg2, %false, %false : !torch.vtensor<[25],f32>, !torch.list<optional<vtensor>>, !torch.vtensor<[],f32>, !torch.bool, !torch.bool -> !torch.vtensor<[25],f32>
+  return %1 : !torch.vtensor<[25],f32>
+}
