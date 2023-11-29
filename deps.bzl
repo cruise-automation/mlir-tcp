@@ -22,8 +22,8 @@ def third_party_deps():
             path = local_llvm_repo_path(),
         )
     else:
-        LLVM_COMMIT = "28b27c1b10ae8d1f5b4fb9df691e8cf0da9be3f6"
-        LLVM_SHA256 = "1f7a7ca5983801d671901644659c32d028e5e7316418fabcb6159454249aefa3"
+        LLVM_COMMIT = "5e5a22caf88ac1ccfa8dc5720295fdeba0ad9372"
+        LLVM_SHA256 = "9d9ae8ae30f6262ca0823493893398ea2ab6fbd49027e338e06ac7c25bb8caf4"
         http_archive(
             name = "llvm-raw",
             build_file_content = "# empty",
@@ -55,17 +55,13 @@ def third_party_deps():
             path = local_stablehlo_repo_path(),
         )
     else:
-        STABLEHLO_COMMIT = "5a8bb985f50a679721292b14f97f270344ac64a3"
-        STABLEHLO_SHA256 = "abda3e8e029c1409b53b1eea080e5cfb4c4ef6705064d7cd954d8272d059567a"
+        STABLEHLO_COMMIT = "83f095e7217c897f1eccac5652600ceb944cb0e0"
+        STABLEHLO_SHA256 = "bd31b22048ce214d191678d294a05495071167abea60f89e0578d4db346aa0fd"
         http_archive(
             name = "stablehlo",
             sha256 = STABLEHLO_SHA256,
             strip_prefix = "stablehlo-" + STABLEHLO_COMMIT,
             urls = ["https://github.com/openxla/stablehlo/archive/{commit}.tar.gz".format(commit = STABLEHLO_COMMIT)],
-            # Note: This patch allows testing stablehlo from mlir-tcp
-            # TODO: Remove after https://github.com/openxla/stablehlo/pull/1810 lands
-            patches = ["@//:stablehlo.patch"],
-            patch_args = ["-p1"],
         )
 
     SKYLIB_VERSION = "1.3.0"
