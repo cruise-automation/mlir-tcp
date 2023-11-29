@@ -39,8 +39,8 @@ def third_party_deps():
             path = local_torch_mlir_repo_path(),
         )
     else:
-        TORCH_MLIR_COMMIT = "52abae1526e51ae8c415ca98ce4a56b00782b68b"
-        TORCH_MLIR_SHA256 = "f9973f3519b4ba98475917eb700f447b65fee88e9dd60c61f174ce38335ccb3b"
+        TORCH_MLIR_COMMIT = "44f6942796536a7cf2eee37ec383c9db74fa853f"
+        TORCH_MLIR_SHA256 = "168b9eebeee2754d7a804eae9465c84adf7b4019344e2a4a2594799ecbfff4f0"
         http_archive(
             name = "torch-mlir-raw",
             sha256 = TORCH_MLIR_SHA256,
