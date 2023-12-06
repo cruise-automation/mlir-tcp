@@ -16,12 +16,13 @@ namespace mlir::tcp {
 class GenericBottomUpFuser : public RewritePattern {
 public:
   using CanFuseFuncType = std::function<bool(Operation *, Operation *)>;
-  using PostProcessingFuncType = std::function<void(Operation *, PatternRewriter &rewriter)>;
+  using PostProcessingFuncType =
+      std::function<void(Operation *, PatternRewriter &rewriter)>;
 
-  GenericBottomUpFuser(MLIRContext *context, CanFuseFuncType canFuseCallback, PostProcessingFuncType postFuncCallback=nullptr)
+  GenericBottomUpFuser(MLIRContext *context, CanFuseFuncType canFuseCallback,
+                       PostProcessingFuncType postFuncCallback = nullptr)
       : RewritePattern(MatchAnyOpTypeTag(), /*benefit=*/1, context),
-        canFuse(canFuseCallback),
-        postFunc(postFuncCallback) {}
+        canFuse(canFuseCallback), postFunc(postFuncCallback) {}
 
   LogicalResult matchAndRewrite(Operation *op,
                                 PatternRewriter &rewriter) const override;
