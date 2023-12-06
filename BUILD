@@ -18,6 +18,7 @@ td_library(
         "include/mlir-tcp/Dialect/IR/TcpEnums.td",
         "include/mlir-tcp/Dialect/IR/TcpOps.td",
         "include/mlir-tcp/Dialect/IR/TcpTypes.td",
+        "include/mlir-tcp/Dialect/IR/TcpOpsCruiseInternal.td",
     ],
     includes = ["include"],
     deps = [
@@ -134,6 +135,7 @@ cc_library(
     name = "TcpDialectPasses",
     srcs = [
         "lib/Dialect/Transforms/FuseTcpOpsPass.cpp",
+        "lib/Dialect/Transforms/FusionPatterns.cpp",
         "lib/Dialect/Transforms/IsolateGroupOpsPass.cpp",
         "lib/Dialect/Transforms/PassDetail.h",
         "lib/Dialect/Transforms/Passes.cpp",
@@ -141,6 +143,7 @@ cc_library(
     ],
     hdrs = [
         "include/mlir-tcp/Dialect/Transforms/FuseTcpOpsPass.h",
+        "include/mlir-tcp/Dialect/Transforms/FusionPatterns.h",
         "include/mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/Passes.h",
         "include/mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h",
@@ -192,12 +195,15 @@ cc_library(
         "lib/Conversion/TorchToTcp/PopulatePatterns.h",
         "lib/Conversion/TorchToTcp/TcpCustomOp.cpp",
         "lib/Conversion/TorchToTcp/TorchToTcp.cpp",
+        "lib/Conversion/TorchToTcp/TorchToTcpCruiseInternal.cpp",
+        "lib/Conversion/TorchToTcp/CruiseInternalPatterns.cpp",
         "lib/Conversion/TorchToTcp/TorchToTcpCustomOp.cpp",
         "lib/Conversion/TorchToTcp/Utils.cpp",
         "lib/Conversion/TorchToTcp/Utils.h",
     ],
     hdrs = [
         "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h",
+        "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcpCruiseInternal.h",
         "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h",
     ],
     strip_include_prefix = "include",
