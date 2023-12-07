@@ -22,7 +22,14 @@ public:
   // A class for supporting generic bottom-up fusion
   // All fused operations will be placed in a single TCP group
   // canFuseCallback checks whether two operations can be fused
-  // postFuncCallback is called on the new TCP group
+  // postFuncCallback is called on the new TCP group for 
+  // post-processing. It provides the group handle to the client pass
+  // and, e.g. can be used to add ad-hoc attributes to the group op
+  // auto addGroupAttr = [](Operation * groupOp, 
+  //                        PatternRewriter &rewriter) -> void {
+  //     groupOp->setAttr("group_type", rewriter.getStringAttr("xxx"));
+  // };  
+  
   GenericBottomUpFuser(MLIRContext *context, CanFuseFuncType canFuseCallback,
                        PostProcessingFuncType postFuncCallback = nullptr)
       : RewritePattern(MatchAnyOpTypeTag(), /*benefit=*/1, context),
