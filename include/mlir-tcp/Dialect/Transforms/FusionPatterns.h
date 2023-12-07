@@ -19,6 +19,10 @@ public:
   using PostProcessingFuncType =
       std::function<void(Operation *, PatternRewriter &rewriter)>;
 
+  // A class for supporting generic bottom-up fusion
+  // All fused operations will be placed in a single TCP group
+  // canFuseCallback checks whether two operations can be fused
+  // postFuncCallback is called on the new TCP group
   GenericBottomUpFuser(MLIRContext *context, CanFuseFuncType canFuseCallback,
                        PostProcessingFuncType postFuncCallback = nullptr)
       : RewritePattern(MatchAnyOpTypeTag(), /*benefit=*/1, context),
