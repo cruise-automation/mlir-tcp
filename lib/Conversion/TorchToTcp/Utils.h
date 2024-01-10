@@ -80,7 +80,10 @@ bool getConstTensorWithType(ConversionPatternRewriter &rewriter, Operation *op,
 template <typename TorchToTcpPattern, typename AtenOp>
 inline void addPatternIfOpInConvertTorchOpsSet(
     TypeConverter &typeConverter, RewritePatternSet &patterns,
-    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet) {
+    ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet,
+    std::function<bool(AtenOp)> dynamicLegalityFcn = [](AtenOp) {
+      return false;
+    }) {
   MLIRContext *context = patterns.getContext();
   std::optional<OperationName> opName =
       TorchToTcpPattern(context).getRootKind();

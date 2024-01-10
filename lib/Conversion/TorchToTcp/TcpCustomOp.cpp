@@ -19,6 +19,7 @@
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
 
 #include "llvm/ADT/StringSet.h"
+#include "llvm/Support/Debug.h"
 
 using namespace mlir;
 using namespace mlir::tcp;
@@ -146,6 +147,70 @@ public:
   }
 };
 
+class ConvertAtenConvolutionOp : public OpConversionPattern<AtenConvolutionOp> {
+public:
+  using OpConversionPattern<AtenConvolutionOp>::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenConvolutionOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    SmallVector<Type> resultTypes;
+    if (failed(OpConversionPattern<AtenConvolutionOp>::getTypeConverter()
+                   ->convertTypes(op->getResultTypes(), resultTypes))) {
+      return failure();
+    }
+
+    SmallVector<Value> operands;
+    operands.push_back(adaptor.getInput());
+    operands.push_back(adaptor.getWeight());
+
+    SmallVector<int64_t, 2> stride;
+    if (!matchPattern(adaptor.getStride(), m_TorchListOfConstantInts(stride)))
+      return rewriter.notifyMatchFailure(op,
+                                         "non-const stride list unsupported");
+    SmallVector<NamedAttribute> attrs;
+    attrs.push_back(
+        rewriter.getNamedAttr("stride", rewriter.getIndexArrayAttr(stride)));
+
+    SmallVector<int64_t, 2> padding_2d;
+    if (!matchPattern(adaptor.getPadding(),
+                      m_TorchListOfConstantInts(padding_2d)))
+      return rewriter.notifyMatchFailure(op,
+                                         "non-const padding list unsupported");
+    attrs.push_back(rewriter.getNamedAttr(
+        "padding", rewriter.getIndexArrayAttr(padding_2d)));
+
+    SmallVector<int64_t, 2> dilation;
+    if (!matchPattern(adaptor.getDilation(),
+                      m_TorchListOfConstantInts(dilation)))
+      return rewriter.notifyMatchFailure(op,
+                                         "non-const dilation list unsupported");
+    attrs.push_back(rewriter.getNamedAttr(
+        "dilation", rewriter.getIndexArrayAttr(dilation)));
+
+    int64_t groups;
+    if (!matchPattern(op.getGroups(), m_TorchConstantInt(&groups)))
+      return rewriter.notifyMatchFailure(op,
+                                         "non-const group size unsupported");
+    attrs.push_back(
+        rewriter.getNamedAttr("groups", rewriter.getI64IntegerAttr(groups)));
+
+    bool transposed;
+    if (matchPattern(op.getTransposed(), m_TorchConstantBool(&transposed)))
+      return rewriter.notifyMatchFailure(
+          op, "non-const transposed bit unsupported");
+    attrs.push_back(
+        rewriter.getNamedAttr("transposed", rewriter.getBoolAttr(transposed)));
+
+    auto replOp = rewriter.replaceOpWithNewOp<tcp::CustomOp>(op, resultTypes,
+                                                             operands, attrs);
+
+    replOp.setOpName("torch.aten.convolution");
+
+    return success();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
@@ -159,4 +224,15 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenIndexTensorHackedTwinOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(Aten_IndexPutImplOp);
 #undef INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN
+
+  auto isNonTransposedConvOp = [](AtenConvolutionOp op) {
+    bool transposed = false;
+    if (matchPattern(op.getTransposed(), m_TorchConstantBool(&transposed)))
+      return !transposed;
+    return false;
+  };
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenConvolutionOp,
+                                                   AtenConvolutionOp>(
+      typeConverter, patterns, target, convertTorchOpsSet,
+      isNonTransposedConvOp);
 }
