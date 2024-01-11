@@ -93,7 +93,7 @@ inline void addPatternIfOpInConvertTorchOpsSet(
   if (convertTorchOpsSet.empty() ||
       convertTorchOpsSet.contains(
           opName->getStringRef().ltrim(torch::Torch::kTorchOpPrefix))) {
-    target.addIllegalOp<AtenOp>();
+    target.addDynamicallyLegalOp<AtenOp>(dynamicLegalityFcn);
     patterns.add<TorchToTcpPattern>(typeConverter, context);
   }
 }

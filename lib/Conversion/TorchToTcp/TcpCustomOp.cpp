@@ -163,49 +163,18 @@ public:
     SmallVector<Value> operands;
     operands.push_back(adaptor.getInput());
     operands.push_back(adaptor.getWeight());
+    operands.push_back(adaptor.getBias());
+    operands.push_back(adaptor.getStride());
+    operands.push_back(adaptor.getPadding());
+    operands.push_back(adaptor.getDilation());
+    operands.push_back(adaptor.getTransposed());
+    operands.push_back(adaptor.getOutputPadding());
+    operands.push_back(adaptor.getGroups());
 
-    SmallVector<int64_t, 2> stride;
-    if (!matchPattern(adaptor.getStride(), m_TorchListOfConstantInts(stride)))
-      return rewriter.notifyMatchFailure(op,
-                                         "non-const stride list unsupported");
-    SmallVector<NamedAttribute> attrs;
-    attrs.push_back(
-        rewriter.getNamedAttr("stride", rewriter.getIndexArrayAttr(stride)));
+    auto replOp =
+        rewriter.replaceOpWithNewOp<tcp::CustomOp>(op, resultTypes, operands);
 
-    SmallVector<int64_t, 2> padding_2d;
-    if (!matchPattern(adaptor.getPadding(),
-                      m_TorchListOfConstantInts(padding_2d)))
-      return rewriter.notifyMatchFailure(op,
-                                         "non-const padding list unsupported");
-    attrs.push_back(rewriter.getNamedAttr(
-        "padding", rewriter.getIndexArrayAttr(padding_2d)));
-
-    SmallVector<int64_t, 2> dilation;
-    if (!matchPattern(adaptor.getDilation(),
-                      m_TorchListOfConstantInts(dilation)))
-      return rewriter.notifyMatchFailure(op,
-                                         "non-const dilation list unsupported");
-    attrs.push_back(rewriter.getNamedAttr(
-        "dilation", rewriter.getIndexArrayAttr(dilation)));
-
-    int64_t groups;
-    if (!matchPattern(op.getGroups(), m_TorchConstantInt(&groups)))
-      return rewriter.notifyMatchFailure(op,
-                                         "non-const group size unsupported");
-    attrs.push_back(
-        rewriter.getNamedAttr("groups", rewriter.getI64IntegerAttr(groups)));
-
-    bool transposed;
-    if (matchPattern(op.getTransposed(), m_TorchConstantBool(&transposed)))
-      return rewriter.notifyMatchFailure(
-          op, "non-const transposed bit unsupported");
-    attrs.push_back(
-        rewriter.getNamedAttr("transposed", rewriter.getBoolAttr(transposed)));
-
-    auto replOp = rewriter.replaceOpWithNewOp<tcp::CustomOp>(op, resultTypes,
-                                                             operands, attrs);
-
-    replOp.setOpName("torch.aten.convolution");
+    replOp.setOpName(op->getName().getStringRef());
 
     return success();
   }
