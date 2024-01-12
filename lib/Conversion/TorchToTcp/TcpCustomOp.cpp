@@ -181,8 +181,7 @@ public:
 
     auto addListOfIntAttr = [&](const std::string &name, Value value) {
       SmallVector<int64_t> valueInt;
-      if (!matchPattern(adaptor.getStride(),
-                        m_TorchListOfConstantInts(valueInt)))
+      if (!matchPattern(value, m_TorchListOfConstantInts(valueInt)))
         return rewriter.notifyMatchFailure(op, std::string("non-const") + name +
                                                    "list unsupported");
       attrs.push_back(
