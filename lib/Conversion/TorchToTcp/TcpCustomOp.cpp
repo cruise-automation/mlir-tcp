@@ -161,18 +161,68 @@ public:
     }
 
     SmallVector<Value> operands;
-    operands.push_back(adaptor.getInput());
-    operands.push_back(adaptor.getWeight());
-    operands.push_back(adaptor.getBias());
-    operands.push_back(adaptor.getStride());
-    operands.push_back(adaptor.getPadding());
-    operands.push_back(adaptor.getDilation());
-    operands.push_back(adaptor.getTransposed());
-    operands.push_back(adaptor.getOutputPadding());
-    operands.push_back(adaptor.getGroups());
+    SmallVector<StringRef> operandNames;
 
-    auto replOp =
-        rewriter.replaceOpWithNewOp<tcp::CustomOp>(op, resultTypes, operands);
+    auto addOperand = [&](std::string name, Value value) {
+      operandNames.push_back(name);
+      operands.push_back(value);
+    };
+
+    addOperand("input", adaptor.getInput());
+    addOperand("weight", adaptor.getWeight());
+    if (!adaptor.getBias().getType().isa<Torch::NoneType>()) {
+      addOperand("bias", adaptor.getBias());
+    }
+
+    SmallVector<NamedAttribute> attrs;
+
+    attrs.push_back(rewriter.getNamedAttr(
+        "torch_operand_names", rewriter.getStrArrayAttr(operandNames)));
+
+    auto addListOfIntAttr = [&](const std::string &name, Value value) {
+      SmallVector<int64_t> valueInt;
+      if (!matchPattern(adaptor.getStride(),
+                        m_TorchListOfConstantInts(valueInt)))
+        return rewriter.notifyMatchFailure(op, std::string("non-const") + name +
+                                                   "list unsupported");
+      attrs.push_back(
+          rewriter.getNamedAttr(name, rewriter.getIndexArrayAttr(valueInt)));
+      return success();
+    };
+
+    if (auto result = addListOfIntAttr("stride", adaptor.getStride());
+        result.failed()) {
+      return result;
+    }
+    if (auto result = addListOfIntAttr("padding", adaptor.getPadding());
+        result.failed()) {
+      return result;
+    }
+    if (auto result = addListOfIntAttr("dilation", adaptor.getDilation());
+        result.failed()) {
+      return result;
+    }
+    if (auto result =
+            addListOfIntAttr("output_padding", adaptor.getOutputPadding());
+        result.failed()) {
+      return result;
+    }
+
+    bool transposed;
+    if (!matchPattern(op.getTransposed(), m_TorchConstantBool(&transposed)))
+      return rewriter.notifyMatchFailure(op,
+                                         "non const transposed unsupported");
+    attrs.push_back(
+        rewriter.getNamedAttr("transposed", rewriter.getBoolAttr(transposed)));
+
+    int64_t groups;
+    if (!matchPattern(op.getGroups(), m_TorchConstantInt(&groups)))
+      return rewriter.notifyMatchFailure(op, "non const groups unsupported");
+    attrs.push_back(
+        rewriter.getNamedAttr("groups", rewriter.getI64IntegerAttr(groups)));
+
+    auto replOp = rewriter.replaceOpWithNewOp<tcp::CustomOp>(op, resultTypes,
+                                                             operands, attrs);
 
     replOp.setOpName(op->getName().getStringRef());
 
@@ -194,14 +244,17 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(Aten_IndexPutImplOp);
 #undef INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN
 
-  auto isNonTransposedConvOp = [](AtenConvolutionOp op) {
-    bool transposed = false;
-    if (matchPattern(op.getTransposed(), m_TorchConstantBool(&transposed)))
-      return !transposed;
-    return false;
+  auto isTransposedConvOp = [](AtenConvolutionOp op) {
+    bool transposed;
+    if (!matchPattern(op.getTransposed(), m_TorchConstantBool(&transposed)))
+      return false;
+    return transposed;
   };
+
+  // Only want to convert transposed conv ops, i.e., if its not transposed,
+  // its "legal", i.e., will not get converted.
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenConvolutionOp,
                                                    AtenConvolutionOp>(
       typeConverter, patterns, target, convertTorchOpsSet,
-      isNonTransposedConvOp);
+      [&](AtenConvolutionOp op) { return !isTransposedConvOp(op); });
 }

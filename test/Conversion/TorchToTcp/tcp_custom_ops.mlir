@@ -60,7 +60,7 @@ func.func @torch.aten.index_put_impl_op(%arg0: !torch.vtensor<[25],f32>, %arg1: 
 
 // ---
 
-// CHECK: tcp.custom_op("torch.aten.convolution") %{{.*}}
+// CHECK: tcp.custom_op("torch.aten.convolution") %{{.*}}, %{{.*}}, %{{.*}} {dilation = [2 : index, 2 : index], groups = 1 : i64, output_padding = [2 : index, 2 : index], padding = [2 : index, 2 : index], stride = [2 : index, 2 : index], torch_operand_names = ["input", "weight", "bias"], transposed = true} : tensor<1x64x1x100xf32>, tensor<64x64x3x3xf32>, tensor<64xf32> -> tensor<1x64x2x200xf32>
 // CHECK: torch.aten.convolution %{{.*}}
 func.func @forward(%input: !torch.vtensor<[1,64,1,100],f32>) -> (!torch.vtensor<[1,64,2,200],f32>, !torch.vtensor<[1,32,16,1600],f32>) {
   %true = torch.constant.bool true
