@@ -34,3 +34,10 @@ build:clang_linux --linkopt=-fuse-ld=lld --host_linkopt=-fuse-ld=lld
 build:clang_linux --config=generic_clang
 
 build:clang_osx --config=generic_clang
+
+# Other compilation modes
+build:opt --compilation_mode=opt
+build:dbg --compilation_mode=dbg
+
+# GDB builds in dbg mode
+build:gdb --config=dbg
