@@ -328,3 +328,13 @@ load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 buildifier(
     name = "buildifier",
 )
+
+load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+
+refresh_compile_commands(
+    name = "refresh_compile_commands",
+    targets = {
+        "//:tcp-opt": "--config=clang_linux",
+        "//...": "--config=clang_linux",
+    },
+)

@@ -40,6 +40,12 @@ find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
 bazel run //:buildifier
 ```
 
+To enable clangd (for code completion, navigation and insights), generate the compilation database using [bazel-compile-commands-extractor](https://github.com/hedronvision/bazel-compile-commands-extractor):
+```shell
+bazel run --config=clang_linux //:refresh_compile_commands
+```
+When run successfully it prints `>>> Finished extracting commands for //:tcp-opt` and a `compile_commands.json` is generated at the project root. If you're using VSCode, just hit CMD+SHIFT+P and select `clangd: Restart language server` to start clangd. Note that this only works for non-docker builds at the moment.
+
 When bumping upstream dependencies (LLVM, Torch-MLIR, StableHLO), you may validate the set of "green commits" by running the corresponding third-party tests:
 ```shell
 bazel test @llvm-project//mlir/...
