@@ -6,6 +6,15 @@
 ARG BASE_IMG=ubuntu:22.04
 FROM ${BASE_IMG} as dev-base
 
+# Specify user IDs
+ARG GROUP
+ARG GID
+ARG USER
+ARG UID
+
+# Run below commands as root
+USER root
+
 # Install basic packages
 RUN apt-get update && \
     apt-get install -y \
@@ -25,4 +34,14 @@ RUN wget -q https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSIO
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# Set workdir before launching container
 WORKDIR /opt/src/mlir-tcp
+
+# Add user
+RUN groupadd -o -g ${GID} ${GROUP} && \
+    useradd -u ${UID} -g ${GROUP} -ms /bin/bash ${USER} && \
+    usermod -aG sudo ${USER} && \
+    chown -R ${USER}:${GROUP} /opt/src/mlir-tcp
+
+# Switch to user
+USER ${USER}
