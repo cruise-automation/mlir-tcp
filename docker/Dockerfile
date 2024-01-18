@@ -37,7 +37,7 @@ RUN apt-get clean \
 # Set workdir before launching container
 WORKDIR /opt/src/mlir-tcp
 
-# Add user
+# Add user permissions
 RUN groupadd -o -g ${GID} ${GROUP} && \
     useradd -u ${UID} -g ${GROUP} -ms /bin/bash ${USER} && \
     usermod -aG sudo ${USER} && \
