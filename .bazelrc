@@ -33,7 +33,12 @@ build:generic_clang --copt=-Wno-deprecated --host_copt=-Wno-deprecated
 build:clang_linux --linkopt=-fuse-ld=lld --host_linkopt=-fuse-ld=lld
 build:clang_linux --config=generic_clang
 
-build:clang_osx --config=generic_clang
+build:clang_macos --config=generic_clang
+
+# Automatically detect host platform to pick config
+common --enable_platform_specific_config
+build:linux --config=clang_linux
+build:macos --config=clang_macos
 
 # Other compilation modes
 build:opt --compilation_mode=opt
