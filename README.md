@@ -23,13 +23,12 @@ To build TCP using Bazel, follow these steps:
 
 2. You can now build `tcp-opt` by running:
 ```shell
-bazel build --config=clang_linux //:tcp-opt
+bazel build //:tcp-opt
 ```
-(replace `linux` with `osx` for Mac)
 
 3. To run TCP lit and aot compile tests:
 ```shell
-bazel test --config=clang_linux //test/...
+bazel test //test/...
 ```
 
 We welcome contributions to `mlir-tcp`. If you do contribute, please finalize your PR with clang-format and bazel buildifier to ensure the C++ sources and BUILD files are formatted consistently:
@@ -38,14 +37,14 @@ We welcome contributions to `mlir-tcp`. If you do contribute, please finalize yo
 find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
 
 # buildifer
-bazel run --config=clang_linux //:buildifier
+bazel run //:buildifier
 ```
 
 When bumping upstream dependencies (LLVM, Torch-MLIR, StableHLO), you may validate the set of "green commits" by running the corresponding third-party tests:
 ```shell
-bazel test --config=clang_linux @llvm-project//mlir/...
-bazel test --config=clang_linux @torch-mlir//...
-bazel test --config=clang_linux @stablehlo//...
+bazel test @llvm-project//mlir/...
+bazel test @torch-mlir//...
+bazel test @stablehlo//...
 ```
 
 The following CI workflows are automatically triggered anytime upstream dependencies (`deps.bzl`) are updated:
@@ -82,14 +81,14 @@ LLVM_DEBUG(llvm::dbgs() << "This only shows up when -debug or -debug-only=bar is
 
 Then run with the `-debug-only=foo,bar` flag to cuts out messages that aren't associated with the passed `DEBUG_TYPE`s.
 ```shell
-bazel run --config=clang_linux //:tcp-opt -- --some-pass `pwd`/test.mlir -debug-only=foo,bar
+bazel run //:tcp-opt -- --some-pass `pwd`/test.mlir -debug-only=foo,bar
 ```
 
 ### `gdb` debugging
 
 To debug `tcp-opt` with [gdb](https://www.sourceware.org/gdb/):
 ```shell
-bazel build --config=clang_linux --config=gdb //:tcp-opt
+bazel build --config=gdb //:tcp-opt
 
 gdb --args bazel-bin/tcp-opt -h
 ```
@@ -111,6 +110,6 @@ Stack dump without symbol names (ensure you have llvm-symbolizer in your PATH or
 
 Do this and re-run:
 ```shell
-bazel build --config=clang_linux @llvm-project//llvm:llvm-symbolizer
+bazel build @llvm-project//llvm:llvm-symbolizer
 export LLVM_SYMBOLIZER_PATH=`pwd`/bazel-bin/external/llvm-project/llvm/llvm-symbolizer
 ```
