@@ -37,11 +37,13 @@ We welcome contributions to `mlir-tcp`. If you do contribute, please finalize yo
 find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
 
 # buildifer
-bazel run //tools/buildifier:buildifier 
+bazel run //tools/buildifier:buildifier
 ```
 
 To enable clangd (for code completion, navigation and insights), generate the compilation database using [bazel-compile-commands-extractor](https://github.com/hedronvision/bazel-compile-commands-extractor):
 ```shell
+bazel build //...
+
 bazel run //tools/clangd:refresh_compile_commands
 ```
 When run successfully, a `compile_commands.json` is generated at the workspace root (and refreshed upon re-runs). If you're using VSCode, just hit CMD+SHIFT+P and select `clangd: Restart language server` to start clangd. Note that this only works for non-docker builds at the moment.
