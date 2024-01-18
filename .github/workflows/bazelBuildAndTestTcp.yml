@@ -73,7 +73,7 @@ jobs:
                    mlir-tcp:ci \
                    bazel run //tools/buildifier:buildifier
         if [ -n "$(git status --porcelain)" ]; then
-          echo "Please 'bazel run //tools/buildifier:buildifier ' and commit changes."
+          echo "Please 'bazel run //tools/buildifier:buildifier' and commit changes."
           exit 1
         fi
 
