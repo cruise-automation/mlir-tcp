@@ -35,6 +35,7 @@ common --enable_platform_specific_config
 # also has lld available.
 build:linux --linkopt=-fuse-ld=lld --host_linkopt=-fuse-ld=lld
 build:linux --config=generic_clang
+
 build:macos --config=generic_clang
 
 # Other compilation modes
