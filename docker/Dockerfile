@@ -26,7 +26,7 @@ RUN apt-get update && \
 
 # Install bazel
 ARG ARCH="x86_64"
-ARG BAZEL_VERSION=5.4.0
+ARG BAZEL_VERSION=7.0.1
 RUN wget -q https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-${ARCH} -O /usr/bin/bazel \
     && chmod a+x /usr/bin/bazel
 
