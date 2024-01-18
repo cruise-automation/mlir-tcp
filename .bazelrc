@@ -46,3 +46,7 @@ build:dbg --compilation_mode=dbg
 
 # GDB builds in dbg mode
 build:gdb --config=dbg
+
+# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
+# https://bazel.build/external/migration
+common --noenable_bzlmod
