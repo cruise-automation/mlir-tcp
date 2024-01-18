@@ -26,10 +26,12 @@ torch_mlir_configure(name = "torch-mlir")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# --------------------------- #
-#    Clangd Compile Commands  #
-#    Extractor for Bazel      #
-# --------------------------- #
+# ----------------------------- #
+#    Compile Commands Extractor #
+#    for Bazel (clangd)         #
+# ----------------------------- #
+
+# https://github.com/hedronvision/bazel-compile-commands-extractor/blob/main/README.md
 
 http_archive(
     name = "hedron_compile_commands",
@@ -58,8 +60,8 @@ hedron_compile_commands_setup_transitive_transitive_transitive()
 #    Buildifier dependencies  #
 # --------------------------- #
 
-# buildifier is written in Go and hence needs rules_go to be built.
-# See https://github.com/bazelbuild/rules_go for the up to date setup instructions.
+# https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md
+
 http_archive(
     name = "io_bazel_rules_go",
     sha256 = "6dc2da7ab4cf5d7bfc7c949776b1b7c733f05e56edc4bcd9022bb249d2e2a996",

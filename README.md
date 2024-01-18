@@ -37,7 +37,7 @@ We welcome contributions to `mlir-tcp`. If you do contribute, please finalize yo
 find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
 
 # buildifer
-bazel run //:buildifier
+bazel run //tools/buildifier:buildifier 
 ```
 
 To enable clangd (for code completion, navigation and insights), generate the compilation database using [bazel-compile-commands-extractor](https://github.com/hedronvision/bazel-compile-commands-extractor):
