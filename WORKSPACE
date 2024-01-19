@@ -26,36 +26,6 @@ torch_mlir_configure(name = "torch-mlir")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# ----------------------------- #
-#    Compile Commands Extractor #
-#    for Bazel (clangd)         #
-# ----------------------------- #
-
-# https://github.com/hedronvision/bazel-compile-commands-extractor/blob/main/README.md
-
-http_archive(
-    name = "hedron_compile_commands",
-    sha256 = "c6cab577506bf660fcdc572cffb0ed83aa3c2778de54886e6082766888dcc0cb",
-    strip_prefix = "bazel-compile-commands-extractor-f41ec092c76458374900242e0d6ed5e96f4e3a21",
-    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/f41ec092c76458374900242e0d6ed5e96f4e3a21.tar.gz",
-)
-
-load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
-
-hedron_compile_commands_setup()
-
-load("@hedron_compile_commands//:workspace_setup_transitive.bzl", "hedron_compile_commands_setup_transitive")
-
-hedron_compile_commands_setup_transitive()
-
-load("@hedron_compile_commands//:workspace_setup_transitive_transitive.bzl", "hedron_compile_commands_setup_transitive_transitive")
-
-hedron_compile_commands_setup_transitive_transitive()
-
-load("@hedron_compile_commands//:workspace_setup_transitive_transitive_transitive.bzl", "hedron_compile_commands_setup_transitive_transitive_transitive")
-
-hedron_compile_commands_setup_transitive_transitive_transitive()
-
 # --------------------------- #
 #    Buildifier dependencies  #
 # --------------------------- #
@@ -113,3 +83,21 @@ http_archive(
         "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.2.tar.gz",
     ],
 )
+
+# ----------------------------- #
+#    Compile Commands Extractor #
+#    for Bazel (clangd)         #
+# ----------------------------- #
+
+# https://github.com/hedronvision/bazel-compile-commands-extractor/blob/main/README.md
+
+http_archive(
+    name = "hedron_compile_commands",
+    sha256 = "2188c3cd3a16404a6b20136151b37e7afb5a320e150453750c15080de5ba3058",
+    strip_prefix = "bazel-compile-commands-extractor-6d58fa6bf39f612304e55566fa628fd160b38177",
+    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/6d58fa6bf39f612304e55566fa628fd160b38177.tar.gz",
+)
+
+load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
+
+hedron_compile_commands_setup()
