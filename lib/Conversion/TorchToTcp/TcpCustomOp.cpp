@@ -242,6 +242,8 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(Aten_IndexPutImplOp);
 #undef INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN
 
+  // torch -> tosa doesn't handle transposed convolutions.
+  // Map them to tcp.custom_op instead.
   auto isTransposedConvOp = [](AtenConvolutionOp op) {
     bool transposed;
     if (!matchPattern(op.getTransposed(), m_TorchConstantBool(&transposed)))
@@ -249,10 +251,18 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
     return transposed;
   };
 
-  // Only want to convert transposed conv ops, i.e., if its not transposed,
-  // its "legal", i.e., will not get converted.
+  // torch -> tosa supports only 2D convolutions.
+  // Map the rest to tcp.custom_op instead.
+  auto is2dConvOp = [](AtenConvolutionOp op) {
+    auto inputTy = op.getInput().getType().cast<torch::Torch::ValueTensorType>();
+    return inputTy.getSizes().size() == 4;
+  };
+
+  // Mark only regular (non-transposed) 2D convolutions as legal (for Torch dialect).
+  // Another way of saying, we don't want to convert them to tcp.custom_op, as they
+  // can be handled by torch -> tosa effectively.
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenConvolutionOp,
                                                    AtenConvolutionOp>(
       typeConverter, patterns, target, convertTorchOpsSet,
-      [&](AtenConvolutionOp op) { return !isTransposedConvOp(op); });
+      [&](AtenConvolutionOp op) { return !isTransposedConvOp(op) && is2dConvOp(op); });
 }
