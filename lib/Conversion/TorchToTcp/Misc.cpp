@@ -158,9 +158,6 @@ public:
         rewriter.create<arith::IndexCastOp>(loc, rewriter.getI64Type(), dimOp);
 
     rewriter.replaceOp(op, result);
-    if (constIntOp->hasOneUse()) {
-      rewriter.eraseOp(constIntOp);
-    }
 
     return success();
   }
