@@ -133,8 +133,7 @@ public:
   }
 };
 
-class ConvertAtenSizeIntOp
-    : public OpConversionPattern<AtenSizeIntOp> {
+class ConvertAtenSizeIntOp : public OpConversionPattern<AtenSizeIntOp> {
 public:
   using OpConversionPattern<AtenSizeIntOp>::OpConversionPattern;
 
@@ -144,20 +143,22 @@ public:
     Location loc = op->getLoc();
     Value self = adaptor.getSelf();
     auto type = self.getType().cast<RankedTensorType>();
-    if(!isa<ConstantIntOp>(op->getOperand(1).getDefiningOp())) {
+    if (!isa<ConstantIntOp>(op->getOperand(1).getDefiningOp())) {
       return rewriter.notifyMatchFailure(op, "dim must be a constant int");
     }
-    auto constIntOp = dyn_cast<ConstantIntOp>(op->getOperand(1).getDefiningOp());
+    auto constIntOp =
+        dyn_cast<ConstantIntOp>(op->getOperand(1).getDefiningOp());
     int idxVal = constIntOp.getValueAttr().getValue().getSExtValue();
-    if(idxVal < 0 || idxVal >= type.getRank()) {
+    if (idxVal < 0 || idxVal >= type.getRank()) {
       return rewriter.notifyMatchFailure(op, "dim must be in range");
     }
     auto idxOp = rewriter.create<arith::ConstantIndexOp>(loc, idxVal);
     auto dimOp = rewriter.create<tensor::DimOp>(loc, self, idxOp);
-    auto result = rewriter.create<arith::IndexCastOp>(loc, rewriter.getI64Type(), dimOp);
-    
+    auto result =
+        rewriter.create<arith::IndexCastOp>(loc, rewriter.getI64Type(), dimOp);
+
     rewriter.replaceOp(op, result);
-    if(constIntOp->hasOneUse()) {
+    if (constIntOp->hasOneUse()) {
       rewriter.eraseOp(constIntOp);
     }
 
