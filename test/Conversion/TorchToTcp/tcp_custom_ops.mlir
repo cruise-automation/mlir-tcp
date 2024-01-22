@@ -84,10 +84,39 @@ func.func @torcn.aten.transposed_convolution(%input: !torch.vtensor<[1,64,1,100]
 
 // -----
 
-// CHECK: torch.aten.convolution %{{.*}}
-func.func @torch.aten.regular_convolution() -> !torch.vtensor<[1,32,16,1600],f32> {
+// CHECK-LABEL: func.func @torch.aten.regular_convolution_1d(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,256,500],f32>) -> !torch.vtensor<[?,256,500],f32>
+// CHECK:          %[[T1:.*]] = torch.vtensor.literal(dense<0.000000e+00> : tensor<256x256x1xf32>) : !torch.vtensor<[256,256,1],f32>
+// CHECK:          %[[T2:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,256,500],f32> -> tensor<?x256x500xf32>
+// CHECK:          %[[T3:.*]] = torch_c.to_builtin_tensor %[[T1]] : !torch.vtensor<[256,256,1],f32> -> tensor<256x256x1xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.convolution") %[[T2]], %[[T3]] {
+// CHECK-SAME:                          dilation = [1 : index],
+// CHECK-SAME:                          groups = 1 : i64,
+// CHECK-SAME:                          output_padding = [0 : index],
+// CHECK-SAME:                          padding = [0 : index],
+// CHECK-SAME:                          stride = [1 : index],
+// CHECK-SAME:                          torch_operand_names = ["input", "weight"],
+// CHECK-SAME:                          transposed = false}
+// CHECK-SAME:      tensor<?x256x500xf32>, tensor<256x256x1xf32> -> tensor<?x256x500xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<?x256x500xf32> -> !torch.vtensor<[?,256,500],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[?,256,500],f32>
+func.func @torch.aten.regular_convolution_1d(%input: !torch.vtensor<[?,256,500],f32>) -> !torch.vtensor<[?,256,500],f32> {
   %false = torch.constant.bool false
-  %input = torch.vtensor.literal(dense<0.0> : tensor<1x9x16x1600xf32>) : !torch.vtensor<[1,9,16,1600],f32>
+  %weights = torch.vtensor.literal(dense<0.0> : tensor<256x256x1xf32>) : !torch.vtensor<[256,256,1],f32>
+  %int0 = torch.constant.int 0
+  %int1 = torch.constant.int 1
+  %listint0 = torch.prim.ListConstruct %int0 : (!torch.int) -> !torch.list<int>
+  %listint1 = torch.prim.ListConstruct %int1 : (!torch.int) -> !torch.list<int>
+  %none = torch.constant.none
+  %output = torch.aten.convolution %input, %weights, %none, %listint1, %listint0, %listint1, %false, %listint0, %int1 : !torch.vtensor<[?,256,500],f32>, !torch.vtensor<[256,256,1],f32>, !torch.none, !torch.list<int>, !torch.list<int>, !torch.list<int>, !torch.bool, !torch.list<int>, !torch.int -> !torch.vtensor<[?,256,500],f32>
+  return %output : !torch.vtensor<[?,256,500],f32>
+}
+
+// -----
+
+// CHECK: torch.aten.convolution %{{.*}}
+func.func @torch.aten.regular_convolution_2d(%input: !torch.vtensor<[1,9,16,1600],f32>) -> !torch.vtensor<[1,32,16,1600],f32> {
+  %false = torch.constant.bool false
   %weights = torch.vtensor.literal(dense<0.0> : tensor<32x9x3x3xf32>) : !torch.vtensor<[32,9,3,3],f32>
   %int0 = torch.constant.int 0
   %int1 = torch.constant.int 1
