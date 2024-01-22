@@ -14,8 +14,10 @@
 
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
+#include "torch-mlir/Conversion/Utils/Utils.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
+#include "torch-mlir/Dialect/Torch/Utils/Utils.h"
 #include "torch-mlir/Dialect/TorchConversion/IR/TorchConversionDialect.h"
 #include "torch-mlir/Dialect/TorchConversion/IR/TorchConversionOps.h"
 
@@ -24,9 +26,11 @@ using namespace mlir::tcp;
 using namespace mlir::torch;
 using namespace mlir::torch::Torch;
 
+namespace mlir::torch_to_tcp {
+
 // The parameter input is expected to be of RankedTensorType.
-Value torch_to_tcp::broadcastRankInLeadingDims(
-    ConversionPatternRewriter &rewriter, Value input, int64_t rankIncrease) {
+Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
+                                 Value input, int64_t rankIncrease) {
   RankedTensorType inputType = input.getType().cast<RankedTensorType>();
 
   SmallVector<ReassociationExprs> reassociationMap(inputType.getRank());
@@ -50,18 +54,18 @@ Value torch_to_tcp::broadcastRankInLeadingDims(
 
 // The parameters input are expected to be of RankedTensorType.
 std::pair<Value, Value>
-torch_to_tcp::broadcastToMatchShape(ConversionPatternRewriter &rewriter,
-                                    Value lhs, Value rhs) {
+broadcastToMatchShape(ConversionPatternRewriter &rewriter, Value lhs,
+                      Value rhs) {
   RankedTensorType inputAType = lhs.getType().cast<RankedTensorType>();
   RankedTensorType inputBType = rhs.getType().cast<RankedTensorType>();
 
   Value resultA = lhs;
   Value resultB = rhs;
   if (inputAType.getRank() > inputBType.getRank())
-    resultB = torch_to_tcp::broadcastRankInLeadingDims(
+    resultB = broadcastRankInLeadingDims(
         rewriter, resultB, inputAType.getRank() - inputBType.getRank());
   if (inputAType.getRank() < inputBType.getRank())
-    resultA = torch_to_tcp::broadcastRankInLeadingDims(
+    resultA = broadcastRankInLeadingDims(
         rewriter, resultA, inputBType.getRank() - inputAType.getRank());
 
   inputAType = resultA.getType().cast<RankedTensorType>();
@@ -109,9 +113,9 @@ torch_to_tcp::broadcastToMatchShape(ConversionPatternRewriter &rewriter,
   return std::make_pair(resultA, resultB);
 }
 
-Value torch_to_tcp::broadcast0DOr1DToNDAndMatchShape(
-    ConversionPatternRewriter &rewriter, Value input, Value target,
-    Type resultType, int64_t axisInOutput) {
+Value broadcast0DOr1DToNDAndMatchShape(ConversionPatternRewriter &rewriter,
+                                       Value input, Value target,
+                                       Type resultType, int64_t axisInOutput) {
   RankedTensorType inputType = input.getType().cast<RankedTensorType>();
   RankedTensorType targetType = target.getType().cast<RankedTensorType>();
 
@@ -169,8 +173,7 @@ Value torch_to_tcp::broadcast0DOr1DToNDAndMatchShape(
   return result;
 }
 
-SmallVector<int64_t>
-torch_to_tcp::getShapeFromPrimList(ArrayRef<Value> listVal) {
+SmallVector<int64_t> getShapeFromPrimList(ArrayRef<Value> listVal) {
   SmallVector<int64_t> resultShape;
   for (Value value : listVal) {
     int64_t num;
@@ -182,9 +185,10 @@ torch_to_tcp::getShapeFromPrimList(ArrayRef<Value> listVal) {
   return resultShape;
 }
 
-Value torch_to_tcp::broadcast0DOr1DFromShape(
-    ConversionPatternRewriter &rewriter, Value input, ArrayRef<Value> targetVal,
-    SmallVector<int64_t> resultShape, int64_t axisInOutput) {
+Value broadcast0DOr1DFromShape(ConversionPatternRewriter &rewriter, Value input,
+                               ArrayRef<Value> targetVal,
+                               SmallVector<int64_t> resultShape,
+                               int64_t axisInOutput) {
   RankedTensorType inputType = input.getType().cast<RankedTensorType>();
   auto inputRank = inputType.getRank();
   RankedTensorType targetType = input.getType().cast<RankedTensorType>();
@@ -230,9 +234,8 @@ Value torch_to_tcp::broadcast0DOr1DFromShape(
   return result;
 }
 
-Value torch_to_tcp::castTensorToDtype(ConversionPatternRewriter &rewriter,
-                                      Type srcType, Type dstType, Value input,
-                                      Type convertedType) {
+Value castTensorToDtype(ConversionPatternRewriter &rewriter, Type srcType,
+                        Type dstType, Value input, Type convertedType) {
   if (srcType == dstType)
     return input;
 
@@ -264,10 +267,10 @@ Value torch_to_tcp::castTensorToDtype(ConversionPatternRewriter &rewriter,
 
 // TODO: Add unit tests for all getConstTensor* functions below
 template <typename T>
-std::optional<Value>
-torch_to_tcp::impl::getConstTensorUtil(PatternRewriter &rewriter, Operation *op,
-                                       ArrayRef<T> vec, ArrayRef<int64_t> shape,
-                                       RankedTensorType type) {
+std::optional<Value> impl::getConstTensorUtil(PatternRewriter &rewriter,
+                                              Operation *op, ArrayRef<T> vec,
+                                              ArrayRef<int64_t> shape,
+                                              RankedTensorType type) {
   uint64_t numTotalElements = 1;
   for (int64_t a : shape) {
     assert(a >= 0 && "getConstTensor(): Only static shapes supported");
@@ -286,82 +289,73 @@ torch_to_tcp::impl::getConstTensorUtil(PatternRewriter &rewriter, Operation *op,
 }
 
 template <typename T>
-std::optional<Value>
-torch_to_tcp::getConstTensor(PatternRewriter &rewriter, Operation *op,
-                             ArrayRef<T> vec, ArrayRef<int64_t> shape) {
+std::optional<Value> getConstTensor(PatternRewriter &rewriter, Operation *op,
+                                    ArrayRef<T> vec, ArrayRef<int64_t> shape) {
   auto constType =
       RankedTensorType::get(shape, rewriter.getIntegerType(sizeof(T) * 8));
 
-  return torch_to_tcp::impl::getConstTensorUtil<T>(rewriter, op, vec, shape,
-                                                   constType);
+  return impl::getConstTensorUtil<T>(rewriter, op, vec, shape, constType);
 }
 
-template std::optional<Value>
-torch_to_tcp::getConstTensor<int8_t>(PatternRewriter &, Operation *,
-                                     ArrayRef<int8_t> vec,
-                                     ArrayRef<int64_t> shape);
+template std::optional<Value> getConstTensor<int8_t>(PatternRewriter &,
+                                                     Operation *,
+                                                     ArrayRef<int8_t> vec,
+                                                     ArrayRef<int64_t> shape);
 
-template std::optional<Value>
-torch_to_tcp::getConstTensor<int32_t>(PatternRewriter &, Operation *,
-                                      ArrayRef<int32_t> vec,
-                                      ArrayRef<int64_t> shape);
+template std::optional<Value> getConstTensor<int32_t>(PatternRewriter &,
+                                                      Operation *,
+                                                      ArrayRef<int32_t> vec,
+                                                      ArrayRef<int64_t> shape);
 
-template std::optional<Value>
-torch_to_tcp::getConstTensor<int64_t>(PatternRewriter &, Operation *,
-                                      ArrayRef<int64_t> vec,
-                                      ArrayRef<int64_t> shape);
+template std::optional<Value> getConstTensor<int64_t>(PatternRewriter &,
+                                                      Operation *,
+                                                      ArrayRef<int64_t> vec,
+                                                      ArrayRef<int64_t> shape);
 
 template <>
-std::optional<Value>
-torch_to_tcp::getConstTensor<float>(PatternRewriter &rewriter, Operation *op,
-                                    ArrayRef<float> vec,
-                                    ArrayRef<int64_t> shape) {
+std::optional<Value> getConstTensor<float>(PatternRewriter &rewriter,
+                                           Operation *op, ArrayRef<float> vec,
+                                           ArrayRef<int64_t> shape) {
   auto constType = RankedTensorType::get(shape, rewriter.getF32Type());
 
-  return torch_to_tcp::impl::getConstTensorUtil<float>(rewriter, op, vec, shape,
-                                                       constType);
+  return impl::getConstTensorUtil<float>(rewriter, op, vec, shape, constType);
 }
 
 template <>
-std::optional<Value>
-torch_to_tcp::getConstTensor<double>(PatternRewriter &rewriter, Operation *op,
-                                     ArrayRef<double> vec,
-                                     ArrayRef<int64_t> shape) {
+std::optional<Value> getConstTensor<double>(PatternRewriter &rewriter,
+                                            Operation *op, ArrayRef<double> vec,
+                                            ArrayRef<int64_t> shape) {
   auto constType = RankedTensorType::get(shape, rewriter.getF64Type());
 
-  return torch_to_tcp::impl::getConstTensorUtil<double>(rewriter, op, vec,
-                                                        shape, constType);
+  return impl::getConstTensorUtil<double>(rewriter, op, vec, shape, constType);
 }
 
 template <>
-std::optional<Value>
-torch_to_tcp::getConstTensor<APInt>(PatternRewriter &rewriter, Operation *op,
-                                    ArrayRef<APInt> vec,
-                                    ArrayRef<int64_t> shape) {
+std::optional<Value> getConstTensor<APInt>(PatternRewriter &rewriter,
+                                           Operation *op, ArrayRef<APInt> vec,
+                                           ArrayRef<int64_t> shape) {
   auto constType = RankedTensorType::get(
       shape, rewriter.getIntegerType(vec[0].getBitWidth()));
 
-  return torch_to_tcp::impl::getConstTensorUtil<APInt>(rewriter, op, vec, shape,
-                                                       constType);
+  return impl::getConstTensorUtil<APInt>(rewriter, op, vec, shape, constType);
 }
 
-bool torch_to_tcp::getConstTensorWithType(ConversionPatternRewriter &rewriter,
-                                          Operation *op, Value &constOp,
-                                          Type resultType, int fillVal) {
+bool getConstTensorWithType(ConversionPatternRewriter &rewriter, Operation *op,
+                            Value &constOp, Type resultType, int fillVal) {
   if (resultType.isInteger(64)) {
-    constOp = *torch_to_tcp::getConstTensor<int64_t>(
+    constOp = *getConstTensor<int64_t>(
         rewriter, op, llvm::ArrayRef(static_cast<int64_t>(fillVal)), {});
   } else if (resultType.isInteger(32)) {
-    constOp = *torch_to_tcp::getConstTensor<int32_t>(
+    constOp = *getConstTensor<int32_t>(
         rewriter, op, llvm::ArrayRef(static_cast<int32_t>(fillVal)), {});
   } else if (resultType.isInteger(8)) {
-    constOp = *torch_to_tcp::getConstTensor<int8_t>(
+    constOp = *getConstTensor<int8_t>(
         rewriter, op, llvm::ArrayRef(static_cast<int8_t>(fillVal)), {});
   } else if (resultType.isF32()) {
-    constOp = *torch_to_tcp::getConstTensor<float>(
+    constOp = *getConstTensor<float>(
         rewriter, op, llvm::ArrayRef(static_cast<float>(fillVal)), {});
   } else if (resultType.isF64()) {
-    constOp = *torch_to_tcp::getConstTensor<double>(
+    constOp = *getConstTensor<double>(
         rewriter, op, llvm::ArrayRef(static_cast<double>(fillVal)), {});
   } else {
     return false;
@@ -370,9 +364,8 @@ bool torch_to_tcp::getConstTensorWithType(ConversionPatternRewriter &rewriter,
 }
 
 // scalarValue should be accessed by op itself, not through the adaptor
-Value torch_to_tcp::scalarToTcpTensor(ConversionPatternRewriter &rewriter,
-                                      Operation *op, Type targetType,
-                                      Value scalarValue) {
+Value scalarToTcpTensor(ConversionPatternRewriter &rewriter, Operation *op,
+                        Type targetType, Value scalarValue) {
   double doubleValue;
   auto isFloat = matchPattern(scalarValue, m_TorchConstantFloat(&doubleValue));
   if (isFloat) {
@@ -389,3 +382,101 @@ Value torch_to_tcp::scalarToTcpTensor(ConversionPatternRewriter &rewriter,
   return rewriter.create<tensor::FromElementsOp>(op->getLoc(), targetType,
                                                  ArrayRef<Value>{scalarValue});
 }
+
+void TorchToTcpCustomOpConversionHelper::addOperand(std::string opName,
+                                                    Value value) {
+  if (conversionResult.failed())
+    return;
+  operandNames.push_back(opName);
+  operands.push_back(value);
+}
+
+void TorchToTcpCustomOpConversionHelper::addAsMultipleTensorOperands(
+    std::string opNamePrefix, mlir::Value value) {
+  if (conversionResult.failed())
+    return;
+  mlir::SmallVector<Value> indicesTorchType;
+  if (!torch::Torch::getListConstructElements(value, indicesTorchType)) {
+    conversionResult = op->emitError(
+        "unimplemented: the tensor list is not from list construct");
+    return;
+  }
+
+  mlir::SmallVector<Value> indexTensors = torch::Torch::getTypeConvertedValues(
+      rewriter, op->getLoc(), typeConverter, indicesTorchType);
+
+  for (size_t i = 0; i < indexTensors.size(); ++i) {
+    addOperand(opNamePrefix + std::to_string(i), indexTensors[i]);
+  }
+}
+
+LogicalResult TorchToTcpCustomOpConversionHelper::replace() {
+  if (conversionResult.failed()) {
+    return conversionResult;
+  }
+
+  SmallVector<Type> resultTypes;
+  auto result = typeConverter->convertTypes(op->getResultTypes(), resultTypes);
+  if (result.failed()) {
+    return result;
+  }
+
+  SmallVector<StringRef> operandNameRefs;
+  operandNameRefs.append(operandNames.begin(), operandNames.end());
+
+  attrs.push_back(rewriter.getNamedAttr(
+      "torch_operand_names", rewriter.getStrArrayAttr(operandNameRefs)));
+
+  auto replOp = rewriter.replaceOpWithNewOp<tcp::CustomOp>(op, resultTypes,
+                                                           operands, attrs);
+  replOp.setOpName(op->getName().getStringRef());
+  return success();
+}
+
+void TorchToTcpCustomOpConversionHelper::addBoolAttr(std::string attrName,
+                                                     Value value) {
+  if (conversionResult.failed())
+    return;
+
+  bool constVal;
+  if (!matchPattern(value, torch::Torch::m_TorchConstantBool(&constVal))) {
+    conversionResult = rewriter.notifyMatchFailure(
+        op, std::string("non-const ") + attrName + " unsupported");
+    return;
+  }
+
+  attrs.push_back(
+      rewriter.getNamedAttr(attrName, rewriter.getBoolAttr(constVal)));
+}
+
+void TorchToTcpCustomOpConversionHelper::addIntAttr(std::string attrName,
+                                                    Value value) {
+  if (conversionResult.failed())
+    return;
+
+  int64_t constVal;
+  if (!matchPattern(value, torch::Torch::m_TorchConstantInt(&constVal))) {
+    conversionResult = rewriter.notifyMatchFailure(
+        op, std::string("non-const ") + attrName + " unsupported");
+    return;
+  }
+  attrs.push_back(
+      rewriter.getNamedAttr(attrName, rewriter.getI64IntegerAttr(constVal)));
+}
+
+void TorchToTcpCustomOpConversionHelper::addListOfIntsAttr(std::string attrName,
+                                                           Value value) {
+  if (conversionResult.failed())
+    return;
+
+  SmallVector<int64_t> constVal;
+  if (!matchPattern(value, torch::Torch::m_TorchListOfConstantInts(constVal))) {
+    conversionResult = rewriter.notifyMatchFailure(
+        op, std::string("non-const ") + attrName + " unsupported");
+    return;
+  }
+  attrs.push_back(
+      rewriter.getNamedAttr(attrName, rewriter.getIndexArrayAttr(constVal)));
+}
+
+} // namespace mlir::torch_to_tcp
