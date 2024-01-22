@@ -193,7 +193,7 @@ cc_library(
         "lib/Conversion/TorchToTcp/Misc.cpp",
         "lib/Conversion/TorchToTcp/PopulatePatterns.h",
         "lib/Conversion/TorchToTcp/TcpCustomOp.cpp",
-        "lib/Conversion/TorchToTcp/TcpCustomOpBuilder.cpp",
+        "lib/Conversion/TorchToTcp/TorchToTcpCustomOpConversionHelper.cpp",
         "lib/Conversion/TorchToTcp/TorchToTcp.cpp",
         "lib/Conversion/TorchToTcp/TorchToTcpCustomOp.cpp",
         "lib/Conversion/TorchToTcp/Utils.cpp",
@@ -202,7 +202,7 @@ cc_library(
     hdrs = [
         "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h",
         "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h",
-        "include/mlir-tcp/Conversion/TorchToTcp/TcpCustomOpBuilder.h",
+        "include/mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOpConversionHelper.h",
     ],
     strip_include_prefix = "include",
     deps = [

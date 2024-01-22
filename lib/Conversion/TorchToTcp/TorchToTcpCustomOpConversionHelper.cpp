@@ -7,22 +7,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir-tcp/Conversion/TorchToTcp/TcpCustomOpBuilder.h"
+#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOpConversionHelper.h"
 
 #include "torch-mlir/Conversion/Utils/Utils.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
 
 namespace mlir::tcp {
 
-void TcpCustomOpBuilder::addOperand(std::string opName, Value value) {
+void TorchToTcpCustomOpConversionHelper::addOperand(std::string opName,
+                                                    Value value) {
   // Should there be some error checking here that Value has a specific
   // type (for instance a RankedTensorType?)
   operandNames.push_back(opName);
   operands.push_back(value);
 }
 
-void TcpCustomOpBuilder::addAsMultipleTensorOperands(std::string opNamePrefix,
-                                                     mlir::Value value) {
+void TorchToTcpCustomOpConversionHelper::addAsMultipleTensorOperands(
+    std::string opNamePrefix, mlir::Value value) {
   mlir::SmallVector<Value> indicesTorchType;
   if (!torch::Torch::getListConstructElements(value, indicesTorchType)) {
     conversionResult = op->emitError(
@@ -38,7 +39,7 @@ void TcpCustomOpBuilder::addAsMultipleTensorOperands(std::string opNamePrefix,
   }
 }
 
-LogicalResult TcpCustomOpBuilder::replace() {
+LogicalResult TorchToTcpCustomOpConversionHelper::replace() {
   if (conversionResult.failed()) {
     return conversionResult;
   }
@@ -66,7 +67,8 @@ LogicalResult TcpCustomOpBuilder::replace() {
   return success();
 }
 
-void TcpCustomOpBuilder::addBoolAttr(std::string attrName, Value value) {
+void TorchToTcpCustomOpConversionHelper::addBoolAttr(std::string attrName,
+                                                     Value value) {
   if (conversionResult.failed())
     return;
 
@@ -76,11 +78,13 @@ void TcpCustomOpBuilder::addBoolAttr(std::string attrName, Value value) {
         op, std::string("non-const ") + attrName + " unsupported");
     return;
   }
+
   attrs.push_back(
       rewriter.getNamedAttr(attrName, rewriter.getBoolAttr(constVal)));
 }
 
-void TcpCustomOpBuilder::addIntAttr(std::string attrName, Value value) {
+void TorchToTcpCustomOpConversionHelper::addIntAttr(std::string attrName,
+                                                    Value value) {
   if (conversionResult.failed())
     return;
 
@@ -94,7 +98,8 @@ void TcpCustomOpBuilder::addIntAttr(std::string attrName, Value value) {
       rewriter.getNamedAttr(attrName, rewriter.getI64IntegerAttr(constVal)));
 }
 
-void TcpCustomOpBuilder::addListOfIntsAttr(std::string attrName, Value value) {
+void TorchToTcpCustomOpConversionHelper::addListOfIntsAttr(std::string attrName,
+                                                           Value value) {
   if (conversionResult.failed())
     return;
 

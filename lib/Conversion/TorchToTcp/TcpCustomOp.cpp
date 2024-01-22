@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir-tcp/Conversion/TorchToTcp/TcpCustomOpBuilder.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
+#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOpConversionHelper.h"
 
 #include "mlir-tcp/Dialect/IR/TcpDialect.h"
 #include "mlir-tcp/Dialect/IR/TcpOps.h"
@@ -34,13 +34,13 @@ public:
   LogicalResult
   matchAndRewrite(AtenGatherOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    TcpCustomOpBuilder builder{op, rewriter, getTypeConverter()};
+    TorchToTcpCustomOpConversionHelper helper{op, rewriter, getTypeConverter()};
 
-    builder.addOperand("self", adaptor.getSelf());
-    builder.addOperand("index", adaptor.getIndex());
-    builder.addIntAttr("axis", op.getDim());
+    helper.addOperand("self", adaptor.getSelf());
+    helper.addOperand("index", adaptor.getIndex());
+    helper.addIntAttr("axis", op.getDim());
 
-    return builder.replace();
+    return helper.replace();
   }
 };
 
@@ -53,7 +53,7 @@ public:
   matchAndRewrite(AtenIndexTensorHackedTwinOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
 
-    TcpCustomOpBuilder builder{op, rewriter, getTypeConverter()};
+    TorchToTcpCustomOpConversionHelper helper{op, rewriter, getTypeConverter()};
 
     Value input = adaptor.getSelf();
     auto inputTensorType = input.getType().dyn_cast<RankedTensorType>();
@@ -62,10 +62,10 @@ public:
       return rewriter.notifyMatchFailure(
           op, "Only tensor types input are currently supported");
 
-    builder.addOperand("self", input);
-    builder.addAsMultipleTensorOperands("index_", op.getIndices());
+    helper.addOperand("self", input);
+    helper.addAsMultipleTensorOperands("index_", op.getIndices());
 
-    return builder.replace();
+    return helper.replace();
   }
 };
 
@@ -78,14 +78,14 @@ public:
   matchAndRewrite(Aten_IndexPutImplOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
 
-    TcpCustomOpBuilder builder{op, rewriter, getTypeConverter()};
-    builder.addOperand("self", adaptor.getSelf());
-    builder.addAsMultipleTensorOperands("index_", adaptor.getIndices());
-    builder.addOperand("values", adaptor.getValues());
-    builder.addBoolAttr("accumulate", op.getAccumulate());
-    builder.addBoolAttr("unsafe", op.getUnsafe());
+    TorchToTcpCustomOpConversionHelper helper{op, rewriter, getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+    helper.addAsMultipleTensorOperands("index_", adaptor.getIndices());
+    helper.addOperand("values", adaptor.getValues());
+    helper.addBoolAttr("accumulate", op.getAccumulate());
+    helper.addBoolAttr("unsafe", op.getUnsafe());
 
-    return builder.replace();
+    return helper.replace();
   }
 };
 
@@ -96,21 +96,21 @@ public:
   LogicalResult
   matchAndRewrite(AtenConvolutionOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    TcpCustomOpBuilder builder{op, rewriter, getTypeConverter()};
-    builder.addOperand("input", adaptor.getInput());
-    builder.addOperand("weight", adaptor.getWeight());
+    TorchToTcpCustomOpConversionHelper helper{op, rewriter, getTypeConverter()};
+    helper.addOperand("input", adaptor.getInput());
+    helper.addOperand("weight", adaptor.getWeight());
     if (!adaptor.getBias().getType().isa<Torch::NoneType>()) {
-      builder.addOperand("bias", adaptor.getBias());
+      helper.addOperand("bias", adaptor.getBias());
     }
 
-    builder.addListOfIntsAttr("stride", adaptor.getStride());
-    builder.addListOfIntsAttr("padding", adaptor.getPadding());
-    builder.addListOfIntsAttr("dilation", adaptor.getDilation());
-    builder.addListOfIntsAttr("output_padding", adaptor.getOutputPadding());
-    builder.addBoolAttr("transposed", op.getTransposed());
-    builder.addIntAttr("groups", op.getGroups());
+    helper.addListOfIntsAttr("stride", adaptor.getStride());
+    helper.addListOfIntsAttr("padding", adaptor.getPadding());
+    helper.addListOfIntsAttr("dilation", adaptor.getDilation());
+    helper.addListOfIntsAttr("output_padding", adaptor.getOutputPadding());
+    helper.addBoolAttr("transposed", op.getTransposed());
+    helper.addIntAttr("groups", op.getGroups());
 
-    return builder.replace();
+    return helper.replace();
   }
 };
 

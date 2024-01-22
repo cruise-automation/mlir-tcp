@@ -32,11 +32,12 @@ namespace mlir::tcp {
 ///
 /// See `ConvertAtenConvolutionOp` and `ConvertAten_IndexPutImplOp` for an
 /// example usages.
-class TcpCustomOpBuilder {
+class TorchToTcpCustomOpConversionHelper {
 
 public:
-  TcpCustomOpBuilder(Operation *a_op, ConversionPatternRewriter &a_rewriter,
-                     const TypeConverter *a_typeConverter)
+  TorchToTcpCustomOpConversionHelper(Operation *a_op,
+                                     ConversionPatternRewriter &a_rewriter,
+                                     const TypeConverter *a_typeConverter)
       : op(a_op), rewriter(a_rewriter), typeConverter(a_typeConverter) {}
 
   /// Add a value as a named tensor operand.
