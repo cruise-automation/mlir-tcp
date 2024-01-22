@@ -16,14 +16,16 @@ namespace mlir::tcp {
 
 void TorchToTcpCustomOpConversionHelper::addOperand(std::string opName,
                                                     Value value) {
-  // Should there be some error checking here that Value has a specific
-  // type (for instance a RankedTensorType?)
+  if (conversionResult.failed())
+    return;
   operandNames.push_back(opName);
   operands.push_back(value);
 }
 
 void TorchToTcpCustomOpConversionHelper::addAsMultipleTensorOperands(
     std::string opNamePrefix, mlir::Value value) {
+  if (conversionResult.failed())
+    return;
   mlir::SmallVector<Value> indicesTorchType;
   if (!torch::Torch::getListConstructElements(value, indicesTorchType)) {
     conversionResult = op->emitError(
@@ -50,11 +52,6 @@ LogicalResult TorchToTcpCustomOpConversionHelper::replace() {
     return result;
   }
 
-  // TODO: Is there some better way to convert a
-  // SmallVector<std::string> to SmallVector<StringRef> locally here? Note
-  // that we cannot store operandNames directly as a SmallVector<StringRef>
-  // because the strings passed to addOperand etc. could be computed
-  // temporary objects.
   SmallVector<StringRef> operandNameRefs;
   operandNameRefs.append(operandNames.begin(), operandNames.end());
 

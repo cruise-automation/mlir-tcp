@@ -27,7 +27,7 @@ namespace mlir::tcp {
 /// the `tcp.custom_op` corresponds to. This also allows us to handle the
 /// case of optional tensor arguments.
 ///
-/// 2. Some of the tensor operands are converted into named attributes of
+/// 2. Some of the operands are converted into named attributes of
 /// the final tcp.custom_op
 ///
 /// See `ConvertAtenConvolutionOp` and `ConvertAten_IndexPutImplOp` for an
