@@ -8,7 +8,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
-#include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOpConversionHelper.h"
 
 #include "mlir-tcp/Dialect/IR/TcpDialect.h"
 #include "mlir-tcp/Dialect/IR/TcpOps.h"
@@ -34,7 +33,8 @@ public:
   LogicalResult
   matchAndRewrite(AtenGatherOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    TorchToTcpCustomOpConversionHelper helper{op, rewriter, getTypeConverter()};
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
 
     helper.addOperand("self", adaptor.getSelf());
     helper.addOperand("index", adaptor.getIndex());
@@ -53,7 +53,8 @@ public:
   matchAndRewrite(AtenIndexTensorHackedTwinOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
 
-    TorchToTcpCustomOpConversionHelper helper{op, rewriter, getTypeConverter()};
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
 
     Value input = adaptor.getSelf();
     auto inputTensorType = input.getType().dyn_cast<RankedTensorType>();
@@ -78,7 +79,8 @@ public:
   matchAndRewrite(Aten_IndexPutImplOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
 
-    TorchToTcpCustomOpConversionHelper helper{op, rewriter, getTypeConverter()};
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
     helper.addOperand("self", adaptor.getSelf());
     helper.addAsMultipleTensorOperands("index_", adaptor.getIndices());
     helper.addOperand("values", adaptor.getValues());
@@ -96,7 +98,8 @@ public:
   LogicalResult
   matchAndRewrite(AtenConvolutionOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    TorchToTcpCustomOpConversionHelper helper{op, rewriter, getTypeConverter()};
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
     helper.addOperand("input", adaptor.getInput());
     helper.addOperand("weight", adaptor.getWeight());
     if (!adaptor.getBias().getType().isa<Torch::NoneType>()) {
