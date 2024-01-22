@@ -178,13 +178,13 @@ func.func @torch.aten.ones_ui8(%arg0: !torch.int, %arg1: !torch.int) -> !torch.v
 // CHECK:        %[[T3:.*]] = torch_c.from_builtin_tensor %[[BC]] : tensor<?x?xf32> -> !torch.vtensor<[?,?],f32>
 // CHECK:        return %[[T3]] : !torch.vtensor<[?,?],f32>
 func.func @torch.aten.zeros_like_f32(%arg0: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],f32> {
-%int0 = torch.constant.int 0
-%int3 = torch.constant.int 3
-%false = torch.constant.bool false
-%none = torch.constant.none
-%cuda3A0 = torch.constant.device "cuda:0"
-%0 = torch.aten.zeros_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],f32>
-return %0 : !torch.vtensor<[?,?],f32>
+  %int0 = torch.constant.int 0
+  %int3 = torch.constant.int 3
+  %false = torch.constant.bool false
+  %none = torch.constant.none
+  %cuda3A0 = torch.constant.device "cuda:0"
+  %0 = torch.aten.zeros_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],f32>
+  return %0 : !torch.vtensor<[?,?],f32>
 }
 
 // -----
@@ -202,13 +202,13 @@ return %0 : !torch.vtensor<[?,?],f32>
 // CHECK:        %[[T3:.*]] = torch_c.from_builtin_tensor %[[BC]] : tensor<?x?xi32> -> !torch.vtensor<[?,?],si32>
 // CHECK:        return %[[T3]] : !torch.vtensor<[?,?],si32>
 func.func @torch.aten.zeros_like_si32(%arg0: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],si32> {
-%int0 = torch.constant.int 0
-%int3 = torch.constant.int 3
-%false = torch.constant.bool false
-%none = torch.constant.none
-%cuda3A0 = torch.constant.device "cuda:0"
-%0 = torch.aten.zeros_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],si32>
-return %0 : !torch.vtensor<[?,?],si32>
+  %int0 = torch.constant.int 0
+  %int3 = torch.constant.int 3
+  %false = torch.constant.bool false
+  %none = torch.constant.none
+  %cuda3A0 = torch.constant.device "cuda:0"
+  %0 = torch.aten.zeros_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],si32>
+  return %0 : !torch.vtensor<[?,?],si32>
 }
 
 // -----
@@ -226,13 +226,13 @@ return %0 : !torch.vtensor<[?,?],si32>
 // CHECK:        %[[T3:.*]] = torch_c.from_builtin_tensor %[[BC]] : tensor<?x?xi8> -> !torch.vtensor<[?,?],ui8>
 // CHECK:        return %[[T3]] : !torch.vtensor<[?,?],ui8>
 func.func @torch.aten.zeros_like_ui8(%arg0: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],ui8> {
-%int0 = torch.constant.int 0
-%int3 = torch.constant.int 3
-%false = torch.constant.bool false
-%none = torch.constant.none
-%cuda3A0 = torch.constant.device "cuda:0"
-%0 = torch.aten.zeros_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],ui8>
-return %0 : !torch.vtensor<[?,?],ui8>
+  %int0 = torch.constant.int 0
+  %int3 = torch.constant.int 3
+  %false = torch.constant.bool false
+  %none = torch.constant.none
+  %cuda3A0 = torch.constant.device "cuda:0"
+  %0 = torch.aten.zeros_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],ui8>
+  return %0 : !torch.vtensor<[?,?],ui8>
 }
 
 // -----
@@ -250,13 +250,13 @@ return %0 : !torch.vtensor<[?,?],ui8>
 // CHECK:        %[[T3:.*]] = torch_c.from_builtin_tensor %[[BC]] : tensor<?x?xf32> -> !torch.vtensor<[?,?],f32>
 // CHECK:        return %[[T3]] : !torch.vtensor<[?,?],f32>
 func.func @torch.aten.ones_like_f32(%arg0: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],f32> {
-%int0 = torch.constant.int 0
-%int3 = torch.constant.int 3
-%false = torch.constant.bool false
-%none = torch.constant.none
-%cuda3A0 = torch.constant.device "cuda:0"
-%0 = torch.aten.ones_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],f32>
-return %0 : !torch.vtensor<[?,?],f32>
+  %int0 = torch.constant.int 0
+  %int3 = torch.constant.int 3
+  %false = torch.constant.bool false
+  %none = torch.constant.none
+  %cuda3A0 = torch.constant.device "cuda:0"
+  %0 = torch.aten.ones_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],f32>
+  return %0 : !torch.vtensor<[?,?],f32>
 }
 
 // -----
@@ -274,13 +274,13 @@ return %0 : !torch.vtensor<[?,?],f32>
 // CHECK:        %[[T3:.*]] = torch_c.from_builtin_tensor %[[BC]] : tensor<?x?xi32> -> !torch.vtensor<[?,?],si32>
 // CHECK:        return %[[T3]] : !torch.vtensor<[?,?],si32>
 func.func @torch.aten.ones_like_si32(%arg0: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],si32> {
-%int0 = torch.constant.int 0
-%int3 = torch.constant.int 3
-%false = torch.constant.bool false
-%none = torch.constant.none
-%cuda3A0 = torch.constant.device "cuda:0"
-%0 = torch.aten.ones_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],si32>
-return %0 : !torch.vtensor<[?,?],si32>
+  %int0 = torch.constant.int 0
+  %int3 = torch.constant.int 3
+  %false = torch.constant.bool false
+  %none = torch.constant.none
+  %cuda3A0 = torch.constant.device "cuda:0"
+  %0 = torch.aten.ones_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],si32>
+  return %0 : !torch.vtensor<[?,?],si32>
 }
 
 // -----
@@ -298,11 +298,27 @@ return %0 : !torch.vtensor<[?,?],si32>
 // CHECK:        %[[T3:.*]] = torch_c.from_builtin_tensor %[[BC]] : tensor<?x?xi8> -> !torch.vtensor<[?,?],ui8>
 // CHECK:        return %[[T3]] : !torch.vtensor<[?,?],ui8>
 func.func @torch.aten.ones_like_ui8(%arg0: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],ui8> {
-%int0 = torch.constant.int 0
-%int3 = torch.constant.int 3
-%false = torch.constant.bool false
-%none = torch.constant.none
-%cuda3A0 = torch.constant.device "cuda:0"
-%0 = torch.aten.ones_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],ui8>
-return %0 : !torch.vtensor<[?,?],ui8>
+  %int0 = torch.constant.int 0
+  %int3 = torch.constant.int 3
+  %false = torch.constant.bool false
+  %none = torch.constant.none
+  %cuda3A0 = torch.constant.device "cuda:0"
+  %0 = torch.aten.ones_like %arg0, %int3, %int0, %cuda3A0, %false, %none : !torch.vtensor<[?,?],f32>, !torch.int, !torch.int, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[?,?],ui8>
+  return %0 : !torch.vtensor<[?,?],ui8>
+}
+
+// -----
+
+// CHECK-LABEL:  @torch.aten.size.int(
+// CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[?,?],f32>) {
+// CHECK:        %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
+// CHECK:        %[[T1:.*]] = torch.constant.int 0
+// CHECK:        %[[C0:.*]] = arith.constant 0 : index
+// CHECK:        %[[DIM0:.*]] = tensor.dim %[[T0]], %[[C0]] : tensor<?x?xf32>
+// CHECK:        %[[C1:.*]] = arith.index_cast %[[DIM0]] : index to i64
+// CHECK:        return
+func.func @torch.aten.size.int(%arg0: !torch.vtensor<[?,?],f32>) -> () {
+  %int0 = torch.constant.int 0
+  %0 = torch.aten.size.int %arg0, %int0 : !torch.vtensor<[?,?],f32>, !torch.int -> !torch.int
+  return
 }
