@@ -71,9 +71,9 @@ jobs:
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"${HOME}/.cache/bazel" \
                    mlir-tcp:ci \
-                   bazel run --config=clang_linux //:buildifier
+                   bazel run //tools/buildifier:buildifier
         if [ -n "$(git status --porcelain)" ]; then
-          echo "Please 'bazel run --config=clang_linux //:buildifier' and commit changes."
+          echo "Please 'bazel run //tools/buildifier:buildifier' and commit changes."
           exit 1
         fi
 
@@ -83,7 +83,7 @@ jobs:
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"${HOME}/.cache/bazel" \
                    mlir-tcp:ci \
-                   bazel build --config=clang_linux //:tcp-opt
+                   bazel build //:tcp-opt
 
     - name: Bazel test mlir-tcp (lit tests, aot compile tests)
       run: |
@@ -91,4 +91,4 @@ jobs:
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"${HOME}/.cache/bazel" \
                    mlir-tcp:ci \
-                   bazel test --config=clang_linux //test/...
+                   bazel test //test/...

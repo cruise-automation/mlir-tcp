@@ -28,12 +28,15 @@ build:generic_clang --cxxopt=-Wno-range-loop-analysis --host_cxxopt=-Wno-range-l
 # not the point of the Bazel build to catch usage of deprecated APIs.
 build:generic_clang --copt=-Wno-deprecated --host_copt=-Wno-deprecated
 
+# Automatically detect host platform to pick config
+common --enable_platform_specific_config
+
 # lld links faster than other linkers. Assume that anybody using clang on linux
 # also has lld available.
-build:clang_linux --linkopt=-fuse-ld=lld --host_linkopt=-fuse-ld=lld
-build:clang_linux --config=generic_clang
+build:linux --linkopt=-fuse-ld=lld --host_linkopt=-fuse-ld=lld
+build:linux --config=generic_clang
 
-build:clang_osx --config=generic_clang
+build:macos --config=generic_clang
 
 # Other compilation modes
 build:opt --compilation_mode=opt
@@ -41,3 +44,7 @@ build:dbg --compilation_mode=dbg
 
 # GDB builds in dbg mode
 build:gdb --config=dbg
+
+# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
+# https://bazel.build/external/migration
+common --noenable_bzlmod

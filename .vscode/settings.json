@@ -1,0 +1,18 @@
+// Configure clangd
+"clangd.detectExtensionConflicts": true,
+"clangd.restartAfterCrash": true,
+"clangd.onConfigChanged": "restart",
+"clangd.arguments": [
+    "--malloc-trim",
+    "--pretty",
+    "--pch-storage=disk",
+    "--background-index",
+    "--header-insertion=never",
+    "--compile-commands-dir=${workspaceFolder}/",
+    "--query-driver=**",
+    "-j=4"
+    ],
+// Disable conflicting settings of the ms-vscode.cpptools extension
+"C_Cpp.intelliSenseEngine": "Disabled",
+"C_Cpp.autocomplete": "Disabled",
+"C_Cpp.errorSquiggles": "Disabled",
