@@ -133,6 +133,36 @@ public:
   }
 };
 
+class ConvertAtenSizeIntOp : public OpConversionPattern<AtenSizeIntOp> {
+public:
+  using OpConversionPattern<AtenSizeIntOp>::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenSizeIntOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    Location loc = op->getLoc();
+    Value self = adaptor.getSelf();
+    auto type = self.getType().cast<RankedTensorType>();
+    if (!isa<ConstantIntOp>(op->getOperand(1).getDefiningOp())) {
+      return rewriter.notifyMatchFailure(op, "dim must be a constant int");
+    }
+    auto constIntOp =
+        dyn_cast<ConstantIntOp>(op->getOperand(1).getDefiningOp());
+    int idxVal = constIntOp.getValueAttr().getValue().getSExtValue();
+    if (idxVal < 0 || idxVal >= type.getRank()) {
+      return rewriter.notifyMatchFailure(op, "dim must be in range");
+    }
+    auto idxOp = rewriter.create<arith::ConstantIndexOp>(loc, idxVal);
+    auto dimOp = rewriter.create<tensor::DimOp>(loc, self, idxOp);
+    auto result =
+        rewriter.create<arith::IndexCastOp>(loc, rewriter.getI64Type(), dimOp);
+
+    rewriter.replaceOp(op, result);
+
+    return success();
+  }
+};
+
 template <typename AtenOpT, int fillVal>
 class ConvertAtenZerosOnesOp : public OpConversionPattern<AtenOpT> {
 public:
@@ -229,6 +259,7 @@ void torch_to_tcp::populateMiscPatternsAndLegality(
       typeConverter, patterns, target, convertTorchOpsSet)
   INSERT_ATEN_MISC_OP_PATTERN(AtenBroadcastToOp);
   INSERT_ATEN_MISC_OP_PATTERN(ValueTensorLiteralOp);
+  INSERT_ATEN_MISC_OP_PATTERN(AtenSizeIntOp);
 #undef INSERT_ATEN_MISC_OP_PATTERN
 
 #define INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenOpPattern, AtenOp, Val)      \
