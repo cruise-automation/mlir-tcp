@@ -48,6 +48,12 @@ jobs:
         restore-keys: |
           llvm-project-bazel-build-cache-${{ runner.os }}
 
+    - name: Set bazel cache permissions
+      run: |
+        if [ ! -d "${HOME}/.cache/bazel" ]; then
+          mkdir "${HOME}/.cache/bazel"
+        fi
+
     - name: Build docker image
       run: |
         docker build -f docker/Dockerfile \
