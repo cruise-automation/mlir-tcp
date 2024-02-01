@@ -12,11 +12,13 @@ on:
       - main
     paths:
       - 'deps.bzl'
+      - '.github/workflows/bazelBuildAndTestLlvm.yml'
   push:
     branches:
       - main
     paths:
       - 'deps.bzl'
+      - '.github/workflows/bazelBuildAndTestLlvm.yml'
   workflow_dispatch:
 
 # Ensure that only a single job or workflow using the same
@@ -47,6 +49,12 @@ jobs:
         key: llvm-project-bazel-build-cache-${{ runner.os }}-${{ github.sha }}
         restore-keys: |
           llvm-project-bazel-build-cache-${{ runner.os }}
+
+    - name: Create bazel cache dir when not found
+      run: |
+        if [ ! -d "${HOME}/.cache/bazel" ]; then
+          mkdir -p "${HOME}/.cache/bazel"
+        fi
 
     - name: Build docker image
       run: |
