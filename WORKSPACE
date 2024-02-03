@@ -10,7 +10,6 @@ load("//:deps.bzl", "third_party_deps")
 third_party_deps()
 
 load("@llvm-raw//utils/bazel:configure.bzl", "llvm_configure")
-load("@torch-mlir-raw//utils/bazel:configure.bzl", "torch_mlir_configure")
 
 llvm_configure(
     name = "llvm-project",
@@ -21,16 +20,18 @@ llvm_configure(
     ],
 )
 
+load("@torch-mlir-raw//utils/bazel:configure.bzl", "torch_mlir_configure")
+
 torch_mlir_configure(name = "torch-mlir")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # --------------------------- #
 #    Buildifier dependencies  #
 # --------------------------- #
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+# https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md
 
-# buildifier is written in Go and hence needs rules_go to be built.
-# See https://github.com/bazelbuild/rules_go for the up to date setup instructions.
 http_archive(
     name = "io_bazel_rules_go",
     sha256 = "6dc2da7ab4cf5d7bfc7c949776b1b7c733f05e56edc4bcd9022bb249d2e2a996",
@@ -59,8 +60,6 @@ http_archive(
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
-# If you use WORKSPACE.bazel, use the following line instead of the bare gazelle_dependencies():
-# gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE.bazel")
 gazelle_dependencies()
 
 http_archive(
@@ -84,3 +83,21 @@ http_archive(
         "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.2.tar.gz",
     ],
 )
+
+# ----------------------------- #
+#    Compile Commands Extractor #
+#    for Bazel (clangd)         #
+# ----------------------------- #
+
+# https://github.com/hedronvision/bazel-compile-commands-extractor/blob/main/README.md
+
+http_archive(
+    name = "hedron_compile_commands",
+    sha256 = "2188c3cd3a16404a6b20136151b37e7afb5a320e150453750c15080de5ba3058",
+    strip_prefix = "bazel-compile-commands-extractor-6d58fa6bf39f612304e55566fa628fd160b38177",
+    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/6d58fa6bf39f612304e55566fa628fd160b38177.tar.gz",
+)
+
+load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
+
+hedron_compile_commands_setup()
