@@ -7,6 +7,7 @@ load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@llvm-project//llvm:lit_test.bzl", "lit_test")
 load("//tools/aot:aot_compile.bzl", "aot_compile")
 load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@pip_deps//:requirements.bzl", "requirement")
 
 expand_template(
     name = "lit_site_cfg_py",
@@ -17,6 +18,8 @@ expand_template(
         "\"@TCP_SOURCE_DIR@\"": "os.path.join(os.environ['TEST_SRCDIR'], 'mlir-tcp')",
         "\"@TCP_BINARY_DIR@\"": "os.path.join(os.environ['TEST_SRCDIR'], 'mlir-tcp')",
         "\"@LLVM_TOOLS_DIR@\"": "os.path.join(os.environ['TEST_SRCDIR'], 'llvm-project', 'llvm')",
+        "\"@Python3_EXECUTABLE@\"": "sys.executable",
+        "\"@PYTHONPATH@\"": "sys.path",
     },
     template = "lit.site.cfg.py.in",
 )
@@ -43,11 +46,16 @@ filegroup(
             "//test:lit_data",
         ],
         tags = ["lit_tests"],
+        deps = [
+            requirement("torch"),
+            requirement("torch_mlir"),
+        ],
     )
     for src in glob([
         "Conversion/**/*.mlir",
         "Dialect/**/*.mlir",
         "Pipeline/**/*.mlir",
+        "python_lit/**/*.py",
     ])
 ]
 
@@ -82,5 +90,6 @@ test_suite(
     tests = [
         "//test:aot_tests",
         "//test:lit_tests",
+        "//test/python:python_tests",
     ],
 )
