@@ -26,8 +26,47 @@ torch_mlir_configure(name = "torch-mlir")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# -------------------------- #
+#    Hermetic Python Setup   #
+# -------------------------- #
+
+RULES_PYTHON_VERSION = "0.29.0"
+
+RULES_PYTHON_SHA256 = "d71d2c67e0bce986e1c5a7731b4693226867c45bfe0b7c5e0067228a536fc580"
+
+http_archive(
+    name = "rules_python",
+    sha256 = RULES_PYTHON_SHA256,
+    strip_prefix = "rules_python-{}".format(RULES_PYTHON_VERSION),
+    url = "https://github.com/bazelbuild/rules_python/releases/download/{}/rules_python-{}.tar.gz".format(RULES_PYTHON_VERSION, RULES_PYTHON_VERSION),
+)
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python_3_10",
+    python_version = "3.10",
+)
+
+load("@python_3_10//:defs.bzl", "interpreter")
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "pip_deps",
+    python_interpreter_target = interpreter,
+    requirements_lock = "//:requirements_lock.txt",
+)
+
+load("@pip_deps//:requirements.bzl", "install_deps")
+
+install_deps()
+
 # --------------------------- #
-#    Buildifier dependencies  #
+#    Buildifier Dependencies  #
 # --------------------------- #
 
 # https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md
@@ -84,10 +123,10 @@ http_archive(
     ],
 )
 
-# ----------------------------- #
-#    Compile Commands Extractor #
-#    for Bazel (clangd)         #
-# ----------------------------- #
+# ------------------------------------ #
+#    Bazel Compile Commands Extractor  #
+#    for clangd                        #
+# ------------------------------------ #
 
 # https://github.com/hedronvision/bazel-compile-commands-extractor/blob/main/README.md
 

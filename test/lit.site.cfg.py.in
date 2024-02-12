@@ -7,6 +7,8 @@
 
 config.tcp_tools_dir = "@TCP_BINARY_DIR@"
 config.llvm_tools_dir = "@LLVM_TOOLS_DIR@"
+config.python_executable = "@Python3_EXECUTABLE@"
+config.python_path = "@PYTHONPATH@"
 
 import lit.llvm
 lit.llvm.initialize(lit_config, config)
