@@ -13,12 +13,13 @@ on:
     paths:
       - 'deps.bzl'
       - '.github/workflows/bazelBuildAndTestStablehlo.yml'
-  push:
-    branches:
-      - main
-    paths:
-      - 'deps.bzl'
-      - '.github/workflows/bazelBuildAndTestStablehlo.yml'
+  # TODO: Use self-hosted runners as we hit disk space issues with GitHub hosted runners
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'deps.bzl'
+  #     - '.github/workflows/bazelBuildAndTestStablehlo.yml'
   workflow_dispatch:
 
 # Ensure that only a single job or workflow using the same
