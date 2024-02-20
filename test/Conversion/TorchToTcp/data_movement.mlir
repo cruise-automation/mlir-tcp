@@ -1,7 +1,5 @@
 // RUN: tcp-opt %s -convert-torch-to-tcp -split-input-file | FileCheck %s
 
-// -----
-
 // CHECK-LABEL: @torch.aten.cat
 //   CHECK-SAME:   %[[ARG0:.+]]: !torch.vtensor<[?,?],f32>, %[[ARG1:.+]]: !torch.vtensor<[?,?],f32>
 //        CHECK:   %[[V1:.+]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
