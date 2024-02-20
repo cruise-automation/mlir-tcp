@@ -31,15 +31,15 @@ namespace {
 // Following function is copied from
 // https://sourcegraph.com/github.com/llvm/torch-mlir@main/-/blob/lib/Conversion/TorchToLinalg/DataMovement.cpp?L42
 // TODO: Expose this function in a header to reuse.
-LogicalResult prepareArgumentsForSlicingOp(OpTy op, OpAdaptor adaptor,
+LogicalResult prepareArgumentsForSlicingOp(AtenSliceTensorOp op,
+                                           AtenSliceTensorOpAdaptor adaptor,
                                            ConversionPatternRewriter &rewriter,
                                            SmallVector<Value> &resultShape,
                                            SmallVector<Value> &offsets,
                                            SmallVector<Value> &strides) {
   Location loc = op.getLoc();
   auto input = adaptor.getSelf();
-  RankedTensorType inputType =
-      input.getType().template cast<RankedTensorType>();
+  RankedTensorType inputType = input.getType().cast<RankedTensorType>();
 
   Value zero = rewriter.create<arith::ConstantIndexOp>(loc, 0);
   Value one = rewriter.create<arith::ConstantIndexOp>(loc, 1);
@@ -156,9 +156,8 @@ public:
     SmallVector<Value> resultShape;
     SmallVector<Value> offsets;
     SmallVector<Value> strides;
-    if (failed(prepareArgumentsForSlicingOp<AtenSliceTensorOp,
-                                            AtenSliceTensorOpAdaptor>(
-            op, adaptor, rewriter, resultShape, offsets, strides))) {
+    if (failed(prepareArgumentsForSlicingOp(op, adaptor, rewriter, resultShape,
+                                            offsets, strides))) {
       return failure();
     }
 
