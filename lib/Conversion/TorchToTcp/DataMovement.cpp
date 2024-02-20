@@ -29,7 +29,7 @@ using namespace mlir::torch::Torch;
 
 namespace {
 // Following function is copied from
-// https://sourcegraph.com/github.com/llvm/torch-mlir@main/-/blob/lib/Conversion/TorchToLinalg/DataMovement.cpp?L42
+// https://sourcegraph.com/github.com/llvm/torch-mlir@4446fa00d8258311867496fc79d0b1dddd22a972/-/blob/lib/Conversion/TorchToLinalg/DataMovement.cpp?L42
 // TODO: Expose this function in a header to reuse.
 LogicalResult prepareArgumentsForSlicingOp(AtenSliceTensorOp op,
                                            AtenSliceTensorOpAdaptor adaptor,
