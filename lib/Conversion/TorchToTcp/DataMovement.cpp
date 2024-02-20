@@ -28,7 +28,9 @@ using namespace mlir::torch;
 using namespace mlir::torch::Torch;
 
 namespace {
-template <typename OpTy, typename OpAdaptor>
+// Following function is copied from
+// https://sourcegraph.com/github.com/llvm/torch-mlir@main/-/blob/lib/Conversion/TorchToLinalg/DataMovement.cpp?L42
+// TODO: Expose this function in a header to reuse.
 LogicalResult prepareArgumentsForSlicingOp(OpTy op, OpAdaptor adaptor,
                                            ConversionPatternRewriter &rewriter,
                                            SmallVector<Value> &resultShape,

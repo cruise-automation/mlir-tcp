@@ -1,4 +1,6 @@
-// RUN: tcp-opt %s -convert-torch-to-tcp | FileCheck %s
+// RUN: tcp-opt %s -convert-torch-to-tcp -split-input-file | FileCheck %s
+
+// -----
 
 // CHECK-LABEL: @torch.aten.cat
 //   CHECK-SAME:   %[[ARG0:.+]]: !torch.vtensor<[?,?],f32>, %[[ARG1:.+]]: !torch.vtensor<[?,?],f32>
@@ -11,6 +13,8 @@ func.func @torch.aten.cat(%arg0: !torch.vtensor<[?,?],f32>, %arg1: !torch.vtenso
   %1 = torch.aten.cat %0, %int0 : !torch.list<vtensor>, !torch.int -> !torch.vtensor<[?,?],f32>
   return %1 : !torch.vtensor<[?,?],f32>
 }
+
+// -----
 
 // CHECK-LABEL: @torch.aten.slice.Tensor
 //   CHECK-SAME:   %[[ARG0:.+]]: !torch.vtensor<[1,56,?,?],f32>
