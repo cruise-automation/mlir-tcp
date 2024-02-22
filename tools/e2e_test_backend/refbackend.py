@@ -18,7 +18,7 @@ __all__ = [
 # The pipeline of func.func passes that lower the TCP backend contract to the
 # Linalg-on-Tensors backend contract accepted by RefBackend.
 TCP_TO_LINALG_FUNC_PIPELINE = ",".join([
-    "convert-tcp-to-linalg"
+    "convert-tcp-to-linalg",
     "convert-tcp-to-arith",
 ])
 

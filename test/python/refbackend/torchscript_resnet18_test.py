@@ -14,7 +14,7 @@ from torchvision import transforms
 
 from torch_mlir import torchscript
 from torch_mlir_e2e_test.linalg_on_tensors_backends import refbackend
-
+#from tools.e2e_test_backend import refbackend
 
 def load_and_preprocess_image(url: str):
     headers = {
@@ -69,6 +69,7 @@ resnet18 = models.resnet18(pretrained=True)
 resnet18.train(False)
 module = torchscript.compile(resnet18, torch.ones(1, 3, 224, 224), output_type="linalg-on-tensors")
 backend = refbackend.RefBackendLinalgOnTensorsBackend()
+#backend = refbackend.LinalgOnTensorsTcpBackend()
 compiled = backend.compile(module)
 jit_module = backend.load(compiled)
 

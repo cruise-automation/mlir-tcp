@@ -26,6 +26,7 @@ py_test(
         requirement("torchvision"),
         requirement("pillow"),
         requirement("requests"),
+        "//tools/e2e_test_backend:tcp_backend",
     ],
 )
 
