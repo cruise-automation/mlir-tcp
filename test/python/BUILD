@@ -16,6 +16,19 @@ py_test(
     ],
 )
 
+py_test(
+    name = "torchscript_resnet18_test",
+    srcs = ["refbackend/torchscript_resnet18_test.py"],
+    tags = ["python_tests"],
+    deps = [
+        requirement("torch"),
+        requirement("torch_mlir"),
+        requirement("torchvision"),
+        requirement("pillow"),
+        requirement("requests"),
+    ],
+)
+
 test_suite(
     name = "python_tests",
     tags = ["python_tests"],
