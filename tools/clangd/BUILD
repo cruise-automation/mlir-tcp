@@ -25,5 +25,8 @@ refresh_compile_commands(
         "//:TcpTypesIncGen",
         "//:TorchToTcp",
         "//:tcp-opt",
+        "//test/AotCompile:aot_compiled_basic_tcp_ops",
+        "//test/AotCompile:test_aot_compiled_basic_tcp_ops",
+        "//tools/aot:abi",
     ],
 )
