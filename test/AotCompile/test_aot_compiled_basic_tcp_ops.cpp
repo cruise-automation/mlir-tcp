@@ -131,4 +131,6 @@ TEST(AotCompiled, MixedRanks) {
   EXPECT_EQ(Result.Strides[0], 1);
   EXPECT_EQ(Result.AlignedPointer[0], 11.0);
   EXPECT_EQ(Result.AlignedPointer[1], 12.0);
+
+  free(Result.AllocatedPointer);
 }
