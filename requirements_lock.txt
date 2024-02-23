@@ -136,15 +136,15 @@ sympy==1.12 \
     --hash=sha256:c3588cd4295d0c0f603d0f2ae780587e64e2efeedb3521e46b9bb1d08d184fa5 \
     --hash=sha256:ebf595c8dac3e0fdc4152c51878b498396ec7f30e7a914d6071e674d49420fb8
     # via torch
-torch==2.3.0.dev20240214+cpu \
-    --hash=sha256:31fb851ad1a957e6257ca61a3439aa0a0ad76e41f1b3239480236bd9132d4ca4 \
-    --hash=sha256:83f9e92c1549c5b2541ab8ea57654463f291c2376e7b8dd5fb357c635efd604d
+torch==2.3.0.dev20240220+cpu \
+    --hash=sha256:03ca173f8cbf3e75035f7648ab93adbc8d90dea28d2b32aada53b7d64bc81a95 \
+    --hash=sha256:d55f8221662c555243af1dc7c9ba861ddb3c69d037fd64677b29b662bb8d2a18
     # via
     #   -r requirements.txt
     #   torch-mlir
-torch-mlir==20240221.14 \
-    --hash=sha256:071077a0ea13d66a409b1d9c55c69d8378f5b9f0a06f72271db23abb2096a8ec \
-    --hash=sha256:15c2dafc29b76d17199f4d11e8f0ac7bff361cc06900baad6b7b62ee1f3f015a
+torch-mlir==20240223.16 \
+    --hash=sha256:429bce23c3830485b2c35ae48c1308ad66f63d3e86e4a9e19a17b11b58a1f06d \
+    --hash=sha256:8b463ad944951781a3c2c51f4240bfc15eb459a6565762499a279d332cc611cf
     # via -r requirements.txt
 typing-extensions==4.9.0 \
     --hash=sha256:23478f88c37f27d76ac8aee6c905017a143b0b1b886c3c9f66bc2fd94f9f5783 \
