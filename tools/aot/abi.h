@@ -30,6 +30,7 @@ using IndexTy = long;
 //
 // StridedMemRefType is described at
 // https://mlir.llvm.org/docs/TargetLLVMIR/#ranked-memref-types
+// and defined at
 // https://sourcegraph.com/github.com/llvm/llvm-project@b5048700fc31f3bf6dd32ace7730815d4cfef411/-/blob/mlir/include/mlir/ExecutionEngine/CRunnerUtils.h?L131
 
 #define DECL_RANK_2_MEMREF_ABI(data_type)                                      \
