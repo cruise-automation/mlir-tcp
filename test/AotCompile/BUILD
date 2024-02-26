@@ -19,6 +19,7 @@ cc_test(
         ":aot_compiled_basic_tcp_ops",
         "//tools/aot:abi",
         "@com_google_googletest//:gtest_main",
+        "@llvm-project//mlir:mlir_c_runner_utils_hdrs",
     ],
 )
 

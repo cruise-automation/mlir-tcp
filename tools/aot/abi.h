@@ -24,18 +24,13 @@ using IndexTy = long;
 // where Output is defined as:
 //
 // struct Output {
-//   RankedMemref<float, 2> A;
-//   RankedMemref<float, 3> B;
+//   StridedMemRefType<float, 2> A;
+//   StridedMemRefType<float, 3> B;
 // };
-
-template <typename DataType, int Rank> struct RankedMemref {
-  // Described at https://mlir.llvm.org/docs/TargetLLVMIR/#ranked-memref-types
-  DataType *AllocatedPointer;
-  DataType *AlignedPointer;
-  IndexTy Offset;
-  IndexTy Sizes[Rank];
-  IndexTy Strides[Rank];
-};
+//
+// StridedMemRefType is described at
+// https://mlir.llvm.org/docs/TargetLLVMIR/#ranked-memref-types
+// https://sourcegraph.com/github.com/llvm/llvm-project@b5048700fc31f3bf6dd32ace7730815d4cfef411/-/blob/mlir/include/mlir/ExecutionEngine/CRunnerUtils.h?L131
 
 #define DECL_RANK_2_MEMREF_ABI(data_type)                                      \
   data_type *, data_type *, IndexTy, IndexTy, IndexTy, IndexTy, IndexTy
@@ -47,14 +42,13 @@ template <typename DataType, int Rank> struct RankedMemref {
 // passing to an AOT compiled function.
 
 #define PASS_RANK_2_MEMREF(memref)                                             \
-  (memref).AllocatedPointer, (memref).AlignedPointer, (memref).Offset,         \
-      (memref).Sizes[0], (memref).Sizes[1], (memref).Strides[0],               \
-      (memref).Strides[1]
+  (memref).basePtr, (memref).data, (memref).offset, (memref).sizes[0],         \
+      (memref).sizes[1], (memref).strides[0], (memref).strides[1]
 #define PASS_RANK_1_MEMREF(memref)                                             \
-  (memref).AllocatedPointer, (memref).AlignedPointer, (memref).Offset,         \
-      (memref).Sizes[0], (memref).Strides[0],
+  (memref).basePtr, (memref).data, (memref).offset, (memref).sizes[0],         \
+      (memref).strides[0],
 #define PASS_RANK_0_MEMREF(memref)                                             \
-  (memref).AllocatedPointer, (memref).AlignedPointer, (memref).Offset
+  (memref).basePtr, (memref).data, (memref).offset
 
 } // namespace tcp
 } // namespace mlir
