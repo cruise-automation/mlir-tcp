@@ -12,7 +12,6 @@
 
 #include "gtest/gtest.h"
 
-using namespace mlir;
 using namespace mlir::tcp;
 
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
