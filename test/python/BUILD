@@ -12,7 +12,7 @@ py_test(
     tags = ["python_tests"],
     deps = [
         requirement("torch"),
-        requirement("torch_mlir"),
+        requirement("torch-mlir"),
     ],
 )
 

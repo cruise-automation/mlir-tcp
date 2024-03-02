@@ -46,7 +46,7 @@ filegroup(
         tags = ["lit_tests"],
         deps = [
             requirement("torch"),
-            requirement("torch_mlir"),
+            requirement("torch-mlir"),
         ],
     )
     for src in glob([
