@@ -129,8 +129,8 @@ TEST(AotCompiled, MixedRanks) {
   StridedMemRefType<float, 1> Result =
       func_3(&Arr0, &Arr0, 0, Arr1, Arr1, 0, 2, 1);
 
-  EXPECT_EQ(Result.sizes[0], 2);
-  EXPECT_EQ(Result.strides[0], 1);
+  ASSERT_EQ(Result.sizes[0], 2);
+  ASSERT_EQ(Result.strides[0], 1);
   EXPECT_EQ(Result.data[0], 11.0);
   EXPECT_EQ(Result.data[1], 12.0);
 

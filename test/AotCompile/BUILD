@@ -5,6 +5,36 @@
 
 load("//tools/aot:aot_compile.bzl", "aot_compile")
 load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_python//python:defs.bzl", "py_library")
+load("@pip_deps//:requirements.bzl", "requirement")
+
+py_library(
+    name = "add_mul_loader_lib",
+    srcs = ["add_mul_loader_lib.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("torch"),
+        "//tools/aot:torch_loader_utils",
+    ],
+)
+
+aot_compile(
+    name = "add_mul_single_output",
+    torch_loader_lib = ":add_mul_loader_lib",
+    torch_loader_path = "test.AotCompile.add_mul_loader_lib.add_mul_single_output_loader",
+)
+
+aot_compile(
+    name = "add_mul_multi_output",
+    torch_loader_lib = ":add_mul_loader_lib",
+    torch_loader_path = "test.AotCompile.add_mul_loader_lib.add_mul_multi_output_loader",
+)
+
+aot_compile(
+    name = "broadcast_add_mixed_ranks",
+    torch_loader_lib = ":add_mul_loader_lib",
+    torch_loader_path = "test.AotCompile.add_mul_loader_lib.broadcast_add_mixed_ranks_loader",
+)
 
 aot_compile(
     name = "basic_tcp_ops",
@@ -12,8 +42,8 @@ aot_compile(
 )
 
 cc_test(
-    name = "test_aot_compiled_basic_tcp_ops",
-    srcs = ["test_aot_compiled_basic_tcp_ops.cpp"],
+    name = "basic_tcp_ops_compile_execute_test",
+    srcs = ["basic_tcp_ops_compile_execute_test.cpp"],
     tags = ["aot_tests"],
     deps = [
         ":aot_compiled_basic_tcp_ops",
