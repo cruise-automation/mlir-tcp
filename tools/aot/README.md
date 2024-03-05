@@ -454,8 +454,8 @@ aot_compile(
 ```
 
 Here, `tcp_source` expects a `.mlir` file containing TCP programs, like so:
-```ll
-# basic_tcp_ops.mlir
+```mlir
+// basic_tcp_ops.mlir
 
 func.func @func_1(%arg0: tensor<?x?xf32>,
                   %arg1: tensor<?x?xf32>,
