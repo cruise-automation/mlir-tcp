@@ -55,8 +55,8 @@ def third_party_deps():
             path = local_stablehlo_repo_path(),
         )
     else:
-        STABLEHLO_COMMIT = "de5a7ab2e6d2fecf7f757a5dffb4de0ee542aaa5"
-        STABLEHLO_SHA256 = "59b0933d29f6b95856786641df0a83d528d5eb124b328baadeb18f8eae9886a7"
+        STABLEHLO_COMMIT = "d214e2e2bd568a80a9f25515907b64dd7b98c538"
+        STABLEHLO_SHA256 = "7dbf8f19b98b1334b0ab61cfe87cc641e8c1ba9c9b5c01e7e8ede0fa23e01254"
         http_archive(
             name = "stablehlo",
             sha256 = STABLEHLO_SHA256,
