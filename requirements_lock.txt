@@ -144,9 +144,9 @@ torch==2.3.0.dev20240220+cpu \
     # via
     #   -r requirements.txt
     #   torch-mlir
-torch-mlir==20240229.23 \
-    --hash=sha256:7889e25c63a895a60a87e512dcf33c196ac04aff5ee99f6a6998a5411d7b9122 \
-    --hash=sha256:ece40760bbef818a5310dffd93ddcbd96a5de37d8e74b42b7d6575c243aa38b8
+torch-mlir==20240306.29 \
+    --hash=sha256:c505cb254196f694ba1447af0ba3300d514fafe5520c2b3266d5d9c2e9ee4f93 \
+    --hash=sha256:da91a833acfba6e80def65295a805156af1399447a141c46f1becdf5f7ae13a3
     # via -r requirements.txt
 typing-extensions==4.10.0 \
     --hash=sha256:69b1a937c3a517342112fb4c6df7e72fc39a38e7891a5730ed4985b5214b5475 \

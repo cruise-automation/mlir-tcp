@@ -176,7 +176,7 @@ def aot_compile(
         tools = ["@llvm-project//mlir:mlir-translate"],
     )
 
-    # TODO: Replace llc with clang for `.o` generation
+    # TODO: Replace llc with clang for optimized `.o` generation
     native.genrule(
         name = "gen_" + name + "_host_asm",
         srcs = [_name + ".ll"],
