@@ -2,8 +2,3 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Also available under a BSD-style license. See LICENSE.
-
-# ignore local_repos of llvm-project, torch-mlir, stablehlo
-third_party/llvm-project
-third_party/torch-mlir
-third_party/stablehlo

@@ -31,7 +31,7 @@ bazel build //:tcp-opt
 bazel test //...
 ```
 
-We welcome contributions to `mlir-tcp`. If you do contribute, please finalize your PR with clang-format and bazel buildifier to ensure the C++ sources and BUILD files are formatted consistently:
+We welcome contributions to `mlir-tcp`. When authoring new TCP ops with dialect conversions from/to Torch and Linalg, please include lit tests for dialect and conversions, as well as [aot_compile](https://github.com/cruise-automation/mlir-tcp/blob/main/tools/aot/README.md) generated e2e integration tests. Finally, please finalize your PR with clang-format and bazel buildifier to ensure the C++ sources and BUILD files are formatted consistently:
 ```shell
 # clang-format
 find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i

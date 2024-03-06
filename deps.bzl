@@ -43,8 +43,8 @@ def third_party_deps():
         TORCH_MLIR_SHA256 = "205ffab6683d5bcbe9bff6afca5aa547826990b0d9d7d58644f9777c37558fd1"
         http_archive(
             name = "torch-mlir-raw",
-            sha256 = TORCH_MLIR_SHA256,
             build_file_content = "# empty",
+            sha256 = TORCH_MLIR_SHA256,
             strip_prefix = "torch-mlir-" + TORCH_MLIR_COMMIT,
             urls = ["https://github.com/llvm/torch-mlir/archive/{commit}.tar.gz".format(commit = TORCH_MLIR_COMMIT)],
         )
@@ -150,4 +150,12 @@ def third_party_deps():
         sha256 = "2188c3cd3a16404a6b20136151b37e7afb5a320e150453750c15080de5ba3058",
         strip_prefix = "bazel-compile-commands-extractor-6d58fa6bf39f612304e55566fa628fd160b38177",
         url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/6d58fa6bf39f612304e55566fa628fd160b38177.tar.gz",
+    )
+
+    http_archive(
+        name = "cnpy",
+        build_file = "//third_party:cnpy.BUILD",
+        sha256 = "5120abc54a564efa92c642cc0199cc4fd3f345901157de9fbbdcedbb34d28d8a",
+        strip_prefix = "cnpy-4e8810b1a8637695171ed346ce68f6984e585ef4",
+        urls = ["https://github.com/rogersce/cnpy/archive/4e8810b1a8637695171ed346ce68f6984e585ef4.tar.gz"],
     )
