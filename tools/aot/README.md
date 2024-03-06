@@ -86,6 +86,8 @@ $ bazel query 'attr(name, "broadcast_add_mixed_ranks", //test/AotCompile/...)'
 //test/AotCompile:gen_broadcast_add_mixed_ranks_reference_tensors
 ```
 
+### Debugging e2e compilation pipeline
+
 Lets walk through a series of steps involved in debugging an e2e compilation pipeline. Note that these steps are not required to be manually run one at a time (although they can be). Bazel automatically identifies the DAG of dependencies and executes just what is needed to build the specified target.
 
 #### 1. Inspect the Torch dialect (`*_torch.mlir`) exported from the PyTorch program:
