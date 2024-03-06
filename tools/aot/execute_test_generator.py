@@ -40,14 +40,14 @@ def main():
     args = parser.parse_args()
 
     # Track string substitutions
-    output_memref_variable_declarations_str = ""
-    input_memref_abi_declarations_str = ""
-    read_reference_tensors_into_npy_array_str = ""
+    input_memref_abi_declarations = []
+    pass_input_memref_arguments = []
     create_memref_from_npy_array_str = ""
-    pass_input_memref_arguments_str = ""
+    output_memref_variable_declarations_str = ""
     assert_result_shape_matches_reference_str = ""
     expect_result_data_matches_reference_str = ""
     deallocate_result_memref_str = ""
+    read_reference_tensors_into_npy_array_str = ""
     reference_tensors_path_str = args.reference_tensors_path.removeprefix(
         "bazel-out/k8-fastbuild/bin/"
     )
@@ -61,10 +61,14 @@ def main():
         dtype = numpy_to_memref_dtype_map[str(tensor.dtype)]
 
         if "Input" in key:
-            input_memref_abi_declarations_str += f"""
-    DECL_RANK_{rank}_MEMREF_ABI({dtype}),"""
-            pass_input_memref_arguments_str += f"""
-      PASS_RANK_{rank}_MEMREF({key}),"""
+            input_memref_abi_declarations.append(
+                f"""
+    DECL_RANK_{rank}_MEMREF_ABI({dtype})"""
+            )
+            pass_input_memref_arguments.append(
+                f"""
+      PASS_RANK_{rank}_MEMREF({key})"""
+            )
             if rank == 0:
                 create_memref_from_npy_array_str += f"""
   StridedMemRefType<{dtype}, {rank}> {key} =
@@ -89,11 +93,9 @@ def main():
         read_reference_tensors_into_npy_array_str += f"""
   cnpy::NpyArray ref{key} = reference_tensors["{key}"];"""
 
-    # Remove the trailing comma if it exists
-    if input_memref_abi_declarations_str.endswith(","):
-        input_memref_abi_declarations_str = input_memref_abi_declarations_str[:-1]
-    if pass_input_memref_arguments_str.endswith(","):
-        pass_input_memref_arguments_str = pass_input_memref_arguments_str[:-1]
+    # Comma separated, except at the end.
+    input_memref_abi_declarations_str = ",".join(input_memref_abi_declarations)
+    pass_input_memref_arguments_str = ",".join(pass_input_memref_arguments)
 
     substitutions = {
         r"//##OUTPUT_MEMREF_VARIABLE_DECLARATIONS##//": output_memref_variable_declarations_str,
