@@ -127,7 +127,7 @@ TEST(AotCompiled, ExecuteTest) {
 
   //##EXPECT_RESULT_DATA_MATCHES_REFERENCE##//
   // for (int i = 0; i < refOutput0.num_vals; i++)
-  //   EXPECT_EQ(Result.Output0.data[i], refOutput0.data<float>()[i]);
+  //   EXPECT_FLOAT_EQ(Result.Output0.data[i], refOutput0.data<float>()[i]);
 
   //##DEALLOCATE_RESULT_MEMREF##//
   // free(Result.Output0.basePtr);

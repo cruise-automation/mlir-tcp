@@ -21,7 +21,7 @@ parser.add_argument(
     help="Path to the file containing the reference inputs and outputs (.npz)",
 )
 
-numpy_to_memref_dtype_map = {
+NUMPY_TO_MEMREF_DTYPE_MAP = {
     # Add more mappings as needed
     "int8": "int8_t",
     "uint8": "uint8_t",
@@ -33,6 +33,19 @@ numpy_to_memref_dtype_map = {
     "uint64": "uint64_t",
     "float32": "float",
     "float64": "double",
+}
+
+MEMREF_DTYPE_TO_GTEST_ASSERT_MAP = {
+    "int8_t": "EXPECT_EQ",
+    "uint8_t": "EXPECT_EQ",
+    "int16_t": "EXPECT_EQ",
+    "uint16_t": "EXPECT_EQ",
+    "int32_t": "EXPECT_EQ",
+    "uint32_t": "EXPECT_EQ",
+    "int64_t": "EXPECT_EQ",
+    "uint64_t": "EXPECT_EQ",
+    "float": "EXPECT_FLOAT_EQ",
+    "double": "EXPECT_DOUBLE_EQ",
 }
 
 
@@ -58,7 +71,7 @@ def main():
     for key in reference_tensors.keys():
         tensor = reference_tensors[key]
         rank = tensor.ndim
-        dtype = numpy_to_memref_dtype_map[str(tensor.dtype)]
+        dtype = NUMPY_TO_MEMREF_DTYPE_MAP[str(tensor.dtype)]
 
         if "Input" in key:
             input_memref_abi_declarations.append(
@@ -86,7 +99,7 @@ def main():
   ASSERT_EQ(Result.{key}.sizes[{n}], ref{key}.shape[{n}]);"""
             expect_result_data_matches_reference_str += f"""
   for (int i = 0; i < ref{key}.num_vals; i++)
-    EXPECT_EQ(Result.{key}.data[i], ref{key}.data<{dtype}>()[i]);"""
+    {MEMREF_DTYPE_TO_GTEST_ASSERT_MAP[dtype]}(Result.{key}.data[i], ref{key}.data<{dtype}>()[i]);"""
             deallocate_result_memref_str += f"""
   free(Result.{key}.basePtr);"""
 
