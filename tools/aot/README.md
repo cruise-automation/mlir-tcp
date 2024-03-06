@@ -1,9 +1,11 @@
 AOT Compile (Developer Guide)
 =============================
 
-The [`aot_compile`](https://github.com/cruise-automation/mlir-tcp/blob/main/tools/aot/aot_compile.bzl) bazel macro implements an end-to-end framework to compile PyTorch (or TCP) programs to a CPU library, execute it and test for functional correctness of the generated code. It comprises starting with TorchDynamo export of PyTorch programs, conversion and lowerings through {Torch, TCP, Linalg, LLVM} MLIR dialects, translation to LLVM assembly, compilation to assembly source for the host architecture (CPU), and lastly generation of shared object that can be dynamically linked into an executable at runtime. It leverages a series of genrules to stitch the compilation pipeline together, and an unsophisticated meta-programming trick for auto-generating C++ tests (specialized to the input program's function signature) that execute the compiled code and validate its numerics against reference PyTorch.
+The [`aot_compile`](https://github.com/cruise-automation/mlir-tcp/blob/main/tools/aot/aot_compile.bzl) bazel macro implements an end-to-end framework to compile PyTorch (or TCP) programs to a CPU library, execute it and test for functional correctness of the generated code. It comprises starting with TorchDynamo export of PyTorch programs, conversion and lowerings through {Torch, TCP, Linalg, LLVM} MLIR dialects, translation to LLVM assembly, compilation to assembly source for the host architecture (CPU), and lastly generation of shared object that could be dynamically linked into an executable/test at runtime. It leverages a series of genrules to stitch the compilation pipeline together, and an unsophisticated meta-programming trick for auto-generating C++ tests (specialized to the input program's function signature) that execute the compiled code and validate its numerics against reference PyTorch.
 
 When authoring new TCP ops with dialect conversions from/to Torch and Linalg, adding an `aot_compile` target is a fast, automated and standardized way to test the e2e compilation and validate that the op lowerings are implemented consistent with PyTorch semantics.
+
+Caveat: The AOT compile framework's primary objective is to serve as an end-to-end `compile -> execute -> test` harness for functional correctness, and *not* as an optimizing compiler for production usecases. In the future we might be interested in reusing pieces of infrastructure here to construct an optimizing compiler, but it entails more work to get there (such as a runtime and performance benchmark apparatus).
 
 ## Compile PyTorch programs
 
@@ -253,7 +255,7 @@ func_main:                              # @func_main
         .section        ".note.GNU-stack","",@progbits
 ```
 
-#### 6. Build the shared object (`*.so`) from the host assembly that can be dynamically linked into an executable at runtime:
+#### 6. Build the shared object (`*.so`) from the host assembly that can be dynamically linked into an executable/test at runtime:
 ```shell
 $ bazel build //test/AotCompile:aot_compiled_broadcast_add_mixed_ranks
 
@@ -266,6 +268,8 @@ INFO: Elapsed time: 2.264s, Critical Path: 0.12s
 INFO: 1 process: 1 internal.
 INFO: Build completed successfully, 1 total action
 ```
+
+Note that this `cc_library` target (called `aot_compiled_*`) is marked `testonly`, which only allows it to be added as a dependency for test targets. The goal is to avoid any inadvertent use of the compiled artifacts in production usecases.
 
 #### 7. Save the reference input and output tensors needed for validation of the compiled code:
 ```shell

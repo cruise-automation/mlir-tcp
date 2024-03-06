@@ -176,6 +176,7 @@ def aot_compile(
         tools = ["@llvm-project//mlir:mlir-translate"],
     )
 
+    # TODO: Replace llc with clang for `.o` generation
     native.genrule(
         name = "gen_" + name + "_host_asm",
         srcs = [_name + ".ll"],
@@ -188,6 +189,8 @@ def aot_compile(
     cc_library(
         name = "aot_compiled_" + name,
         srcs = [_name + ".S"],
+        # Can only be consumed (depended on) by test targets.
+        # Prevents inadvertent use in a production usecase.
         testonly = True,
     )
 
