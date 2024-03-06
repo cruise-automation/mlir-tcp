@@ -1,4 +1,4 @@
-// RUN: tcp-opt %s -split-input-file -tcp-isolate-group-ops -verify-diagnostics --mlir-print-ir-after-all | FileCheck %s
+// RUN: tcp-opt %s -split-input-file -tcp-isolate-group-ops --mlir-print-ir-after-all | FileCheck %s
 
 // CHECK-LABEL: func.func @test_group(
 // CHECK-SAME:          %[[ARG0:.*]]: tensor<?x?xf32>,

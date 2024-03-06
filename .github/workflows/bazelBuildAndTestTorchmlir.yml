@@ -13,12 +13,13 @@ on:
     paths:
       - 'deps.bzl'
       - '.github/workflows/bazelBuildAndTestTorchmlir.yml'
-  push:
-    branches:
-      - main
-    paths:
-      - 'deps.bzl'
-      - '.github/workflows/bazelBuildAndTestTorchmlir.yml'
+  # TODO: Use self-hosted runners as we hit disk space issues with GitHub hosted runners
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'deps.bzl'
+  #     - '.github/workflows/bazelBuildAndTestTorchmlir.yml'
   workflow_dispatch:
 
 # Ensure that only a single job or workflow using the same
@@ -37,24 +38,12 @@ jobs:
 
     steps:
     - name: Checkout mlir-tcp
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    # Continually update cache even if there's a "hit" during
-    # restore to avoid the cache going stale over time
-    # https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
-    - name: Setup cache for bazel
-      uses: actions/cache@v3
+    - name: Setup workspace
+      uses: ./.github/actions/setup-build
       with:
-        path: ~/.cache/bazel
-        key: torch-mlir-bazel-build-cache-${{ runner.os }}-${{ github.sha }}
-        restore-keys: |
-          torch-mlir-bazel-build-cache-${{ runner.os }}
-
-    - name: Create bazel cache dir when not found
-      run: |
-        if [ ! -d "${HOME}/.cache/bazel" ]; then
-          mkdir -p "${HOME}/.cache/bazel"
-        fi
+        cache-prefix: 'torch-mlir'
 
     - name: Build docker image
       run: |
@@ -72,4 +61,4 @@ jobs:
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"${HOME}/.cache/bazel" \
                    mlir-tcp:ci \
-                   bazel test @torch-mlir//...
+                   bazel test --test_output=errors @torch-mlir//...

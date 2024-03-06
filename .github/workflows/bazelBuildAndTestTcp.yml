@@ -30,24 +30,12 @@ jobs:
 
     steps:
     - name: Checkout mlir-tcp
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    # Continually update cache even if there's a "hit" during
-    # restore to avoid the cache going stale over time
-    # https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
-    - name: Setup cache for bazel
-      uses: actions/cache@v3
+    - name: Setup workspace
+      uses: ./.github/actions/setup-build
       with:
-        path: ~/.cache/bazel
-        key: mlir-tcp-bazel-build-cache-${{ runner.os }}-${{ github.sha }}
-        restore-keys: |
-          mlir-tcp-bazel-build-cache-${{ runner.os }}
-
-    - name: Create bazel cache dir when not found
-      run: |
-        if [ ! -d "${HOME}/.cache/bazel" ]; then
-          mkdir -p "${HOME}/.cache/bazel"
-        fi
+        cache-prefix: 'mlir-tcp'
 
     - name: Build docker image
       run: |
@@ -97,4 +85,4 @@ jobs:
                    -v "$(pwd)":"/opt/src/mlir-tcp" \
                    -v "${HOME}/.cache/bazel":"${HOME}/.cache/bazel" \
                    mlir-tcp:ci \
-                   bazel test //test/...
+                   bazel test --test_output=errors //...
