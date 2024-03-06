@@ -4,16 +4,19 @@
 # Also available under a BSD-style license. See LICENSE.
 
 load("@rules_python//python:defs.bzl", "py_test")
-load("@pip_deps//:requirements.bzl", "requirement")
+# No need to depend on hermetic python for internal repo.
+# load("@pip_deps//:requirements.bzl", "requirement")
 
 py_test(
     name = "basic_test",
     srcs = ["fx_import/basic_test.py"],
-    tags = ["python_tests"],
-    deps = [
-        requirement("torch"),
-        requirement("torch_mlir"),
-    ],
+    # Skip python tests for internal repo.
+    tags = ["python_tests", "manual"],
+    # No need to depend on hermetic python for internal repo.
+    # deps = [
+        # requirement("torch"),
+        # requirement("torch_mlir"),
+    # ],
 )
 
 test_suite(

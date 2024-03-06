@@ -5,7 +5,8 @@
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@llvm-project//llvm:lit_test.bzl", "lit_test")
-load("@pip_deps//:requirements.bzl", "requirement")
+# No need to depend on hermetic python for internal repo.
+# load("@pip_deps//:requirements.bzl", "requirement")
 
 expand_template(
     name = "lit_site_cfg_py",
@@ -44,16 +45,18 @@ filegroup(
             "//test:lit_data",
         ],
         tags = ["lit_tests"],
-        deps = [
-            requirement("torch"),
-            requirement("torch_mlir"),
-        ],
+        # No need to depend on hermetic python for internal repo.
+        # deps = [
+            # requirement("torch"),
+            # requirement("torch_mlir"),
+        # ],
     )
     for src in glob([
         "Conversion/**/*.mlir",
         "Dialect/**/*.mlir",
         "Pipeline/**/*.mlir",
-        "python_lit/**/*.py",
+        # Skip python tests for internal repo.
+        # "python_lit/**/*.py",
     ])
 ]
 
@@ -67,6 +70,7 @@ test_suite(
     tests = [
         "//test:lit_tests",
         "//test/AotCompile:aot_tests",
-        "//test/python:python_tests",
+        # Skip python tests for internal repo.
+        # "//test/python:python_tests",
     ],
 )
