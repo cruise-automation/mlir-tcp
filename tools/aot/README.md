@@ -18,16 +18,16 @@ Then call the macro like this:
 ```starlark
 aot_compile(
     name = "broadcast_add_mixed_ranks",
-    torch_loader_lib = ":add_mul_loader_lib",
-    torch_loader_path = "test.AotCompile.add_mul_loader_lib.broadcast_add_mixed_ranks_loader",
+    torch_loader_lib = ":model_loader_lib",
+    torch_loader_path = "test.AotCompile.model_loader_lib.broadcast_add_mixed_ranks_loader",
 )
 ```
 
 Here, `torch_loader_lib` expects a `py_library` target for the module that defines the PyTorch program to be AOT compiled, and `torch_loader_path` is the full python import path (dot separated) to the loader function.
 ```starlark
 py_library(
-    name = "add_mul_loader_lib",
-    srcs = ["add_mul_loader_lib.py"],
+    name = "model_loader_lib",
+    srcs = ["model_loader_lib.py"],
     visibility = ["//visibility:public"],
     deps = [
         requirement("torch"),

@@ -73,8 +73,8 @@ static void createTcpToLlvmPipeline(OpPassManager &pm) {
   pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
   pm.addPass(createFinalizeMemRefToLLVMConversionPass());
   pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
-  pm.addPass(createConvertMathToLibmPass());
   pm.addPass(createConvertMathToLLVMPass());
+  pm.addPass(createConvertMathToLibmPass());
   pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
   pm.addPass(createConvertFuncToLLVMPass());
   pm.addPass(createReconcileUnrealizedCastsPass());
