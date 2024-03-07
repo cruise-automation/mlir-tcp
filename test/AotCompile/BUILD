@@ -18,6 +18,16 @@ py_library(
     ],
 )
 
+py_library(
+    name = "elementwise_loader_lib",
+    srcs = ["elementwise_loader_lib.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("torch"),
+        "//tools/aot:torch_loader_utils",
+    ],
+)
+
 aot_compile(
     name = "add_mul_single_output",
     torch_loader_lib = ":add_mul_loader_lib",
@@ -34,6 +44,12 @@ aot_compile(
     name = "broadcast_add_mixed_ranks",
     torch_loader_lib = ":add_mul_loader_lib",
     torch_loader_path = "test.AotCompile.add_mul_loader_lib.broadcast_add_mixed_ranks_loader",
+)
+
+aot_compile(
+    name = "sigmoid",
+    torch_loader_lib = ":elementwise_loader_lib",
+    torch_loader_path = "test.AotCompile.elementwise_loader_lib.sigmoid_loader",
 )
 
 aot_compile(
