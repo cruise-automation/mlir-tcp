@@ -9,8 +9,8 @@ load("@rules_python//python:defs.bzl", "py_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 
 py_library(
-    name = "add_mul_loader_lib",
-    srcs = ["add_mul_loader_lib.py"],
+    name = "model_loader_lib",
+    srcs = ["model_loader_lib.py"],
     visibility = ["//visibility:public"],
     deps = [
         requirement("torch"),
@@ -20,20 +20,26 @@ py_library(
 
 aot_compile(
     name = "add_mul_single_output",
-    torch_loader_lib = ":add_mul_loader_lib",
-    torch_loader_path = "test.AotCompile.add_mul_loader_lib.add_mul_single_output_loader",
+    torch_loader_lib = ":model_loader_lib",
+    torch_loader_path = "test.AotCompile.model_loader_lib.add_mul_single_output_loader",
 )
 
 aot_compile(
     name = "add_mul_multi_output",
-    torch_loader_lib = ":add_mul_loader_lib",
-    torch_loader_path = "test.AotCompile.add_mul_loader_lib.add_mul_multi_output_loader",
+    torch_loader_lib = ":model_loader_lib",
+    torch_loader_path = "test.AotCompile.model_loader_lib.add_mul_multi_output_loader",
 )
 
 aot_compile(
     name = "broadcast_add_mixed_ranks",
-    torch_loader_lib = ":add_mul_loader_lib",
-    torch_loader_path = "test.AotCompile.add_mul_loader_lib.broadcast_add_mixed_ranks_loader",
+    torch_loader_lib = ":model_loader_lib",
+    torch_loader_path = "test.AotCompile.model_loader_lib.broadcast_add_mixed_ranks_loader",
+)
+
+aot_compile(
+    name = "sigmoid",
+    torch_loader_lib = ":model_loader_lib",
+    torch_loader_path = "test.AotCompile.model_loader_lib.sigmoid_loader",
 )
 
 aot_compile(
