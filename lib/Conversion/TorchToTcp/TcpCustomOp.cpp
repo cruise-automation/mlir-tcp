@@ -28,7 +28,7 @@ using namespace mlir::torch::Torch;
 namespace {
 class ConvertAtenGatherOp : public OpConversionPattern<AtenGatherOp> {
 public:
-  using OpConversionPattern<AtenGatherOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenGatherOp op, OpAdaptor adaptor,
@@ -47,7 +47,7 @@ public:
 class ConvertAtenIndexTensorHackedTwinOp
     : public OpConversionPattern<AtenIndexTensorHackedTwinOp> {
 public:
-  using OpConversionPattern<AtenIndexTensorHackedTwinOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenIndexTensorHackedTwinOp op, OpAdaptor adaptor,
@@ -73,7 +73,7 @@ public:
 class ConvertAten_IndexPutImplOp
     : public OpConversionPattern<Aten_IndexPutImplOp> {
 public:
-  using OpConversionPattern<Aten_IndexPutImplOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(Aten_IndexPutImplOp op, OpAdaptor adaptor,
@@ -93,7 +93,7 @@ public:
 
 class ConvertAtenConvolutionOp : public OpConversionPattern<AtenConvolutionOp> {
 public:
-  using OpConversionPattern<AtenConvolutionOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenConvolutionOp op, OpAdaptor adaptor,

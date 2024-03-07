@@ -59,7 +59,7 @@ public:
 
 } // namespace
 
-std::unique_ptr<Pass> createConvertTcpToLinalgPass() {
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertTcpToLinalgPass() {
   return std::make_unique<ConvertTcpToLinalg>();
 }
 

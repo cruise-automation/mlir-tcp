@@ -67,7 +67,7 @@ public:
 
 } // namespace
 
-std::unique_ptr<Pass> createConvertStablehloToTcpPass() {
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertStablehloToTcpPass() {
   return std::make_unique<ConvertStablehloToTcp>();
 }
 

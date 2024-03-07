@@ -138,6 +138,7 @@ gentbl_cc_library(
 cc_library(
     name = "TcpDialectPasses",
     srcs = [
+        "lib/Dialect/Transforms/DecomposeTensorConcatOpsPass.cpp",
         "lib/Dialect/Transforms/FuseTcpOpsPass.cpp",
         "lib/Dialect/Transforms/FusionPatterns.cpp",
         "lib/Dialect/Transforms/IsolateGroupOpsPass.cpp",
@@ -146,6 +147,7 @@ cc_library(
         "lib/Dialect/Transforms/VerifyTcpBackendContractPass.cpp",
     ],
     hdrs = [
+        "include/mlir-tcp/Dialect/Transforms/DecomposeTensorConcatOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/FuseTcpOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/FusionPatterns.h",
         "include/mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h",
@@ -158,6 +160,7 @@ cc_library(
         ":TcpDialectPassesIncGen",
         "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:TensorDialect",
+        "@llvm-project//mlir:TensorTransforms",
         "@llvm-project//mlir:Transforms",
     ],
 )
@@ -216,6 +219,7 @@ cc_library(
         "@torch-mlir//:TorchMLIRTorchBackendTypeConversion",
         "@torch-mlir//:TorchMLIRTorchConversionDialect",
         "@torch-mlir//:TorchMLIRTorchPasses",
+        "@torch-mlir//:TorchMLIRTorchToLinalg",
     ],
 )
 

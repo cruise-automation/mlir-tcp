@@ -42,6 +42,6 @@ cc_test(
         ":abi",
         "@cnpy",
         "@com_google_googletest//:gtest_main",
-        "@llvm-project//mlir:mlir_c_runner_utils_hdrs",
+        "@llvm-project//mlir:mlir_c_runner_utils",
     ],
 )

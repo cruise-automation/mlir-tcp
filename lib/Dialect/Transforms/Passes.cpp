@@ -8,9 +8,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "mlir-tcp/Dialect/Transforms/Passes.h"
+#include "mlir-tcp/Dialect/Transforms/DecomposeTensorConcatOpsPass.h"
 #include "mlir-tcp/Dialect/Transforms/FuseTcpOpsPass.h"
 #include "mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h"
 #include "mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h"
+
 #include "mlir/Pass/Pass.h"
 #include <memory>
 

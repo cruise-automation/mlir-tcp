@@ -192,7 +192,7 @@ public:
 
 class ConvertAtenBatchNormOp : public OpConversionPattern<AtenBatchNormOp> {
 public:
-  using OpConversionPattern<AtenBatchNormOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenBatchNormOp op, OpAdaptor adaptor,
@@ -356,7 +356,7 @@ public:
 
 class ConvertAtenClampOp : public OpConversionPattern<AtenClampOp> {
 public:
-  using OpConversionPattern<AtenClampOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenClampOp op, OpAdaptor adaptor,
@@ -419,7 +419,7 @@ public:
 
 class ConvertAtenReluOp : public OpConversionPattern<AtenReluOp> {
 public:
-  using OpConversionPattern<AtenReluOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenReluOp op, OpAdaptor adaptor,
@@ -502,7 +502,7 @@ public:
 
 class ConvertAtenAtan2Op : public OpConversionPattern<AtenAtan2Op> {
 public:
-  using OpConversionPattern<AtenAtan2Op>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenAtan2Op op, OpAdaptor adaptor,
@@ -553,7 +553,7 @@ public:
 
 class ConvertAtenToDtypeOp : public OpConversionPattern<AtenToDtypeOp> {
 public:
-  using OpConversionPattern<AtenToDtypeOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenToDtypeOp op, OpAdaptor adaptor,

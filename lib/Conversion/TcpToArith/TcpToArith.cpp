@@ -65,7 +65,7 @@ public:
 
 } // namespace
 
-std::unique_ptr<Pass> createConvertTcpToArithPass() {
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertTcpToArithPass() {
   return std::make_unique<ConvertTcpToArith>();
 }
 
