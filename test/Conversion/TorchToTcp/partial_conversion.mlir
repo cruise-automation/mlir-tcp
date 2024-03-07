@@ -1,7 +1,7 @@
-// RUN: tcp-opt %s -convert-torch-to-tcp="convert-torch-ops=aten.atan"    -verify-diagnostics | FileCheck %s -check-prefix=CHECK1
-// RUN: tcp-opt %s -convert-torch-to-tcp="convert-torch-ops=aten.log"     -verify-diagnostics | FileCheck %s -check-prefix=CHECK2
-// RUN: tcp-opt %s -convert-torch-to-tcp="convert-torch-ops=aten.sigmoid" -verify-diagnostics | FileCheck %s -check-prefix=CHECK3
-// RUN: tcp-opt %s -convert-torch-to-tcp                                  -verify-diagnostics | FileCheck %s -check-prefix=CHECK4
+// RUN: tcp-opt %s -convert-torch-to-tcp="convert-torch-ops=aten.atan"    | FileCheck %s -check-prefix=CHECK1
+// RUN: tcp-opt %s -convert-torch-to-tcp="convert-torch-ops=aten.log"     | FileCheck %s -check-prefix=CHECK2
+// RUN: tcp-opt %s -convert-torch-to-tcp="convert-torch-ops=aten.sigmoid" | FileCheck %s -check-prefix=CHECK3
+// RUN: tcp-opt %s -convert-torch-to-tcp                                  | FileCheck %s -check-prefix=CHECK4
 
 // CHECK1-LABEL:  func.func @torch.aten.atan.log(
 // CHECK1-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],f32> {

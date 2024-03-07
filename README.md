@@ -28,7 +28,7 @@ bazel build //:tcp-opt
 
 3. To run TCP lit and aot compile tests:
 ```shell
-bazel test //test/...
+bazel test //...
 ```
 
 We welcome contributions to `mlir-tcp`. If you do contribute, please finalize your PR with clang-format and bazel buildifier to ensure the C++ sources and BUILD files are formatted consistently:
@@ -60,6 +60,11 @@ The following CI workflows are automatically triggered anytime upstream dependen
 - [![Bazel Build and Test (torch-mlir)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestTorchmlir.yml/badge.svg)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestTorchmlir.yml)
 - [![Bazel Build and Test (stablehlo)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestStablehlo.yml/badge.svg)](https://github.com/cruise-automation/mlir-tcp/actions/workflows/bazelBuildAndTestStablehlo.yml)
 
+To use newer `torch-mlir` and/or `torch` python packages in our hermetic python sandbox, just regenerate `requirements_lock.txt` as follows:
+```shell
+truncate -s 0 requirements_lock.txt
+bazel run //tools/pip:requirements.update
+```
 
 ## Debugging Guide
 

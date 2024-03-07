@@ -1,3 +1,8 @@
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+# Also available under a BSD-style license. See LICENSE.
+
 load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
 
 refresh_compile_commands(
@@ -20,7 +25,8 @@ refresh_compile_commands(
         "//:TcpTypesIncGen",
         "//:TorchToTcp",
         "//:tcp-opt",
-        "//test:AotCompile/test_aot_compiled_basic_tcp_ops",
-        "//test:aot_compiled_basic_tcp_ops",
+        "//test/AotCompile:aot_compiled_basic_tcp_ops",
+        "//test/AotCompile:test_aot_compiled_basic_tcp_ops",
+        "//tools/aot:abi",
     ],
 )

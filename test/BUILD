@@ -5,8 +5,8 @@
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@llvm-project//llvm:lit_test.bzl", "lit_test")
-load("//tools/aot:aot_compile.bzl", "aot_compile")
-load("@rules_cc//cc:defs.bzl", "cc_test")
+# No need to depend on hermetic python for internal repo.
+# load("@pip_deps//:requirements.bzl", "requirement")
 
 expand_template(
     name = "lit_site_cfg_py",
@@ -17,6 +17,8 @@ expand_template(
         "\"@TCP_SOURCE_DIR@\"": "os.path.join(os.environ['TEST_SRCDIR'], 'mlir-tcp')",
         "\"@TCP_BINARY_DIR@\"": "os.path.join(os.environ['TEST_SRCDIR'], 'mlir-tcp')",
         "\"@LLVM_TOOLS_DIR@\"": "os.path.join(os.environ['TEST_SRCDIR'], 'llvm-project', 'llvm')",
+        "\"@Python3_EXECUTABLE@\"": "sys.executable",
+        "\"@PYTHONPATH@\"": "sys.path",
     },
     template = "lit.site.cfg.py.in",
 )
@@ -43,29 +45,20 @@ filegroup(
             "//test:lit_data",
         ],
         tags = ["lit_tests"],
+        # No need to depend on hermetic python for internal repo.
+        # deps = [
+            # requirement("torch"),
+            # requirement("torch_mlir"),
+        # ],
     )
     for src in glob([
         "Conversion/**/*.mlir",
         "Dialect/**/*.mlir",
         "Pipeline/**/*.mlir",
+        # Skip python tests for internal repo.
+        # "python_lit/**/*.py",
     ])
 ]
-
-aot_compile(
-    name = "basic_tcp_ops",
-    tcp_source = "AotCompile/basic_tcp_ops.mlir",
-)
-
-cc_test(
-    name = "AotCompile/test_aot_compiled_basic_tcp_ops",
-    srcs = ["AotCompile/test_aot_compiled_basic_tcp_ops.cpp"],
-    tags = ["aot_tests"],
-    deps = [
-        ":aot_compiled_basic_tcp_ops",
-        "//tools/aot:abi",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
 
 test_suite(
     name = "lit_tests",
@@ -73,14 +66,11 @@ test_suite(
 )
 
 test_suite(
-    name = "aot_tests",
-    tags = ["aot_tests"],
-)
-
-test_suite(
     name = "all_tests",
     tests = [
-        "//test:aot_tests",
         "//test:lit_tests",
+        "//test/AotCompile:aot_tests",
+        # Skip python tests for internal repo.
+        # "//test/python:python_tests",
     ],
 )

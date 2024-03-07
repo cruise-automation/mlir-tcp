@@ -11,6 +11,11 @@ package(
     ],
 )
 
+exports_files([
+    "requirements.txt",
+    "requirements_lock.txt",
+])
+
 td_library(
     name = "TcpDialectTdFiles",
     srcs = [
