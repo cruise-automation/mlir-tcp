@@ -48,3 +48,7 @@ build:gdb --config=dbg
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://bazel.build/external/migration
 common --noenable_bzlmod
+
+# Continue running tests for targets that build without having
+# AOT compile genrules failing to build from terminating the rest
+test --keep_going
