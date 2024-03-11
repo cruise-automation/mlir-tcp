@@ -9,13 +9,12 @@
 
 #include "mlir-tcp/Pipeline/Pipeline.h"
 
-#include "mlir-tcp/Dialect/Transforms/DecomposeTensorConcatOpsPass.h"
-#include "mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h"
-
 #include "mlir-tcp/Conversion/TcpToArith/TcpToArith.h"
 #include "mlir-tcp/Conversion/TcpToLinalg/TcpToLinalg.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h"
+#include "mlir-tcp/Dialect/Transforms/TransformTensorOpsPass.h"
+#include "mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h"
 
 #include "mlir/Conversion/AffineToStandard/AffineToStandard.h"
 #include "mlir/Conversion/ArithToLLVM/ArithToLLVM.h"

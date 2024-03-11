@@ -138,20 +138,20 @@ gentbl_cc_library(
 cc_library(
     name = "TcpDialectPasses",
     srcs = [
-        "lib/Dialect/Transforms/DecomposeTensorConcatOpsPass.cpp",
         "lib/Dialect/Transforms/FuseTcpOpsPass.cpp",
         "lib/Dialect/Transforms/FusionPatterns.cpp",
         "lib/Dialect/Transforms/IsolateGroupOpsPass.cpp",
         "lib/Dialect/Transforms/PassDetail.h",
         "lib/Dialect/Transforms/Passes.cpp",
+        "lib/Dialect/Transforms/TransformTensorOpsPass.cpp",
         "lib/Dialect/Transforms/VerifyTcpBackendContractPass.cpp",
     ],
     hdrs = [
-        "include/mlir-tcp/Dialect/Transforms/DecomposeTensorConcatOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/FuseTcpOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/FusionPatterns.h",
         "include/mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/Passes.h",
+        "include/mlir-tcp/Dialect/Transforms/TransformTensorOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h",
     ],
     strip_include_prefix = "include",

@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir-tcp/Dialect/Transforms/DecomposeTensorConcatOpsPass.h"
+#include "mlir-tcp/Dialect/Transforms/TransformTensorOpsPass.h"
 #include "mlir-tcp/Dialect/Transforms/Passes.h"
 
 #include "./PassDetail.h"
