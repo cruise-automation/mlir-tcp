@@ -172,3 +172,26 @@ def concat_int_tensors_loader() -> TorchLoaderOutput:
         inputs=[x, y],
         constraints=constraints,
     )
+
+
+def slice_tensor_loader() -> TorchLoaderOutput:
+    class SliceTensor(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return x[0:2, :1]
+
+    # Sample inputs
+    x = torch.randn(4, 3)
+
+    # Dynamic dim constraints
+    constraints = [
+        dynamic_dim(x, 0) > 2,
+    ]
+
+    return TorchLoaderOutput(
+        model=SliceTensor(),
+        inputs=[x],
+        constraints=constraints,
+    )
