@@ -55,6 +55,12 @@ aot_compile(
 )
 
 aot_compile(
+    name = "slice_tensor",
+    torch_loader_lib = ":model_loader_lib",
+    torch_loader_path = "test.AotCompile.model_loader_lib.slice_tensor_loader",
+)
+
+aot_compile(
     name = "basic_tcp_ops",
     tcp_source = "basic_tcp_ops.mlir",
 )
