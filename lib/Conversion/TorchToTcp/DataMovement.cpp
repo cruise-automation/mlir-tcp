@@ -16,6 +16,7 @@
 #include "Utils.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
+#include "torch-mlir/Conversion/TorchToLinalg/Utils.h"
 #include "torch-mlir/Conversion/Utils/Utils.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
@@ -28,21 +29,22 @@ using namespace mlir::torch;
 using namespace mlir::torch::Torch;
 
 namespace {
-// Following function is copied from
-// https://sourcegraph.com/github.com/llvm/torch-mlir@4446fa00d8258311867496fc79d0b1dddd22a972/-/blob/lib/Conversion/TorchToLinalg/DataMovement.cpp?L42
-// TODO: Expose this function in a header to reuse.
-LogicalResult prepareArgumentsForSlicingOp(AtenSliceTensorOp op,
-                                           AtenSliceTensorOpAdaptor adaptor,
+// Adopted from
+// https://sourcegraph.com/github.com/llvm/torch-mlir@6b3a7d07c2c76f5e8437ff4e88110899621557b9/-/blob/lib/Conversion/TorchToLinalg/DataMovement.cpp?L42
+template <typename OpTy, typename OpAdaptor>
+LogicalResult prepareArgumentsForSlicingOp(OpTy op, OpAdaptor adaptor,
                                            ConversionPatternRewriter &rewriter,
                                            SmallVector<Value> &resultShape,
                                            SmallVector<Value> &offsets,
                                            SmallVector<Value> &strides) {
   Location loc = op.getLoc();
   auto input = adaptor.getSelf();
-  RankedTensorType inputType = input.getType().cast<RankedTensorType>();
+  RankedTensorType inputType =
+      input.getType().template cast<RankedTensorType>();
 
   Value zero = rewriter.create<arith::ConstantIndexOp>(loc, 0);
   Value one = rewriter.create<arith::ConstantIndexOp>(loc, 1);
+  Value negone = rewriter.create<arith::ConstantIndexOp>(loc, -1);
 
   int64_t dim;
   if (!matchPattern(op.getDim(), m_TorchConstantInt(&dim)))
@@ -65,85 +67,121 @@ LogicalResult prepareArgumentsForSlicingOp(AtenSliceTensorOp op,
       torchTypeEnd.getType().isa<OptionalType>())
     return rewriter.notifyMatchFailure(op, "unimplemented optional type arg");
 
-  int64_t step;
-  if (!matchPattern(op.getStep(), m_TorchConstantInt(&step))) {
-    if (!op.getStep().getType().template isa<Torch::NoneType>())
-      return op->emitError("unimplemented: step is not constant");
-    step = 1;
-  }
-
+  Value stepIndex = castIntToIndex(rewriter, loc, adaptor.getStep());
   Value start = toPositiveValidDim(rewriter, loc, torchTypeStart,
                                    builtinTypeStart, zero, dimSize);
-  Value end = toPositiveValidDim(rewriter, loc, torchTypeEnd, builtinTypeEnd,
-                                 dimSize, dimSize);
 
-  // end >= start ? end : start
-  Value endSgeStart = rewriter.create<arith::CmpIOp>(
-      loc, arith::CmpIPredicate::sge, end, start);
-  end = rewriter.create<arith::SelectOp>(loc, endSgeStart, end, start);
-  Value stepIndex = rewriter.create<arith::ConstantIndexOp>(loc, step);
+  // We cannot use to positive valid dim as for negative strides we need to
+  // clamp to `-1` so that the full tensor bounds are available:
+  Value end = builtinTypeEnd;
+  if (torchTypeEnd.getType().isa<Torch::NoneType>()) {
+    end = dimSize;
+  } else {
+    end = castIntToIndex(rewriter, loc, end);
+    Value endcmp = rewriter.create<arith::CmpIOp>(
+        loc, arith::CmpIPredicate::slt, end, zero);
+    Value endadd = rewriter.create<arith::AddIOp>(loc, end, dimSize);
+    end = rewriter.create<arith::SelectOp>(loc, endcmp, endadd, end);
+    endcmp = rewriter.create<arith::CmpIOp>(loc, arith::CmpIPredicate::slt, end,
+                                            zero);
+    end = rewriter.create<arith::SelectOp>(loc, endcmp, negone, end);
+    endcmp = rewriter.create<arith::CmpIOp>(loc, arith::CmpIPredicate::sgt, end,
+                                            dimSize);
+    end = rewriter.create<arith::SelectOp>(loc, endcmp, dimSize, end);
+  }
 
   // Slice logic: resultSize = floordiv(end - start + step - 1,  step)
   resultShape = getTensorSizes(rewriter, loc, input);
   Value len = rewriter.create<arith::SubIOp>(loc, end, start);
+
+  // We check the difference between start and end to determine the total size:
+  Value stepcmp = rewriter.create<arith::CmpIOp>(loc, arith::CmpIPredicate::sge,
+                                                 stepIndex, zero);
+  Value stepsign = rewriter.create<arith::SelectOp>(loc, stepcmp, one, negone);
   Value resultSize = rewriter.create<arith::AddIOp>(loc, len, stepIndex);
-  resultSize = rewriter.create<arith::SubIOp>(loc, resultSize, one);
+  resultSize = rewriter.create<arith::SubIOp>(loc, resultSize, stepsign);
   resultSize = rewriter.create<arith::FloorDivSIOp>(loc, resultSize, stepIndex);
+
+  // Clamp the size to [0, ...]:
+  Value szcmp = rewriter.create<arith::CmpIOp>(loc, arith::CmpIPredicate::slt,
+                                               resultSize, zero);
+  resultSize = rewriter.create<arith::SelectOp>(loc, szcmp, zero, resultSize);
   resultShape[dim] = resultSize;
 
   strides.resize(inputType.getRank(), one);
   offsets.resize(inputType.getRank(), zero);
 
   offsets[dim] = start;
-  strides[dim] = rewriter.create<arith::MulIOp>(loc, strides[dim], stepIndex);
+  strides[dim] = stepIndex;
   return success();
 }
 
+// Adopted from
+// https://sourcegraph.com/github.com/llvm/torch-mlir@6b3a7d07c2c76f5e8437ff4e88110899621557b9/-/blob/lib/Conversion/TorchToLinalg/DataMovement.cpp?L1552
 class ConvertAtenCatOp : public OpConversionPattern<AtenCatOp> {
 public:
-  using OpConversionPattern<AtenCatOp>::OpConversionPattern;
-
+  using OpConversionPattern::OpConversionPattern;
   LogicalResult
-  matchAndRewrite(AtenCatOp catOp, OpAdaptor adaptor,
+  matchAndRewrite(AtenCatOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    SmallVector<Value> inputs;
-    if (!getListConstructElements(adaptor.getTensors(), inputs))
-      return rewriter.notifyMatchFailure(
-          catOp, "aten.cat operands must be a list of tensors");
+    if (failed(verifyLinalgCompatibleTypes(op, rewriter)))
+      return failure();
+    Location loc = op.getLoc();
+    const TypeConverter *typeConverter = getTypeConverter();
 
-    auto tensorInputs = getTypeConvertedValues(rewriter, catOp->getLoc(),
-                                               getTypeConverter(), inputs);
+    // Collect all the tensors to be concatenated.
+    auto tensorList = op.getTensors();
+    SmallVector<Value> tensorsTorchType;
+    if (!getListConstructElements(tensorList, tensorsTorchType))
+      return op.emitError(
+          "unimplemented: the tensor list is not from list construct");
+    auto tensors =
+        getTypeConvertedValues(rewriter, loc, typeConverter, tensorsTorchType);
 
+    RankedTensorType newResultType =
+        typeConverter->convertType(op.getType()).cast<RankedTensorType>();
+    int rank = newResultType.getRank();
+    Value dimValue = op.getDim();
     int64_t dim;
-    if (!matchPattern(catOp.getDim(), m_TorchConstantInt(&dim)))
-      return rewriter.notifyMatchFailure(
-          catOp, "aten.cat dim must be constant integer");
+    if (!matchPattern(dimValue, m_TorchConstantInt(&dim)))
+      return op.emitError("unimplemented: dim is not constant");
+    dim = toPositiveDim(dim, rank);
+    if (!isValidDim(dim, rank))
+      return rewriter.notifyMatchFailure(op, "dim is statically invalid");
 
-    RankedTensorType resultType = getTypeConverter()
-                                      ->convertType(catOp.getType())
-                                      .cast<RankedTensorType>();
+    auto outElemType = newResultType.getElementType();
+    for (size_t i = 0; i < tensors.size(); ++i) {
+      auto inputType = cast<RankedTensorType>(tensors[i].getType());
+      if (inputType.getElementType() != outElemType) {
+        tensors[i] = torch_to_linalg::convertTensorToElementType(
+            rewriter, loc, tensors[i], outElemType);
+      }
+    }
 
-    dim = toPositiveDim(dim, resultType.getRank());
+    llvm::SmallVector<Value> filteredTensors;
+    for (auto tensor : tensors) {
+      auto inputType = cast<RankedTensorType>(tensor.getType());
+      if (inputType.getDimSize(dim) != 0) {
+        filteredTensors.push_back(tensor);
+      }
+    }
 
-    rewriter.replaceOpWithNewOp<tcp::ConcatOp>(
-        catOp, resultType, tensorInputs,
-        rewriter.getIntegerAttr(rewriter.getI64Type(), dim));
+    rewriter.replaceOpWithNewOp<tensor::ConcatOp>(op, newResultType, dim,
+                                                  filteredTensors);
     return success();
   }
 };
 
+// Adopted from
+// https://sourcegraph.com/github.com/llvm/torch-mlir@6b3a7d07c2c76f5e8437ff4e88110899621557b9/-/blob/lib/Conversion/TorchToLinalg/DataMovement.cpp?L1516
 class ConvertAtenSliceTensorOp : public OpConversionPattern<AtenSliceTensorOp> {
 public:
   using OpConversionPattern::OpConversionPattern;
   LogicalResult
   matchAndRewrite(AtenSliceTensorOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    auto inputType =
-        op.getSelf().getType().dyn_cast<torch::Torch::ValueTensorType>();
-    auto outputType = op.getType().dyn_cast<torch::Torch::ValueTensorType>();
-    if (!inputType || !outputType)
-      return rewriter.notifyMatchFailure(
-          op, "Expected Input/Output to be ValueTensorType");
+    if (failed(verifyLinalgCompatibleTypes(op, rewriter)))
+      return failure();
 
     Location loc = op.getLoc();
     const TypeConverter *typeConverter = getTypeConverter();
@@ -156,8 +194,9 @@ public:
     SmallVector<Value> resultShape;
     SmallVector<Value> offsets;
     SmallVector<Value> strides;
-    if (failed(prepareArgumentsForSlicingOp(op, adaptor, rewriter, resultShape,
-                                            offsets, strides))) {
+    if (failed(prepareArgumentsForSlicingOp<AtenSliceTensorOp,
+                                            AtenSliceTensorOpAdaptor>(
+            op, adaptor, rewriter, resultShape, offsets, strides))) {
       return failure();
     }
 

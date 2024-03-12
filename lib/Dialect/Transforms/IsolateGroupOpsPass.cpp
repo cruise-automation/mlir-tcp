@@ -101,7 +101,8 @@ class TcpIsolateGroupOpsPass
     RewritePatternSet patterns(context);
 
     patterns.add<IsolateGroups>(context);
-    (void)applyPatternsAndFoldGreedily(op, std::move(patterns));
+    if (failed(applyPatternsAndFoldGreedily(op, std::move(patterns))))
+      return signalPassFailure();
   }
 };
 

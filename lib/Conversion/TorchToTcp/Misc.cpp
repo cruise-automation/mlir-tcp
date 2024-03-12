@@ -58,7 +58,7 @@ bool checkZerosOnesOpAttributes(AtenOpT op, RankedTensorType outType) {
 
 class ConvertAtenBroadcastToOp : public OpConversionPattern<AtenBroadcastToOp> {
 public:
-  using OpConversionPattern<AtenBroadcastToOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenBroadcastToOp op, OpAdaptor adaptor,
@@ -108,7 +108,7 @@ public:
 class ConvertValueTensorLiteralOp
     : public OpConversionPattern<ValueTensorLiteralOp> {
 public:
-  using OpConversionPattern<ValueTensorLiteralOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(ValueTensorLiteralOp op, OpAdaptor adaptor,
@@ -135,7 +135,7 @@ public:
 
 class ConvertAtenSizeIntOp : public OpConversionPattern<AtenSizeIntOp> {
 public:
-  using OpConversionPattern<AtenSizeIntOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenSizeIntOp op, OpAdaptor adaptor,

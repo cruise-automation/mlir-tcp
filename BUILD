@@ -143,6 +143,7 @@ cc_library(
         "lib/Dialect/Transforms/IsolateGroupOpsPass.cpp",
         "lib/Dialect/Transforms/PassDetail.h",
         "lib/Dialect/Transforms/Passes.cpp",
+        "lib/Dialect/Transforms/TransformTensorOps.cpp",
         "lib/Dialect/Transforms/VerifyTcpBackendContractPass.cpp",
     ],
     hdrs = [
@@ -150,6 +151,7 @@ cc_library(
         "include/mlir-tcp/Dialect/Transforms/FusionPatterns.h",
         "include/mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/Passes.h",
+        "include/mlir-tcp/Dialect/Transforms/TransformTensorOps.h",
         "include/mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h",
     ],
     strip_include_prefix = "include",
@@ -158,6 +160,7 @@ cc_library(
         ":TcpDialectPassesIncGen",
         "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:TensorDialect",
+        "@llvm-project//mlir:TensorTransforms",
         "@llvm-project//mlir:Transforms",
     ],
 )
@@ -216,6 +219,7 @@ cc_library(
         "@torch-mlir//:TorchMLIRTorchBackendTypeConversion",
         "@torch-mlir//:TorchMLIRTorchConversionDialect",
         "@torch-mlir//:TorchMLIRTorchPasses",
+        "@torch-mlir//:TorchMLIRTorchToLinalg",
     ],
 )
 

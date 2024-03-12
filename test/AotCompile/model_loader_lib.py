@@ -122,3 +122,28 @@ def sigmoid_loader() -> TorchLoaderOutput:
         inputs=[x],
         constraints=constraints,
     )
+
+
+def concat_loader() -> TorchLoaderOutput:
+    class Concat(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            return torch.cat((x, y), dim=0)
+
+    # Sample inputs
+    x = torch.randn(2, 3)
+    y = torch.randn(3, 3)
+
+    # Dynamic dim constraints
+    constraints = [
+        dynamic_dim(x, 0),
+        dynamic_dim(y, 0),
+    ]
+
+    return TorchLoaderOutput(
+        model=Concat(),
+        inputs=[x, y],
+        constraints=constraints,
+    )

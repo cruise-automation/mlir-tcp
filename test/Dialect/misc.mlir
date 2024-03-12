@@ -235,62 +235,7 @@ func.func @test_constants() -> tensor<f32> {
 }
 
 // -----
-//      CHECK: tcp.concat
-// CHECK-SAME: {axis = 0 : i64} : tensor<1x1xf32>, tensor<1x1xf32> -> tensor<2x1xf32>
-func.func @test_concat(%arg0: tensor<1x1xf32>, %arg1: tensor<1x1xf32>) -> tensor<2x1xf32> {
-  %0 = tcp.concat %arg0, %arg1 attributes {axis = 0 : i64} : tensor<1x1xf32>, tensor<1x1xf32> -> tensor<2x1xf32>
-  return %0 : tensor<2x1xf32>
-}
 
-// -----
-//      CHECK: tcp.concat
-// CHECK-SAME: {axis = 0 : i64} : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-func.func @test_concat(%arg0: tensor<?x?xf32>, %arg1: tensor<?x?xf32>) -> tensor<?x?xf32> {
-  %0 = tcp.concat %arg0, %arg1 attributes {axis = 0 : i64} : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-  return %0 : tensor<?x?xf32>
-}
-
-// -----
-//      CHECK: tcp.concat
-// CHECK-SAME: {axis = 0 : i64} : tensor<?x?xf32>, tensor<5x?xf32> -> tensor<?x?xf32>
-func.func @test_concat(%arg0: tensor<?x?xf32>, %arg1: tensor<5x?xf32>) -> tensor<?x?xf32> {
-  %0 = tcp.concat %arg0, %arg1 attributes {axis = 0 : i64} : tensor<?x?xf32>, tensor<5x?xf32> -> tensor<?x?xf32>
-  return %0 : tensor<?x?xf32>
-}
-
-// -----
-
-func.func @test_concat(%arg0: tensor<?x?xf32>, %arg1: tensor<?x?xf32>) -> tensor<?xf32> {
-  // expected-error @+1 {{'tcp.concat' op failed to verify tcp.concat operands and results rank mismatched}}
-  %0 = tcp.concat %arg0, %arg1 attributes {axis = 0 : i64} : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?xf32>
-  return %0 : tensor<?xf32>
-}
-
-// -----
-
-func.func @test_concat(%arg0: tensor<?x4xf32>, %arg1: tensor<5x5xf32>) -> tensor<?x5xf32> {
-  // expected-error @+1 {{'tcp.concat' op failed to verify tcp.concat with non concat dim 1, having different values 4 5}}
-  %0 = tcp.concat %arg0, %arg1 attributes {axis = 0 : i64} : tensor<?x4xf32>, tensor<5x5xf32> -> tensor<?x5xf32>
-  return %0 : tensor<?x5xf32>
-}
-
-// -----
-
-func.func @test_concat(%arg0: tensor<3x?xf32>, %arg1: tensor<5x?xf32>) -> tensor<?x?xf32> {
-  // expected-error @+1 {{'tcp.concat' op failed to verify tcp.concat with dynamic concat axis and static inputs}}
-  %0 = tcp.concat %arg0, %arg1 attributes {axis = 0 : i64} : tensor<3x?xf32>, tensor<5x?xf32> -> tensor<?x?xf32>
-  return %0 : tensor<?x?xf32>
-}
-
-// -----
-
-func.func @test_concat(%arg0: tensor<1x5xf32>, %arg1: tensor<5x5xf32>) -> tensor<4x5xf32> {
-  // expected-error @+1 {{'tcp.concat' op failed to verify tcp.concat with dim 0 != 6}}
-  %0 = tcp.concat %arg0, %arg1 attributes {axis = 0 : i64} : tensor<1x5xf32>, tensor<5x5xf32> -> tensor<4x5xf32>
-  return %0 : tensor<4x5xf32>
-}
-
-// -----
 // CHECK-LABEL:   func.func @test_per_tensor_quant_type
 // CHECK: tensor<?x?x!quant.uniform<i8:f32, 7.843100e-02:-12>>, tensor<?x?x!quant.uniform<i8:f32, 7.843100e-02:-12>> -> tensor<?x?x!quant.uniform<i8:f32, 7.843100e-02:-12>>
 func.func @test_per_tensor_quant_type(%0 : tensor<?x?x!quant.uniform<i8:f32, 0.078431:-12>>) -> tensor<?x?x!quant.uniform<i8:f32, 0.078431:-12>> {
@@ -299,6 +244,7 @@ func.func @test_per_tensor_quant_type(%0 : tensor<?x?x!quant.uniform<i8:f32, 0.0
 }
 
 // -----
+
 // CHECK-LABEL:   func.func @test_per_axis_quant_type
 // CHECK: tensor<3x?x?x!quant.uniform<i8<-127:127>:f32:0, {1.000000e-01,1.000000e-01,1.000000e-01}>>, tensor<3x?x?x!quant.uniform<i8<-127:127>:f32:0, {1.000000e-01,1.000000e-01,1.000000e-01}>> 
 // CHECK: -> tensor<3x?x?x!quant.uniform<i8<-127:127>:f32:0, {1.000000e-01,1.000000e-01,1.000000e-01}>>
