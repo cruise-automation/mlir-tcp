@@ -17,6 +17,6 @@
 namespace mlir::tcp {
 
 std::unique_ptr<mlir::OperationPass<func::FuncOp>>
-createDecomposeTensorConcatOpsPass();
+createDecomposeTensorOpsPass();
 
 } // namespace mlir::tcp

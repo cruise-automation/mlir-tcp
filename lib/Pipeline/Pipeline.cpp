@@ -13,7 +13,7 @@
 #include "mlir-tcp/Conversion/TcpToLinalg/TcpToLinalg.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h"
-#include "mlir-tcp/Dialect/Transforms/TransformTensorOpsPass.h"
+#include "mlir-tcp/Dialect/Transforms/TransformTensorOps.h"
 #include "mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h"
 
 #include "mlir/Conversion/AffineToStandard/AffineToStandard.h"
@@ -62,7 +62,7 @@ static void createTorchBackendToTcpBackendPipeline(OpPassManager &pm) {
 
 static void createTcpToLlvmPipeline(OpPassManager &pm) {
   // TCP transformations.
-  pm.addNestedPass<func::FuncOp>(tcp::createDecomposeTensorConcatOpsPass());
+  pm.addNestedPass<func::FuncOp>(tcp::createDecomposeTensorOpsPass());
 
   // TCP -> Linalg/Arith conversions.
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToLinalgPass());

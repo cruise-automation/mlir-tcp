@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir-tcp/Dialect/Transforms/TransformTensorOpsPass.h"
+#include "mlir-tcp/Dialect/Transforms/TransformTensorOps.h"
 #include "mlir-tcp/Dialect/Transforms/Passes.h"
 
 #include "./PassDetail.h"
@@ -21,8 +21,8 @@ using namespace mlir;
 namespace mlir::tcp {
 namespace {
 
-class DecomposeTensorConcatOpsPass
-    : public DecomposeTensorConcatOpsBase<DecomposeTensorConcatOpsPass> {
+class DecomposeTensorOpsPass
+    : public DecomposeTensorOpsBase<DecomposeTensorOpsPass> {
   void runOnOperation() override {
     Operation *op = getOperation();
     MLIRContext *context = op->getContext();
@@ -36,9 +36,8 @@ class DecomposeTensorConcatOpsPass
 
 } // namespace
 
-std::unique_ptr<OperationPass<func::FuncOp>>
-createDecomposeTensorConcatOpsPass() {
-  return std::make_unique<DecomposeTensorConcatOpsPass>();
+std::unique_ptr<OperationPass<func::FuncOp>> createDecomposeTensorOpsPass() {
+  return std::make_unique<DecomposeTensorOpsPass>();
 }
 
 } // namespace mlir::tcp
