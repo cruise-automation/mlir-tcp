@@ -59,6 +59,18 @@ jobs:
           exit 1
         fi
 
+    - name: Verify black was run (py lint)
+      run: |
+        docker run --rm \
+                   -v "$(pwd)":"/opt/src/mlir-tcp" \
+                   -v "${HOME}/.cache/bazel":"${HOME}/.cache/bazel" \
+                   mlir-tcp:ci \
+                   black .
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Please run 'black .' and commit changes."
+          exit 1
+        fi
+
     - name: Verify buildifier was run (bazel lint)
       run: |
         docker run --rm \
