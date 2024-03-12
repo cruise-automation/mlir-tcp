@@ -124,8 +124,8 @@ def sigmoid_loader() -> TorchLoaderOutput:
     )
 
 
-def concat_loader() -> TorchLoaderOutput:
-    class Concat(torch.nn.Module):
+def concat_float_tensors_loader() -> TorchLoaderOutput:
+    class ConcatFloatTensors(torch.nn.Module):
         def __init__(self):
             super().__init__()
 
@@ -143,7 +143,32 @@ def concat_loader() -> TorchLoaderOutput:
     ]
 
     return TorchLoaderOutput(
-        model=Concat(),
+        model=ConcatFloatTensors(),
+        inputs=[x, y],
+        constraints=constraints,
+    )
+
+
+def concat_int_tensors_loader() -> TorchLoaderOutput:
+    class ConcatIntTensors(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            return torch.cat((x, y), dim=0)
+
+    # Sample inputs
+    x = torch.randint(0, 5, (2, 3), dtype=torch.int32)
+    y = torch.randint(2, 8, (3, 3), dtype=torch.int32)
+
+    # Dynamic dim constraints
+    constraints = [
+        dynamic_dim(x, 0),
+        dynamic_dim(y, 0),
+    ]
+
+    return TorchLoaderOutput(
+        model=ConcatIntTensors(),
         inputs=[x, y],
         constraints=constraints,
     )

@@ -43,9 +43,15 @@ aot_compile(
 )
 
 aot_compile(
-    name = "concat",
+    name = "concat_float_tensors",
     torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.concat_loader",
+    torch_loader_path = "test.AotCompile.model_loader_lib.concat_float_tensors_loader",
+)
+
+aot_compile(
+    name = "concat_int_tensors",
+    torch_loader_lib = ":model_loader_lib",
+    torch_loader_path = "test.AotCompile.model_loader_lib.concat_int_tensors_loader",
 )
 
 aot_compile(
