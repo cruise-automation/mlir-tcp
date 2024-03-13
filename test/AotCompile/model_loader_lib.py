@@ -102,6 +102,31 @@ def broadcast_add_mixed_ranks_loader() -> TorchLoaderOutput:
     )
 
 
+def add_tensor_with_alpha_loader() -> TorchLoaderOutput:
+    class AddTensorWithAlpha(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            add = torch.add(x, y, alpha=2)
+            return add
+
+    # Sample inputs
+    x = torch.randn(2, 3)
+    y = torch.randn(2, 3)
+
+    # Dynamic dim constraints
+    constraints = [
+        dynamic_dim(x, 0) == dynamic_dim(y, 0),
+    ]
+
+    return TorchLoaderOutput(
+        model=AddTensorWithAlpha(),
+        inputs=[x, y],
+        constraints=constraints,
+    )
+
+
 def sigmoid_loader() -> TorchLoaderOutput:
     class Sigmoid(torch.nn.Module):
         def __init__(self):
