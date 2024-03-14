@@ -24,6 +24,9 @@ func.func @tensor_concat_float_tensors(%arg0: tensor<?x3xf32>, %arg1: tensor<?x3
 // CHECK-LABEL: func.func @tensor_concat_int_tensors(
 // CHECK-SAME:          %[[ARG0:.*]]: tensor<?x3xi32>,
 // CHECK-SAME:          %[[ARG1:.*]]: tensor<?x3xi32>) -> tensor<?x3xi32> {
+// CHECK:         tensor.empty
+// CHECK:         tensor.insert_slice
+// CHECK:         tensor.insert_slice
 func.func @tensor_concat_int_tensors(%arg0: tensor<?x3xi32>, %arg1: tensor<?x3xi32>) -> tensor<?x3xi32> {                                                                                                                                                                             
   %concat = tensor.concat dim(0) %arg0, %arg1 : (tensor<?x3xi32>, tensor<?x3xi32>) -> tensor<?x3xi32>                                                                                                                                                                 
   return %concat : tensor<?x3xi32>                                                                                                                                                                                                                                    
