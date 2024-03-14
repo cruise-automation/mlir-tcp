@@ -55,9 +55,8 @@ func.func @broadcast_4D(%arg0 : tensor<?x1x?x1xf32>, %arg1 : index, %arg2 : inde
 
 // -----
 
-// tcp.const is not converted by TcpToLinalg, but this test ensures
-// it goes through without failing legalization, and that TcpToLinalg
-// doesn't mark TcpDialect is illegal.
+// tcp.const is not converted by TcpToLinalg, but this test ensures it goes through
+// without failing legalization, and that TcpToLinalg doesn't mark TcpDialect is illegal.
 
 // CHECK-LABEL: func.func @test_constants() -> tensor<f32> {
 // CHECK:         tcp.const {value = dense<2.500000e+00> : tensor<f32>} : tensor<f32>
