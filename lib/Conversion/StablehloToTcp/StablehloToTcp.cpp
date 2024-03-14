@@ -22,7 +22,7 @@
 
 namespace mlir {
 
-#define GEN_PASS_DEF_CONVERTTCPTOLINALG
+#define GEN_PASS_DEF_CONVERTSTABLEHLOTOTCP
 #include "mlir-tcp/Conversion/Passes.h.inc"
 
 namespace tcp {

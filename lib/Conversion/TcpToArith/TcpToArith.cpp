@@ -22,7 +22,7 @@
 
 namespace mlir {
 
-#define GEN_PASS_DEF_CONVERTTCPTOLINALG
+#define GEN_PASS_DEF_CONVERTTCPTOARITH
 #include "mlir-tcp/Conversion/Passes.h.inc"
 
 namespace tcp {
@@ -40,8 +40,10 @@ public:
   }
 };
 
-void populateTcpToArithConversionPatterns(RewritePatternSet *patterns) {
-  patterns->add<ConstOpConverter>(patterns->getContext());
+void populateTcpToArithConversionPatterns(RewritePatternSet &patterns) {
+  MLIRContext *context = patterns.getContext();
+
+  patterns.add<ConstOpConverter>(context);
 }
 
 class ConvertTcpToArith : public ConvertTcpToArithBase<ConvertTcpToArith> {
@@ -55,7 +57,7 @@ public:
     typeConverter.addConversion([](Type type) { return type; });
 
     RewritePatternSet patterns(context);
-    populateTcpToArithConversionPatterns(&patterns);
+    populateTcpToArithConversionPatterns(patterns);
 
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns))))
