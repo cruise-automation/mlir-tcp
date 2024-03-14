@@ -29,11 +29,11 @@ namespace tcp {
 
 namespace {
 
-class ConstOpConverter : public OpRewritePattern<ConstOp> {
+class ConstOpConverter : public OpRewritePattern<tcp::ConstOp> {
 public:
-  using OpRewritePattern<ConstOp>::OpRewritePattern;
+  using OpRewritePattern::OpRewritePattern;
 
-  LogicalResult matchAndRewrite(ConstOp op,
+  LogicalResult matchAndRewrite(tcp::ConstOp op,
                                 PatternRewriter &rewriter) const final {
     rewriter.replaceOpWithNewOp<arith::ConstantOp>(op, op.getValue());
     return success();
@@ -44,7 +44,7 @@ void populateTcpToArithPatternsAndLegality(RewritePatternSet &patterns,
                                            ConversionTarget &target) {
   MLIRContext *context = patterns.getContext();
 
-  target.addIllegalOp<ConstOp>();
+  target.addIllegalOp<tcp::ConstOp>();
   patterns.add<ConstOpConverter>(context);
 }
 
