@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Also available under a BSD-style license. See LICENSE.
 
-from typing import List, NamedTuple, Optional
+from typing import NamedTuple, Optional, Tuple, Union, Dict, Any
 
 import torch
 
 
 class TorchLoaderOutput(NamedTuple):
     model: torch.nn.Module
-    inputs: List[torch.Tensor]
-    constraints: Optional[List[torch.export.dynamic_dim]] = None
+    inputs: Tuple[torch.Tensor]
+    dynamic_shapes: Optional[Union[Dict[str, Any], Tuple[Any]]] = None
     func_name: Optional[str] = "func_main"
