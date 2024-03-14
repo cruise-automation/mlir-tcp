@@ -37,8 +37,8 @@ def main():
         loader_result, TorchLoaderOutput
     ), "Please use tools.aot.torch_loader_utils.TorchLoaderOutput as your torch_loader function's return type"
     assert isinstance(
-        loader_result.inputs, list
-    ), "Please provide List[torch.Tensor] as TorchLoaderOutput.inputs in your torch_loader function"
+        loader_result.inputs, tuple
+    ), "Please provide Tuple[torch.Tensor] as TorchLoaderOutput.inputs in your torch_loader function"
 
     # Used by gen_{name}_mlir_torch genrule
     if not args.reference_tensors_path:
@@ -46,7 +46,7 @@ def main():
         torch_program = fx.export_and_import(
             loader_result.model,
             *loader_result.inputs,  # unpack list of input tensors
-            constraints=loader_result.constraints,
+            dynamic_shapes=loader_result.dynamic_shapes,
             func_name=loader_result.func_name,
         )
 
