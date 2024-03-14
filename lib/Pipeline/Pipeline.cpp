@@ -24,6 +24,7 @@
 #include "mlir/Conversion/MemRefToLLVM/MemRefToLLVM.h"
 #include "mlir/Conversion/ReconcileUnrealizedCasts/ReconcileUnrealizedCasts.h"
 #include "mlir/Conversion/SCFToControlFlow/SCFToControlFlow.h"
+#include "mlir/Dialect/Arith/Transforms/Passes.h"
 #include "mlir/Dialect/Bufferization/Transforms/Passes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Func/Transforms/Passes.h"
@@ -75,6 +76,7 @@ static void createTcpToLlvmPipeline(OpPassManager &pm) {
       bufferization::createBufferizationBufferizePass());
   pm.addNestedPass<func::FuncOp>(createLinalgBufferizePass());
   pm.addNestedPass<func::FuncOp>(tensor::createTensorBufferizePass());
+  pm.addPass(arith::createConstantBufferizePass());
   pm.addPass(func::createFuncBufferizePass());
   pm.addNestedPass<func::FuncOp>(
       bufferization::createFinalizingBufferizePass());

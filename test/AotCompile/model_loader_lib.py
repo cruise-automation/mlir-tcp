@@ -10,7 +10,7 @@ from tools.aot.torch_loader_utils import TorchLoaderOutput
 
 
 def add_mul_single_output_loader() -> TorchLoaderOutput:
-    class AddMulNetSingleOutput(torch.nn.Module):
+    class AddMulSingleOutput(torch.nn.Module):
         def __init__(self):
             super().__init__()
 
@@ -36,14 +36,14 @@ def add_mul_single_output_loader() -> TorchLoaderOutput:
     }
 
     return TorchLoaderOutput(
-        model=AddMulNetSingleOutput(),
+        model=AddMulSingleOutput(),
         inputs=(x, y, z),
         dynamic_shapes=dynamic_shapes,
     )
 
 
 def add_mul_multi_output_loader() -> TorchLoaderOutput:
-    class AddMulNetMultiOutput(torch.nn.Module):
+    class AddMulMultiOutput(torch.nn.Module):
         def __init__(self):
             super().__init__()
 
@@ -69,7 +69,7 @@ def add_mul_multi_output_loader() -> TorchLoaderOutput:
     }
 
     return TorchLoaderOutput(
-        model=AddMulNetMultiOutput(),
+        model=AddMulMultiOutput(),
         inputs=(x, y, z),
         dynamic_shapes=dynamic_shapes,
     )
@@ -97,6 +97,33 @@ def broadcast_add_mixed_ranks_loader() -> TorchLoaderOutput:
 
     return TorchLoaderOutput(
         model=BroadcastAddMixedRanks(),
+        inputs=(x, y),
+        dynamic_shapes=dynamic_shapes,
+    )
+
+
+def add_tensor_with_alpha_loader() -> TorchLoaderOutput:
+    class AddTensorWithAlpha(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            add = torch.add(x, y, alpha=2)
+            return add
+
+    # Sample inputs
+    x = torch.randn(2, 3)
+    y = torch.randn(2, 3)
+
+    # Dynamic dim constraints
+    batch = Dim("batch")
+    dynamic_shapes = {
+        "x": {0: batch},
+        "y": {0: batch},
+    }
+
+    return TorchLoaderOutput(
+        model=AddTensorWithAlpha(),
         inputs=(x, y),
         dynamic_shapes=dynamic_shapes,
     )

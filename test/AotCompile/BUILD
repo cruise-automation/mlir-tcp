@@ -37,6 +37,12 @@ aot_compile(
 )
 
 aot_compile(
+    name = "add_tensor_with_alpha",
+    torch_loader_lib = ":model_loader_lib",
+    torch_loader_path = "test.AotCompile.model_loader_lib.add_tensor_with_alpha_loader",
+)
+
+aot_compile(
     name = "sigmoid",
     torch_loader_lib = ":model_loader_lib",
     torch_loader_path = "test.AotCompile.model_loader_lib.sigmoid_loader",
