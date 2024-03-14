@@ -40,9 +40,11 @@ public:
   }
 };
 
-void populateTcpToArithConversionPatterns(RewritePatternSet &patterns) {
+void populateTcpToArithPatternsAndLegality(RewritePatternSet &patterns,
+                                           ConversionTarget &target) {
   MLIRContext *context = patterns.getContext();
 
+  target.addIllegalOp<ConstOp>();
   patterns.add<ConstOpConverter>(context);
 }
 
@@ -53,11 +55,8 @@ public:
     ConversionTarget target(*context);
     target.addLegalDialect<arith::ArithDialect>();
 
-    TypeConverter typeConverter;
-    typeConverter.addConversion([](Type type) { return type; });
-
     RewritePatternSet patterns(context);
-    populateTcpToArithConversionPatterns(patterns);
+    populateTcpToArithPatternsAndLegality(patterns, target);
 
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns))))
