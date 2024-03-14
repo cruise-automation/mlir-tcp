@@ -315,23 +315,26 @@ void mlir::TcpToLinalg::populateElementwisePatternsAndLegality(
     ConversionTarget &target) {
   MLIRContext *context = patterns.getContext();
 
-  target.addIllegalDialect<TcpDialect>();
-  patterns.add<ConvertElementwiseOp<AddOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<ClampOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<MulOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<DivFOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<SubOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<TanhOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<SigmoidOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<SqrtOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<CeilOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<FloorOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<SinOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<CosOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<AbsOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<LogOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<NegOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<AtanOp>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<Atan2Op>>(typeConverter, context);
-  patterns.add<ConvertElementwiseOp<CastOp>>(typeConverter, context);
+#define INSERT_TCP_TO_LINALG_PATTERN(TcpOp)                                    \
+  target.addIllegalOp<TcpOp>();                                                \
+  patterns.add<ConvertElementwiseOp<TcpOp>>(typeConverter, context);
+  INSERT_TCP_TO_LINALG_PATTERN(AddOp);
+  INSERT_TCP_TO_LINALG_PATTERN(ClampOp);
+  INSERT_TCP_TO_LINALG_PATTERN(MulOp);
+  INSERT_TCP_TO_LINALG_PATTERN(DivFOp);
+  INSERT_TCP_TO_LINALG_PATTERN(SubOp);
+  INSERT_TCP_TO_LINALG_PATTERN(TanhOp);
+  INSERT_TCP_TO_LINALG_PATTERN(SigmoidOp);
+  INSERT_TCP_TO_LINALG_PATTERN(SqrtOp);
+  INSERT_TCP_TO_LINALG_PATTERN(CeilOp);
+  INSERT_TCP_TO_LINALG_PATTERN(FloorOp);
+  INSERT_TCP_TO_LINALG_PATTERN(SinOp);
+  INSERT_TCP_TO_LINALG_PATTERN(CosOp);
+  INSERT_TCP_TO_LINALG_PATTERN(AbsOp);
+  INSERT_TCP_TO_LINALG_PATTERN(LogOp);
+  INSERT_TCP_TO_LINALG_PATTERN(NegOp);
+  INSERT_TCP_TO_LINALG_PATTERN(AtanOp);
+  INSERT_TCP_TO_LINALG_PATTERN(Atan2Op);
+  INSERT_TCP_TO_LINALG_PATTERN(CastOp);
+#undef INSERT_TCP_TO_LINALG_PATTERN
 }
