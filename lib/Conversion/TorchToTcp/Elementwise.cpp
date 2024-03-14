@@ -127,7 +127,7 @@ public:
         return rewriter.notifyMatchFailure(op, "Unsupported alpha data type");
       std::tie(alpha, rhs) =
           torch_to_tcp::broadcastToMatchShape(rewriter, alpha, rhs);
-      rhs = rewriter.create<MulOp>(op->getLoc(), resultType, alpha, rhs);
+      rhs = rewriter.create<tcp::MulOp>(op->getLoc(), resultType, alpha, rhs);
     }
 
     rewriter.replaceOpWithNewOp<TcpOpT>(op, resultType, lhs, rhs);

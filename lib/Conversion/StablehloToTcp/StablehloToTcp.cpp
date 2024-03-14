@@ -40,8 +40,12 @@ public:
   }
 };
 
-void populateStablehloToTcpConversionPatterns(RewritePatternSet *patterns) {
-  patterns->add<TanhOpConverter>(patterns->getContext());
+void populateStablehloToTcpPatternsAndLegality(RewritePatternSet &patterns,
+                                               ConversionTarget &target) {
+  MLIRContext *context = patterns.getContext();
+
+  target.addIllegalOp<stablehlo::TanhOp>();
+  patterns.add<TanhOpConverter>(context);
 }
 
 class ConvertStablehloToTcp
@@ -50,14 +54,10 @@ public:
   void runOnOperation() override {
     MLIRContext *context = &getContext();
     ConversionTarget target(*context);
-    target.addIllegalDialect<stablehlo::StablehloDialect>();
     target.addLegalDialect<tcp::TcpDialect>();
 
-    TypeConverter typeConverter;
-    typeConverter.addConversion([](Type type) { return type; });
-
     RewritePatternSet patterns(context);
-    populateStablehloToTcpConversionPatterns(&patterns);
+    populateStablehloToTcpPatternsAndLegality(patterns, target);
 
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns))))
