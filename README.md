@@ -43,7 +43,7 @@ black .
 bazel run //tools/buildifier:buildifier
 ```
 
-To enable clangd (for code completion, navigation and insights), generate the compilation database using [bazel-compile-commands-extractor](https://github.com/hedronvision/bazel-compile-commands-extractor):
+To enable [clangd](https://clangd.llvm.org/) (for code completion, navigation and insights), generate the compilation database using [bazel-compile-commands-extractor](https://github.com/hedronvision/bazel-compile-commands-extractor):
 ```shell
 bazel build //...
 
@@ -110,6 +110,10 @@ gdb --args bazel-bin/tcp-opt -h
 ```
 
 For help with gdb commands please refer to [gdb cheat sheet](https://gist.github.com/rkubik/b96c23bd8ed58333de37f2b8cd052c30).
+
+### `aot_compile` debugging
+
+Refer this [README](https://github.com/cruise-automation/mlir-tcp/blob/main/tools/aot/README.md) for a step-by-step guide to debugging an end-to-end compilation pipeline using the AOT Compile framework.
 
 ### Enable `llvm-symbolizer`
 
