@@ -8,6 +8,17 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 
+AOT_TEST_SUITE = [
+    "add_mul_single_output",
+    "add_mul_multi_output",
+    "broadcast_add_mixed_ranks",
+    "add_tensor_with_alpha",
+    "sigmoid",
+    "concat_float_tensors",
+    "concat_int_tensors",
+    "slice_tensor",
+]
+
 py_library(
     name = "model_loader_lib",
     srcs = ["model_loader_lib.py"],
@@ -18,53 +29,14 @@ py_library(
     ],
 )
 
-aot_compile(
-    name = "add_mul_single_output",
-    torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.add_mul_single_output_loader",
-)
-
-aot_compile(
-    name = "add_mul_multi_output",
-    torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.add_mul_multi_output_loader",
-)
-
-aot_compile(
-    name = "broadcast_add_mixed_ranks",
-    torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.broadcast_add_mixed_ranks_loader",
-)
-
-aot_compile(
-    name = "add_tensor_with_alpha",
-    torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.add_tensor_with_alpha_loader",
-)
-
-aot_compile(
-    name = "sigmoid",
-    torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.sigmoid_loader",
-)
-
-aot_compile(
-    name = "concat_float_tensors",
-    torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.concat_float_tensors_loader",
-)
-
-aot_compile(
-    name = "concat_int_tensors",
-    torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.concat_int_tensors_loader",
-)
-
-aot_compile(
-    name = "slice_tensor",
-    torch_loader_lib = ":model_loader_lib",
-    torch_loader_path = "test.AotCompile.model_loader_lib.slice_tensor_loader",
-)
+[
+    aot_compile(
+        name = test,
+        torch_loader_lib = ":model_loader_lib",
+        torch_loader_path = "test.AotCompile.model_loader_lib.%s_loader" % test,
+    )
+    for test in AOT_TEST_SUITE
+]
 
 aot_compile(
     name = "basic_tcp_ops",
