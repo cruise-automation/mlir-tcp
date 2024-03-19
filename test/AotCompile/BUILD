@@ -11,8 +11,9 @@ load("@pip_deps//:requirements.bzl", "requirement")
 AOT_TEST_SUITE = [
     "add_mul_single_output",
     "add_mul_multi_output",
-    "broadcast_add_mixed_ranks",
+    "add_tensor_mixed_ranks",
     "add_tensor_with_alpha",
+    "add_scalar",
     "sigmoid",
     "concat_float_tensors",
     "concat_int_tensors",

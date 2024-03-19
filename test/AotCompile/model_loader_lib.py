@@ -75,8 +75,8 @@ def add_mul_multi_output_loader() -> TorchLoaderOutput:
     )
 
 
-def broadcast_add_mixed_ranks_loader() -> TorchLoaderOutput:
-    class BroadcastAddMixedRanks(torch.nn.Module):
+def add_tensor_mixed_ranks_loader() -> TorchLoaderOutput:
+    class AddTensorMixedRanks(torch.nn.Module):
         def __init__(self):
             super().__init__()
 
@@ -86,7 +86,7 @@ def broadcast_add_mixed_ranks_loader() -> TorchLoaderOutput:
 
     # Sample inputs
     x = torch.tensor(10.0)
-    y = torch.randn(2)
+    y = torch.randn(2, 3)
 
     # Dynamic dim constraints
     batch = Dim("batch")
@@ -96,7 +96,7 @@ def broadcast_add_mixed_ranks_loader() -> TorchLoaderOutput:
     }
 
     return TorchLoaderOutput(
-        model=BroadcastAddMixedRanks(),
+        model=AddTensorMixedRanks(),
         inputs=(x, y),
         dynamic_shapes=dynamic_shapes,
     )
@@ -125,6 +125,32 @@ def add_tensor_with_alpha_loader() -> TorchLoaderOutput:
     return TorchLoaderOutput(
         model=AddTensorWithAlpha(),
         inputs=(x, y),
+        dynamic_shapes=dynamic_shapes,
+    )
+
+
+def add_scalar_loader() -> TorchLoaderOutput:
+    class AddScalar(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.int1 = 1
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            add = torch.add(x, self.int1)
+            return add
+
+    # Sample inputs
+    x = torch.randn(2, 3)
+
+    # Dynamic dim constraints
+    batch = Dim("batch")
+    dynamic_shapes = {
+        "x": {0: batch},
+    }
+
+    return TorchLoaderOutput(
+        model=AddScalar(),
+        inputs=(x,),
         dynamic_shapes=dynamic_shapes,
     )
 
