@@ -129,15 +129,48 @@ def add_tensor_with_alpha_loader() -> TorchLoaderOutput:
     )
 
 
-def add_scalar_loader() -> TorchLoaderOutput:
-    class AddScalar(torch.nn.Module):
+def sub_tensor_with_alpha_loader() -> TorchLoaderOutput:
+    class SubTensorWithAlpha(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            add = torch.sub(x, y, alpha=2)
+            return add
+
+    # Sample inputs
+    x = torch.randn(2, 3)
+    y = torch.randn(2, 3)
+
+    # Dynamic dim constraints
+    batch = Dim("batch")
+    dynamic_shapes = {
+        "x": {0: batch},
+        "y": {0: batch},
+    }
+
+    return TorchLoaderOutput(
+        model=SubTensorWithAlpha(),
+        inputs=(x, y),
+        dynamic_shapes=dynamic_shapes,
+    )
+
+
+def add_sub_mul_div_scalar_loader() -> TorchLoaderOutput:
+    class AddSubMulDivScalar(torch.nn.Module):
         def __init__(self):
             super().__init__()
             self.int1 = 1
+            self.int2 = 2
+            self.int3 = 3
+            self.int4 = 4
 
         def forward(self, x: torch.Tensor) -> torch.Tensor:
             add = torch.add(x, self.int1)
-            return add
+            sub = torch.sub(add, self.int2)
+            mul = torch.mul(sub, self.int3)
+            div = torch.div(mul, self.int4)
+            return div
 
     # Sample inputs
     x = torch.randn(2, 3)
@@ -149,7 +182,7 @@ def add_scalar_loader() -> TorchLoaderOutput:
     }
 
     return TorchLoaderOutput(
-        model=AddScalar(),
+        model=AddSubMulDivScalar(),
         inputs=(x,),
         dynamic_shapes=dynamic_shapes,
     )
