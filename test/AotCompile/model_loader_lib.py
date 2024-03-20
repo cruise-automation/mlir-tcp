@@ -240,6 +240,33 @@ def sigmoid_loader() -> TorchLoaderOutput:
     )
 
 
+def clamp_loader() -> TorchLoaderOutput:
+    class Clamp(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.float1 = 1e-01
+            self.float2 = 1.024e01
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return torch.clamp(x, self.float1, self.float2)
+
+    # Sample inputs
+    x = torch.randn(2, 3)
+
+    # Dynamic dim constraints
+    dim_0 = Dim("dim_0")
+    dim_1 = Dim("dim_1")
+    dynamic_shapes = {
+        "x": {0: dim_0, 1: dim_1},
+    }
+
+    return TorchLoaderOutput(
+        model=Clamp(),
+        inputs=(x,),
+        dynamic_shapes=dynamic_shapes,
+    )
+
+
 def concat_float_tensors_loader() -> TorchLoaderOutput:
     class ConcatFloatTensors(torch.nn.Module):
         def __init__(self):

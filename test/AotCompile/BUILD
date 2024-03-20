@@ -17,6 +17,7 @@ AOT_TEST_SUITE = [
     "div_tensor_mixed_ranks",
     "add_sub_mul_div_scalar",
     "sigmoid",
+    "clamp",
     "concat_float_tensors",
     "concat_int_tensors",
     "slice_tensor",
