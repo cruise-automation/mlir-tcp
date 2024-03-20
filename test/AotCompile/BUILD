@@ -14,6 +14,7 @@ AOT_TEST_SUITE = [
     "add_tensor_mixed_ranks",
     "add_tensor_with_alpha",
     "sub_tensor_with_alpha",
+    "div_tensor_mixed_ranks",
     "add_sub_mul_div_scalar",
     "sigmoid",
     "concat_float_tensors",

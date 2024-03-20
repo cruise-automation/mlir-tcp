@@ -156,6 +156,33 @@ def sub_tensor_with_alpha_loader() -> TorchLoaderOutput:
     )
 
 
+def div_tensor_mixed_ranks_loader() -> TorchLoaderOutput:
+    class DivTensorMixedRanks(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            add = torch.div(x, y)
+            return add
+
+    # Sample inputs
+    x = torch.tensor(10.0)
+    y = torch.randn(2, 3)
+
+    # Dynamic dim constraints
+    batch = Dim("batch")
+    dynamic_shapes = {
+        "x": None,
+        "y": {0: batch},
+    }
+
+    return TorchLoaderOutput(
+        model=DivTensorMixedRanks(),
+        inputs=(x, y),
+        dynamic_shapes=dynamic_shapes,
+    )
+
+
 def add_sub_mul_div_scalar_loader() -> TorchLoaderOutput:
     class AddSubMulDivScalar(torch.nn.Module):
         def __init__(self):
