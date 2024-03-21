@@ -19,6 +19,7 @@ AOT_TEST_SUITE = [
     "sigmoid",
     "tanh",
     "clamp",
+    "relu",
     "concat_float_tensors",
     "concat_int_tensors",
     "slice_tensor",

@@ -292,6 +292,31 @@ def clamp_loader() -> TorchLoaderOutput:
     )
 
 
+def relu_loader() -> TorchLoaderOutput:
+    class Relu(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return torch.relu(x)
+
+    # Sample inputs
+    x = torch.randn(2, 3)
+
+    # Dynamic dim constraints
+    dim_0 = Dim("dim_0")
+    dim_1 = Dim("dim_1")
+    dynamic_shapes = {
+        "x": {0: dim_0, 1: dim_1},
+    }
+
+    return TorchLoaderOutput(
+        model=Relu(),
+        inputs=(x,),
+        dynamic_shapes=dynamic_shapes,
+    )
+
+
 def concat_float_tensors_loader() -> TorchLoaderOutput:
     class ConcatFloatTensors(torch.nn.Module):
         def __init__(self):
