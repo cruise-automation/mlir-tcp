@@ -313,16 +313,16 @@ def relu_loader() -> TorchLoaderOutput:
     )
 
 
-def abs_sqrt_loader() -> TorchLoaderOutput:
-    class AbsSqrt(torch.nn.Module):
+def sqrt_float_loader() -> TorchLoaderOutput:
+    class SqrtFloat(torch.nn.Module):
         def __init__(self):
             super().__init__()
 
         def forward(self, x: torch.Tensor) -> torch.Tensor:
-            return torch.sqrt(torch.abs(x))
+            return torch.sqrt(x)
 
     # Sample inputs
-    x = torch.randn(2, 3)
+    x = torch.abs(torch.randn(2, 3))
 
     # Dynamic dim constraints
     batch = Dim("batch")
@@ -331,7 +331,31 @@ def abs_sqrt_loader() -> TorchLoaderOutput:
     }
 
     return TorchLoaderOutput(
-        model=AbsSqrt(),
+        model=SqrtFloat(),
+        inputs=(x,),
+        dynamic_shapes=dynamic_shapes,
+    )
+
+
+def sqrt_int_loader() -> TorchLoaderOutput:
+    class SqrtInt(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return torch.sqrt(x)
+
+    # Sample inputs
+    x = torch.randint(0, 5, (2, 3), dtype=torch.int32)
+
+    # Dynamic dim constraints
+    batch = Dim("batch")
+    dynamic_shapes = {
+        "x": {0: batch},
+    }
+
+    return TorchLoaderOutput(
+        model=SqrtInt(),
         inputs=(x,),
         dynamic_shapes=dynamic_shapes,
     )
