@@ -20,6 +20,7 @@ AOT_TEST_SUITE = [
     "tanh",
     "clamp",
     "relu",
+    "abs_sqrt",
     "concat_float_tensors",
     "concat_int_tensors",
     "slice_tensor",

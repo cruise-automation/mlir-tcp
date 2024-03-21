@@ -227,10 +227,9 @@ def sigmoid_loader() -> TorchLoaderOutput:
     x = torch.randn(2, 3)
 
     # Dynamic dim constraints
-    dim_0 = Dim("dim_0")
-    dim_1 = Dim("dim_1")
+    batch = Dim("batch")
     dynamic_shapes = {
-        "x": {0: dim_0, 1: dim_1},
+        "x": {0: batch},
     }
 
     return TorchLoaderOutput(
@@ -252,10 +251,9 @@ def tanh_loader() -> TorchLoaderOutput:
     x = torch.randn(2, 3)
 
     # Dynamic dim constraints
-    dim_0 = Dim("dim_0")
-    dim_1 = Dim("dim_1")
+    batch = Dim("batch")
     dynamic_shapes = {
-        "x": {0: dim_0, 1: dim_1},
+        "x": {0: batch},
     }
 
     return TorchLoaderOutput(
@@ -279,10 +277,9 @@ def clamp_loader() -> TorchLoaderOutput:
     x = torch.randn(2, 3)
 
     # Dynamic dim constraints
-    dim_0 = Dim("dim_0")
-    dim_1 = Dim("dim_1")
+    batch = Dim("batch")
     dynamic_shapes = {
-        "x": {0: dim_0, 1: dim_1},
+        "x": {0: batch},
     }
 
     return TorchLoaderOutput(
@@ -304,14 +301,37 @@ def relu_loader() -> TorchLoaderOutput:
     x = torch.randn(2, 3)
 
     # Dynamic dim constraints
-    dim_0 = Dim("dim_0")
-    dim_1 = Dim("dim_1")
+    batch = Dim("batch")
     dynamic_shapes = {
-        "x": {0: dim_0, 1: dim_1},
+        "x": {0: batch},
     }
 
     return TorchLoaderOutput(
         model=Relu(),
+        inputs=(x,),
+        dynamic_shapes=dynamic_shapes,
+    )
+
+
+def abs_sqrt_loader() -> TorchLoaderOutput:
+    class AbsSqrt(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return torch.sqrt(torch.abs(x))
+
+    # Sample inputs
+    x = torch.randn(2, 3)
+
+    # Dynamic dim constraints
+    batch = Dim("batch")
+    dynamic_shapes = {
+        "x": {0: batch},
+    }
+
+    return TorchLoaderOutput(
+        model=AbsSqrt(),
         inputs=(x,),
         dynamic_shapes=dynamic_shapes,
     )
