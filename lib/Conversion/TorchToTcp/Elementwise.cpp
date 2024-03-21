@@ -38,16 +38,6 @@ bool IsMultiplyAlphaOne(Value alphaValue) {
   return ((isFloat && doubleValue == 1.0) || (isInt && intValue == 1.0));
 }
 
-SignednessAttr
-getTcpSignednessAttr(MLIRContext *context,
-                     IntegerType::SignednessSemantics signednessInfo) {
-  if (signednessInfo == IntegerType::SignednessSemantics::Signless)
-    return SignednessAttr::get(context, Signedness::Signless);
-  if (signednessInfo == IntegerType::SignednessSemantics::Signed)
-    return SignednessAttr::get(context, Signedness::Signed);
-  return SignednessAttr::get(context, Signedness::Unsigned);
-}
-
 Value convertScalarOperandToTensor(ConversionPatternRewriter &rewriter,
                                    Operation *op, Value scalarValue,
                                    Value convertedScalarValue, Type outputType,
@@ -56,12 +46,12 @@ Value convertScalarOperandToTensor(ConversionPatternRewriter &rewriter,
       RankedTensorType::get({}, convertedScalarValue.getType());
   Value resultValue = torch_to_tcp::scalarToTcpTensor(
       rewriter, op, scalarToTensorType, scalarValue);
-  if (convertedScalarValue.getType().template isa<mlir::FloatType>())
+  if (convertedScalarValue.getType().isa<mlir::FloatType>())
     // FP scalarValue is treated as fp64
     resultValue = torch_to_tcp::castTensorToDtype(
         rewriter, rewriter.getF64Type(), outputType, resultValue,
         convertedOutputType);
-  else if (convertedScalarValue.getType().template isa<mlir::IntegerType>())
+  else if (convertedScalarValue.getType().isa<mlir::IntegerType>())
     // INT scalarValue is treated as si64
     resultValue = torch_to_tcp::castTensorToDtype(
         rewriter, rewriter.getIntegerType(64, true), outputType, resultValue,
@@ -462,7 +452,9 @@ public:
       return rewriter.notifyMatchFailure(
           op, "Input tensor must have integer or floating-point datatype");
 
-    // if (elementType.isa<mlir::IntegerType>())
+    if (elementType.isa<mlir::IntegerType>()) {
+      rewriter.create<tcp::CastOp>(op->getLoc());
+    }
 
     RankedTensorType resultType =
         getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
@@ -636,7 +628,8 @@ public:
       if (auto intType = outputType.getDtype().dyn_cast<mlir::IntegerType>())
         rewriter.replaceOpWithNewOp<tcp::CastOp>(
             op, resultType, adaptor.getSelf(), SignednessAttr{},
-            getTcpSignednessAttr(context, intType.getSignedness()));
+            torch_to_tcp::getTcpSignednessAttr(context,
+                                               intType.getSignedness()));
       else
         return rewriter.notifyMatchFailure(
             op, "expect output type to be signless/signed/unsigned integer");
@@ -645,7 +638,8 @@ public:
       if (auto intType = inputType.getDtype().dyn_cast<mlir::IntegerType>())
         rewriter.replaceOpWithNewOp<tcp::CastOp>(
             op, resultType, adaptor.getSelf(),
-            getTcpSignednessAttr(context, intType.getSignedness()),
+            torch_to_tcp::getTcpSignednessAttr(context,
+                                               intType.getSignedness()),
             SignednessAttr{});
       else
         return rewriter.notifyMatchFailure(
@@ -657,8 +651,10 @@ public:
       if (inIntType && outIntType)
         rewriter.replaceOpWithNewOp<tcp::CastOp>(
             op, resultType, adaptor.getSelf(),
-            getTcpSignednessAttr(context, inIntType.getSignedness()),
-            getTcpSignednessAttr(context, outIntType.getSignedness()));
+            torch_to_tcp::getTcpSignednessAttr(context,
+                                               inIntType.getSignedness()),
+            torch_to_tcp::getTcpSignednessAttr(context,
+                                               outIntType.getSignedness()));
       else
         return rewriter.notifyMatchFailure(op,
                                            "invalid input/output data type");
