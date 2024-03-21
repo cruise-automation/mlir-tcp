@@ -343,7 +343,7 @@ def Tcp_SqrtOp : Tcp_UnaryElementwiseOp<"sqrt"> {
   }];
 
   let arguments = (ins
-    Tcp_FloatOrIntTensor:$in
+    Tcp_FloatTensor:$in
   );
 
   let results = (outs

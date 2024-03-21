@@ -93,10 +93,9 @@ public:
       }
     }
 
-    RankedTensorType resultType =
-        OpConversionPattern<AtenBroadcastToOp>::getTypeConverter()
-            ->convertType(op->getResult(0).getType())
-            .cast<RankedTensorType>();
+    RankedTensorType resultType = getTypeConverter()
+                                      ->convertType(op->getResult(0).getType())
+                                      .cast<RankedTensorType>();
 
     auto axesAttr = rewriter.getI64ArrayAttr(axes);
     rewriter.replaceOpWithNewOp<tcp::BroadcastOp>(op, resultType, input,
@@ -114,9 +113,7 @@ public:
   matchAndRewrite(ValueTensorLiteralOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     RankedTensorType resultType =
-        OpConversionPattern<ValueTensorLiteralOp>::getTypeConverter()
-            ->convertType(op.getType())
-            .cast<RankedTensorType>();
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
 
     if (auto elements = op.getValueAttr().dyn_cast<DenseIntElementsAttr>()) {
       Type elementType = resultType.getElementType();

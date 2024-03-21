@@ -215,9 +215,7 @@ public:
         runningVar.getType().dyn_cast<RankedTensorType>();
 
     RankedTensorType resultType =
-        OpConversionPattern<AtenBatchNormOp>::getTypeConverter()
-            ->convertType(op.getType())
-            .cast<RankedTensorType>();
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
 
     if (!inputType || !weightType || !biasType || !runningMeanType ||
         !runningVarType || !resultType)
@@ -369,8 +367,7 @@ public:
     auto elementType = inputType.getElementType();
     if (!elementType.isIntOrFloat())
       return rewriter.notifyMatchFailure(
-          op,
-          "Clamp input tensor must have integer or floating-point datatype");
+          op, "Input tensor must have integer or floating-point datatype");
 
     Value minValue = op.getMin();
     Value maxValue = op.getMax();
@@ -432,7 +429,7 @@ public:
     auto elementType = inputType.getElementType();
     if (!elementType.isIntOrFloat())
       return rewriter.notifyMatchFailure(
-          op, "Relu input tensor must have integer or floating-point datatype");
+          op, "Input tensor must have integer or floating-point datatype");
 
     FloatAttr minFloatAttr, maxFloatAttr;
     IntegerAttr minIntAttr, maxIntAttr;
@@ -444,6 +441,34 @@ public:
     rewriter.replaceOpWithNewOp<tcp::ClampOp>(op, inputType, input,
                                               minFloatAttr, maxFloatAttr,
                                               minIntAttr, maxIntAttr);
+    return success();
+  }
+};
+
+class ConvertAtenSqrtOp : public OpConversionPattern<AtenSqrtOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenSqrtOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    Value input = adaptor.getSelf();
+    RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
+    if (!inputType)
+      return rewriter.notifyMatchFailure(
+          op, "Only Ranked Tensor types are supported in TCP");
+    auto elementType = inputType.getElementType();
+    if (!elementType.isIntOrFloat())
+      return rewriter.notifyMatchFailure(
+          op, "Input tensor must have integer or floating-point datatype");
+
+    // if (elementType.isa<mlir::IntegerType>())
+
+    RankedTensorType resultType =
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
+
+    rewriter.replaceOpWithNewOp<tcp::SqrtOp>(op, resultType, input);
+
     return success();
   }
 };
@@ -465,7 +490,7 @@ public:
     auto elementType = inputType.getElementType();
     if (!elementType.isIntOrFloat())
       return rewriter.notifyMatchFailure(
-          op, "Abs input tensor must have integer or floating-point datatype");
+          op, "Input tensor must have integer or floating-point datatype");
 
     RankedTensorType resultType =
         OpConversionPattern<AtenOpT>::getTypeConverter()
@@ -514,9 +539,7 @@ public:
     RankedTensorType rhsType = rhs.getType().dyn_cast<RankedTensorType>();
 
     RankedTensorType resultType =
-        OpConversionPattern<AtenAtan2Op>::getTypeConverter()
-            ->convertType(op.getType())
-            .cast<RankedTensorType>();
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
 
     if (!lhsType || !rhsType || !resultType)
       return rewriter.notifyMatchFailure(
@@ -563,9 +586,7 @@ public:
     auto inputType = input.getType().dyn_cast<torch::Torch::ValueTensorType>();
     auto outputType = op.getType().dyn_cast<torch::Torch::ValueTensorType>();
     RankedTensorType resultType =
-        OpConversionPattern<AtenToDtypeOp>::getTypeConverter()
-            ->convertType(op.getType())
-            .cast<RankedTensorType>();
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
 
     if (!inputType || !outputType)
       return rewriter.notifyMatchFailure(
@@ -660,6 +681,7 @@ void torch_to_tcp::populateElementwisePatternsAndLegality(
   INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenReluOp);
   INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenBatchNormOp);
   INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenAtan2Op);
+  INSERT_ATEN_ELEMENTWISE_OP_PATTERN(AtenSqrtOp);
 #undef INSERT_ATEN_ELEMENTWISE_OP_PATTERN
 
 #define INSERT_ATEN_ELEMENTWISE_ADD_SUB_PATTERN(AtenOp, TcpOp)                 \
@@ -702,6 +724,5 @@ void torch_to_tcp::populateElementwisePatternsAndLegality(
       ConvertAtenUnaryIntOrFpOp<AtenOp, TcpOp>, AtenOp>(                       \
       typeConverter, patterns, target, convertTorchOpsSet)
   INSERT_ATEN_UNARY_INT_OR_FP_PATTERN(AtenAbsOp, tcp::AbsOp);
-  INSERT_ATEN_UNARY_INT_OR_FP_PATTERN(AtenSqrtOp, tcp::SqrtOp);
 #undef INSERT_ATEN_UNARY_INT_OR_FP_PATTERN
 }
