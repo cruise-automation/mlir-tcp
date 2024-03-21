@@ -68,6 +68,8 @@ public:
     Value input = adaptor.getSelf();
     RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
 
+    ArrayRef<int64_t> inputShape = inputType.getShape();
+
     SmallVector<Value> newDimSizes;
     if (!getListConstructElements(op.getSize(), newDimSizes))
       return rewriter.notifyMatchFailure(
@@ -86,7 +88,8 @@ public:
       int64_t staticDimSize;
       if (i < newLeadingDims ||
           !matchPattern(newDimSize, m_TorchConstantInt(&staticDimSize)) ||
-          staticDimSize != -1) {
+          (staticDimSize != -1 &&
+           staticDimSize != inputShape[i - newLeadingDims])) {
         axes.push_back(i);
         newDimSize = rewriter.create<torch::TorchConversion::ToI64Op>(
             op->getLoc(), newDimSize);
