@@ -65,6 +65,22 @@ func.func @test_broadcast_axes_w_duplicates(%arg0 : tensor<?x1x?x1xf32>, %arg1 :
 
 // -----
 
+func.func @test_broadcast_axes_out_of_bounds(%arg0 : tensor<?x1x?x1xf32>, %arg1 : index, %arg2 : index) -> tensor<?x?x?x?xf32> {
+  // expected-error@+1{{'tcp.broadcast' op failed to verify that attribute `axes` are in bounds}}
+  %0 = tcp.broadcast %arg0, %arg1, %arg2 {axes = [1, 100]} : tensor<?x1x?x1xf32>, index, index -> tensor<?x?x?x?xf32>
+  return %0 : tensor<?x?x?x?xf32>
+}
+
+// -----
+
+func.func @test_broadcast_axes_not_1(%arg0 : tensor<?x7x?x1xf32>, %arg1 : index, %arg2 : index) -> tensor<?x?x?x?xf32> {
+  // expected-error@+1{{'tcp.broadcast' op failed to verify that dimensions listed in attribute `axes` have a static size of `1`}}
+  %0 = tcp.broadcast %arg0, %arg1, %arg2 {axes = [1, 1]} : tensor<?x7x?x1xf32>, index, index -> tensor<?x?x?x?xf32>
+  return %0 : tensor<?x?x?x?xf32>
+}
+
+// -----
+
 // CHECK-LABEL: func.func @test_group(
 // CHECK-SAME:          %[[ARG0:.*]]: tensor<?x?xf32>,
 // CHECK-SAME:          %[[ARG1:.*]]: tensor<?x?xf32>) -> tensor<?x?xf32>

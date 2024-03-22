@@ -85,11 +85,28 @@ public:
     SmallVector<Value> resultShape;
     for (int64_t i = 0; i < static_cast<int64_t>(newDimSizes.size()); ++i) {
       Value newDimSize = newDimSizes[i];
+
+      bool isNewDim = i < newLeadingDims;
+      // At the pytorch level it's possible to broadcast to a dynamic dimension;
+      // for example: `torch.broadcast_to(x, y.size())` where `y.size()` has
+      // dynamic shapes. When broadcasting to dynamic size, matchPattern fails
+      // to read an int out of the MLIR Value. In the "usual" case
+      // (`torch.broadcast_to(x, (3, 3))`) matchPattern will succeed.
       int64_t staticDimSize;
-      if (i < newLeadingDims ||
-          !matchPattern(newDimSize, m_TorchConstantInt(&staticDimSize)) ||
-          (staticDimSize != -1 &&
-           staticDimSize != inputShape[i - newLeadingDims])) {
+      bool isDimDynamic =
+          !matchPattern(newDimSize, m_TorchConstantInt(&staticDimSize));
+      // lambda because staticDimSize will contain garbage in the case of a
+      // dynamic dim.
+      auto isDimBroadcasted = [i, &inputShape,
+                               newLeadingDims](int64_t dimSize) -> bool {
+        // pytorch defines "passing -1 as the size for a dimension means not
+        // changing the size of that dimension."
+        bool isDimSizePreserved = dimSize == -1;
+        bool doesDimChangeShape = dimSize != inputShape[i - newLeadingDims];
+
+        return !isDimSizePreserved && doesDimChangeShape;
+      };
+      if (isNewDim || isDimDynamic || isDimBroadcasted(staticDimSize)) {
         axes.push_back(i);
         newDimSize = rewriter.create<torch::TorchConversion::ToI64Op>(
             op->getLoc(), newDimSize);

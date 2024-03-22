@@ -359,3 +359,27 @@ func.func @torch.aten.broadcast_to(%arg0: !torch.vtensor<[1,2,1,2],f32>) -> () {
   %2 = torch.aten.broadcast_to %arg0, %1 : !torch.vtensor<[1,2,1,2],f32>, !torch.list<int> -> !torch.vtensor<[4,2,4,2],f32>
   return
 }
+
+// -----
+
+// CHECK-LABEL:  @torch.aten.broadcast_to_dynamic_dim(
+// CHECK-SAME:   %[[ARG0:.*]]: !torch.vtensor<[1,2],f32>, %[[ARG1:.*]]: !torch.vtensor<[?],f32>) -> !torch.vtensor<[?,2],f32> {
+// CHECK:        %[[ARG1_T:.*]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[?],f32> -> tensor<?xf32>
+// CHECK:        %[[ARG0_T:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,2],f32> -> tensor<1x2xf32>
+// CHECK:        %[[C0:.*]] = arith.constant 0 : index
+// CHECK:        %[[DIM:.*]] = tensor.dim %[[ARG1_T]], %[[C0]] : tensor<?xf32>
+// CHECK:        %[[DIM_CAST:.*]] = arith.index_cast %[[DIM]] : index to i64
+// CHECK:        %[[FROM:.*]] = torch_c.from_i64 %[[DIM_CAST]]
+// CHECK:        %[[TO:.*]] = torch_c.to_i64 %[[FROM]]
+// CHECK:        %[[CAST:.*]] = arith.index_cast %[[TO]] : i64 to index
+// CHECK:        %[[B_RESULT:.*]] = tcp.broadcast %[[ARG0_T]], %[[CAST]] {axes = [0]} : tensor<1x2xf32>, index -> tensor<?x2xf32>
+// CHECK:        %[[OUT:.*]] = torch_c.from_builtin_tensor %[[B_RESULT]] : tensor<?x2xf32> -> !torch.vtensor<[?,2],f32>
+// CHECK:        return %[[OUT]] : !torch.vtensor<[?,2],f32>
+func.func @torch.aten.broadcast_to_dynamic_dim(%arg0: !torch.vtensor<[1,2],f32>, %arg1: !torch.vtensor<[?],f32>) -> !torch.vtensor<[?,2],f32> {
+  %int0 = torch.constant.int 0
+  %0 = torch.aten.size.int %arg1, %int0 : !torch.vtensor<[?],f32>, !torch.int -> !torch.int
+  %int-1 = torch.constant.int -1
+  %1 = torch.prim.ListConstruct %0, %int-1 : (!torch.int, !torch.int) -> !torch.list<int>
+  %2 = torch.aten.broadcast_to %arg0, %1  : !torch.vtensor<[1,2],f32>, !torch.list<int> -> !torch.vtensor<[?,2],f32>
+  return %2 : !torch.vtensor<[?,2],f32>
+}
