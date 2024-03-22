@@ -232,8 +232,8 @@ def slice_tensor_loader() -> TorchLoaderOutput:
     )
 
 
-def broadcast_to_loader() -> TorchLoaderOutput:
-    class BroadcastTo(torch.nn.Module):
+def broadcast_unit_dim_to_static_with_explicit_dim_static_loader() -> TorchLoaderOutput:
+    class BroadcastUnitDimToStaticWithExplicitDimStatic(torch.nn.Module):
         def __init__(self):
             super().__init__()
 
@@ -244,6 +244,50 @@ def broadcast_to_loader() -> TorchLoaderOutput:
     x = torch.randn(1, 2)
 
     return TorchLoaderOutput(
-        model=BroadcastTo(),
+        model=BroadcastUnitDimToStaticWithExplicitDimStatic(),
         inputs=(x,),
+    )
+
+
+def broadcast_unit_dim_to_static_with_unchanged_dim_static_loader() -> (
+    TorchLoaderOutput
+):
+    class BroadcastUnitDimToStaticWithUnchangedDimStatic(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return torch.broadcast_to(x, (3, -1))
+
+    # Sample inputs
+    x = torch.randn(1, 2)
+
+    return TorchLoaderOutput(
+        model=BroadcastUnitDimToStaticWithUnchangedDimStatic(),
+        inputs=(x,),
+    )
+
+
+def broadcast_unit_dim_to_static_with_unchanged_dim_dynamic_loader() -> (
+    TorchLoaderOutput
+):
+    class BroadcastUnitDimToStaticWithUnchangedDimDynamic(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return torch.broadcast_to(x, (3, -1))
+
+    # Sample inputs
+    x = torch.randn(1, 2)
+
+    dim_1 = Dim("batch")
+    dynamic_shapes = {
+        "x": {1: dim_1},
+    }
+
+    return TorchLoaderOutput(
+        model=BroadcastUnitDimToStaticWithUnchangedDimDynamic(),
+        inputs=(x,),
+        dynamic_shapes=dynamic_shapes,
     )

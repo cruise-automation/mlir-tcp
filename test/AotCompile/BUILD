@@ -18,8 +18,10 @@ AOT_TEST_SUITE = [
     ("concat_float_tensors", False),
     ("concat_int_tensors", False),
     ("slice_tensor", False),
-    # FIXME: broadcast broken
-    ("broadcast_to", True),
+    # FIXME: don't broadcast dims that are the same
+    ("broadcast_unit_dim_to_static_with_explicit_dim_static", True),
+    ("broadcast_unit_dim_to_static_with_unchanged_dim_static", False),
+    ("broadcast_unit_dim_to_static_with_unchanged_dim_dynamic", False),
 ]
 
 py_library(
