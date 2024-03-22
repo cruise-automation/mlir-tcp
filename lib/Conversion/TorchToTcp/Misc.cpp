@@ -56,12 +56,14 @@ bool checkZerosOnesOpAttributes(AtenOpT op, RankedTensorType outType) {
   return true;
 }
 
-class ConvertAtenBroadcastToOp : public OpConversionPattern<AtenBroadcastToOp> {
+template <typename AtenOpT>
+class ConvertAtenBroadcastLikeOps : public OpConversionPattern<AtenOpT> {
 public:
-  using OpConversionPattern::OpConversionPattern;
+  using OpConversionPattern<AtenOpT>::OpConversionPattern;
+  using OpAdaptor = typename AtenOpT::Adaptor;
 
   LogicalResult
-  matchAndRewrite(AtenBroadcastToOp op, OpAdaptor adaptor,
+  matchAndRewrite(AtenOpT op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     Value input = adaptor.getSelf();
     RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
@@ -94,9 +96,9 @@ public:
     }
 
     RankedTensorType resultType =
-        OpConversionPattern<AtenBroadcastToOp>::getTypeConverter()
+        OpConversionPattern<AtenOpT>::getTypeConverter()
             ->convertType(op->getResult(0).getType())
-            .cast<RankedTensorType>();
+            .template cast<RankedTensorType>();
 
     auto axesAttr = rewriter.getI64ArrayAttr(axes);
     rewriter.replaceOpWithNewOp<tcp::BroadcastOp>(op, resultType, input,
@@ -257,10 +259,17 @@ void torch_to_tcp::populateMiscPatternsAndLegality(
 #define INSERT_ATEN_MISC_OP_PATTERN(AtenOp)                                    \
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<Convert##AtenOp, AtenOp>(   \
       typeConverter, patterns, target, convertTorchOpsSet)
-  INSERT_ATEN_MISC_OP_PATTERN(AtenBroadcastToOp);
   INSERT_ATEN_MISC_OP_PATTERN(ValueTensorLiteralOp);
   INSERT_ATEN_MISC_OP_PATTERN(AtenSizeIntOp);
 #undef INSERT_ATEN_MISC_OP_PATTERN
+
+#define INSERT_ATEN_BROADCAST_PATTERN(AtenOp)                                  \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
+      ConvertAtenBroadcastLikeOps<AtenOp>, AtenOp>(typeConverter, patterns,    \
+                                                   target, convertTorchOpsSet)
+  INSERT_ATEN_BROADCAST_PATTERN(AtenBroadcastToOp);
+  INSERT_ATEN_BROADCAST_PATTERN(AtenExpandOp);
+#undef INSERT_ATEN_BROADCAST_PATTERN
 
 #define INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenOpPattern, AtenOp, Val)      \
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \

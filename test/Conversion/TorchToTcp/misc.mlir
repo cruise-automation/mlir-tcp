@@ -322,3 +322,22 @@ func.func @torch.aten.size.int(%arg0: !torch.vtensor<[?,?],f32>) -> () {
   %0 = torch.aten.size.int %arg0, %int0 : !torch.vtensor<[?,?],f32>, !torch.int -> !torch.int
   return
 }
+
+// -----
+
+// CHECK-LABEL:  @torch.aten.expand(
+// CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[1,2],f32>) -> !torch.vtensor<[3,2],f32> {
+// CHECK:        %[[TENSOR:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[1,2],f32> -> tensor<1x2xf32>
+// CHECK:        %[[CONSTANT0:.*]] = torch.constant.int 3
+// CHECK:        %[[CONSTANT1:.*]] = torch.constant.int -1
+// CHECK:        %[[CAST0:.*]] = torch_c.to_i64 %[[CONSTANT0]]
+// CHECK:        %[[BROADCAST_DIM0:.*]] = arith.index_cast %[[CAST0]] : i64 to index
+// CHECK:        %{{.*}} = tcp.broadcast %[[TENSOR]], %[[BROADCAST_DIM0]] {axes = [0]} : tensor<1x2xf32>, index -> tensor<3x2xf32>
+func.func @torch.aten.expand(%arg0: !torch.vtensor<[1,2],f32>) -> !torch.vtensor<[3,2],f32> {
+  %int3 = torch.constant.int 3
+  %int-1 = torch.constant.int -1
+  %0 = torch.prim.ListConstruct %int3, %int-1 : (!torch.int, !torch.int) -> !torch.list<int>
+  %false = torch.constant.bool false
+  %1 = torch.aten.expand %arg0, %0, %false : !torch.vtensor<[1,2],f32>, !torch.list<int>, !torch.bool -> !torch.vtensor<[3,2],f32>
+  return %1 : !torch.vtensor<[3,2],f32>
+}
