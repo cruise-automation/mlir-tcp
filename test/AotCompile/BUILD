@@ -22,6 +22,8 @@ AOT_TEST_SUITE = [
     ("broadcast_unit_dim_to_static_with_explicit_dim_static", True),
     ("broadcast_unit_dim_to_static_with_unchanged_dim_static", False),
     ("broadcast_unit_dim_to_static_with_unchanged_dim_dynamic", False),
+    ("broadcast_unit_dim_to_dynamic_with_unchanged_dim_static", False),
+    ("broadcast_unit_dim_to_dynamic_with_unchanged_dim_dynamic", False),
 ]
 
 py_library(
