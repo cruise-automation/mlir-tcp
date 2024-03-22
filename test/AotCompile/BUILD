@@ -35,9 +35,9 @@ py_library(
 [
     aot_compile(
         name = test_name,
+        skip_ci = skip_ci,
         torch_loader_lib = ":model_loader_lib",
         torch_loader_path = "test.AotCompile.model_loader_lib.%s_loader" % test_name,
-        skip_ci = skip_ci,
     )
     for test_name, skip_ci in AOT_TEST_SUITE
 ]
