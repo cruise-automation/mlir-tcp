@@ -230,3 +230,20 @@ def slice_tensor_loader() -> TorchLoaderOutput:
         inputs=(x,),
         dynamic_shapes=dynamic_shapes,
     )
+
+
+def broadcast_to_loader() -> TorchLoaderOutput:
+    class BroadcastTo(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return torch.broadcast_to(x, (3, 2))
+
+    # Sample inputs
+    x = torch.randn(1, 2)
+
+    return TorchLoaderOutput(
+        model=BroadcastTo(),
+        inputs=(x,),
+    )

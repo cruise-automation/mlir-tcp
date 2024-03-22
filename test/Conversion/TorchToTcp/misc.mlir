@@ -322,3 +322,6 @@ func.func @torch.aten.size.int(%arg0: !torch.vtensor<[?,?],f32>) -> () {
   %0 = torch.aten.size.int %arg0, %int0 : !torch.vtensor<[?,?],f32>, !torch.int -> !torch.int
   return
 }
+
+// -----
+
