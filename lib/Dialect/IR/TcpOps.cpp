@@ -49,6 +49,22 @@ LogicalResult BroadcastOp::verify() {
     return v1.cast<IntegerAttr>().getInt() < v2.cast<IntegerAttr>().getInt();
   };
 
+  auto getInt = [](IntegerAttr v) { return v.getInt(); };
+
+  ArrayRef<int64_t> inputShape = getIn().getType().getShape();
+  for (auto axis :
+       llvm::map_range(getAxes().getAsRange<IntegerAttr>(), getInt)) {
+    if (axis >= inputShape.size()) {
+      return emitOpError(
+          "failed to verify that attribute `axes` are in bounds");
+    }
+
+    if (inputShape[axis] != 1) {
+      return emitOpError("failed to verify that dimensions listed in attribute "
+                         "`axes` have a static size of `1`");
+    }
+  }
+
   if (!llvm::is_sorted(getAxes(), compareIntAttr))
     return emitOpError(
         "failed to verify that attribute `axes` must be in increasing order");
