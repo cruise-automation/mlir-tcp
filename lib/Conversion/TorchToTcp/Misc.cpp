@@ -95,18 +95,19 @@ public:
       int64_t staticDimSize;
       bool isDimDynamic =
           !matchPattern(newDimSize, m_TorchConstantInt(&staticDimSize));
-      // lambda because staticDimSize will contain garbage in the case of a
-      // dynamic dim.
-      auto isDimBroadcasted = [i, &inputShape,
-                               newLeadingDims](int64_t dimSize) -> bool {
-        // pytorch defines "passing -1 as the size for a dimension means not
-        // changing the size of that dimension."
-        bool isDimSizePreserved = dimSize == -1;
-        bool doesDimChangeShape = dimSize != inputShape[i - newLeadingDims];
+      // pytorch defines "passing -1 as the size for a dimension means not
+      // changing the size of that dimension." Short circuit if dim is dynamic
+      // as staticDimSize won't have a valid value.
+      bool isDimSizePreserved = isDimDynamic ? false : staticDimSize == -1;
+      // Short circuit if isNewDim to prevent out of bounds access of
+      // inputShape.
+      bool doesDimChangeShape =
+          isDimDynamic || isNewDim
+              ? false
+              : staticDimSize != inputShape[i - newLeadingDims];
 
-        return !isDimSizePreserved && doesDimChangeShape;
-      };
-      if (isNewDim || isDimDynamic || isDimBroadcasted(staticDimSize)) {
+      if (isNewDim || isDimDynamic ||
+          (!isDimSizePreserved && doesDimChangeShape)) {
         axes.push_back(i);
         newDimSize = rewriter.create<torch::TorchConversion::ToI64Op>(
             op->getLoc(), newDimSize);
