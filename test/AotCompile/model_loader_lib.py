@@ -346,3 +346,46 @@ def broadcast_unit_dim_to_dynamic_with_unchanged_dim_dynamic_loader() -> (
         inputs=(x, y),
         dynamic_shapes=dynamic_shapes,
     )
+
+
+def broadcast_unit_dim_to_static_with_rank_increase_loader() -> TorchLoaderOutput:
+    class BroadcastUnitDimToStaticWithRankIncrease(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            return torch.broadcast_to(x, y.size())
+
+    # Sample inputs
+    x = torch.randn(1, 2)
+    y = torch.randn(4, 3, 2)
+
+    return TorchLoaderOutput(
+        model=BroadcastUnitDimToStaticWithRankIncrease(),
+        inputs=(x, y),
+    )
+
+
+def broadcast_unit_dim_to_dynamic_with_rank_increase_loader() -> TorchLoaderOutput:
+    class BroadcastUnitDimToDynamicWithRankIncrease(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            return torch.broadcast_to(x, y.size())
+
+    # Sample inputs
+    x = torch.randn(1, 2)
+    y = torch.randn(4, 3, 2)
+
+    dim_0 = Dim("dim_0")
+    dynamic_shapes = {
+        "x": {},
+        "y": {0: dim_0},
+    }
+
+    return TorchLoaderOutput(
+        model=BroadcastUnitDimToDynamicWithRankIncrease(),
+        inputs=(x, y),
+        dynamic_shapes=dynamic_shapes,
+    )
