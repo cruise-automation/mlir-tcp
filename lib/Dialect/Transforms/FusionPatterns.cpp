@@ -49,8 +49,8 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
         //   func and the use is already inside a group.
         isChanged = true;
         if (def->getParentRegion() == use->getParentRegion()) {
-          auto groupOp =
-              rewriter.create<GroupOp>(use->getLoc(), use->getResultTypes());
+          auto groupOp = rewriter.create<tcp::GroupOp>(use->getLoc(),
+                                                       use->getResultTypes());
           if (postFunc) {
             postFunc(groupOp, rewriter);
           }
@@ -64,11 +64,11 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
             OpBuilder::InsertionGuard guard(rewriter);
             rewriter.setInsertionPointToStart(groupBlock);
             auto yieldOp =
-                rewriter.create<YieldOp>(use->getLoc(), use->getResults());
+                rewriter.create<tcp::YieldOp>(use->getLoc(), use->getResults());
             use->moveBefore(yieldOp);
             operand.getDefiningOp()->moveBefore(use);
           }
-        } else if (auto groupOp = dyn_cast<GroupOp>(use->getParentOp())) {
+        } else if (auto groupOp = dyn_cast<tcp::GroupOp>(use->getParentOp())) {
           def->moveBefore(use);
         } else {
           llvm_unreachable("Unhandled case during fusion");

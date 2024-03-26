@@ -8,7 +8,11 @@ bazel-bin
 bazel-out
 bazel-mlir-tcp
 bazel-testlogs
-third_party/
+
+# ignore local_repos of llvm, torch-mlir, stablehlo
+third_party/llvm-project
+third_party/torch-mlir
+third_party/stablehlo
 
 # clangd related
 .cache

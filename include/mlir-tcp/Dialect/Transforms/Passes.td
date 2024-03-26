@@ -30,4 +30,12 @@ def VerifyTcpBackendContract : Pass<"torch-verify-tcp-backend-contract", "Module
   let constructor = "mlir::tcp::createVerifyTcpBackendContractPass()";
 }
 
+// \brief This pass decomposes tensor ops into simpler tensor ops.
+// For example, `tensor::ConcatOp` is decomposed into a destination (`tensor::EmptyOp`)
+// and a sequence of slice inserts (`tensor::InsertSliceOp`).
+def DecomposeTensorOps : Pass<"decompose-tensor-ops", "func::FuncOp"> {
+  let summary = "Decomposes tensor ops into simpler tensor ops.";
+  let constructor = "mlir::tcp::createDecomposeTensorOpsPass()";
+}
+
 #endif // TCP_PASSES

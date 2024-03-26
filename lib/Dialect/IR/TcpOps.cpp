@@ -49,6 +49,22 @@ LogicalResult BroadcastOp::verify() {
     return v1.cast<IntegerAttr>().getInt() < v2.cast<IntegerAttr>().getInt();
   };
 
+  auto getInt = [](IntegerAttr v) { return v.getInt(); };
+
+  ArrayRef<int64_t> inputShape = getIn().getType().getShape();
+  for (auto axis :
+       llvm::map_range(getAxes().getAsRange<IntegerAttr>(), getInt)) {
+    if (axis >= inputShape.size()) {
+      return emitOpError(
+          "failed to verify that attribute `axes` are in bounds");
+    }
+
+    if (inputShape[axis] != 1) {
+      return emitOpError("failed to verify that dimensions listed in attribute "
+                         "`axes` have a static size of `1`");
+    }
+  }
+
   if (!llvm::is_sorted(getAxes(), compareIntAttr))
     return emitOpError(
         "failed to verify that attribute `axes` must be in increasing order");
@@ -110,51 +126,6 @@ LogicalResult IsolatedGroupOp::verify() {
 }
 
 OpFoldResult ConstOp::fold(FoldAdaptor) { return getValueAttr(); }
-
-LogicalResult ConcatOp::verify() {
-  auto outputTensorType = getResult().getType().cast<TensorType>();
-  int64_t axis = getAxis();
-  int64_t concatDimVal = outputTensorType.getShape()[axis];
-  // Accumulate concat dim, ignored if any of the inputs are dynamic.
-  int64_t concatDimAcc = 0;
-  // All tensors must have the same dtype, rank and all non-concat dims must be
-  // the same.
-  for (auto type : getInputs().getTypes()) {
-    auto inputTensorType = type.cast<TensorType>();
-    if (outputTensorType.getRank() != inputTensorType.getRank())
-      return emitOpError() << "failed to verify tcp.concat operands and "
-                              "results rank mismatched";
-    for (int64_t dim = 0; dim < inputTensorType.getRank(); ++dim) {
-      if (dim == axis) {
-        concatDimAcc += inputTensorType.getShape()[dim];
-      } else {
-        if (inputTensorType.getShape()[dim] != outputTensorType.getShape()[dim])
-          emitOpError() << "failed to verify tcp.concat with non concat dim "
-                        << dim << ", having different values "
-                        << inputTensorType.getShape()[dim] << " "
-                        << outputTensorType.getShape()[dim];
-      }
-    }
-  }
-
-  // If concat dim is dynamic, at least one input must be dynamic.
-  if (ShapedType::isDynamic(concatDimVal)) {
-    if (!llvm::any_of(getInputs().getTypes(), [axis](Type type) {
-          return ShapedType::isDynamic(
-              type.cast<TensorType>().getShape()[axis]);
-        }))
-      return emitOpError() << "failed to verify tcp.concat with dynamic concat "
-                              "axis and static inputs";
-    else
-      return success();
-  }
-
-  // Static case, concat dim must be the sum of dim[axis] across all inputs.
-  if (concatDimAcc != concatDimVal)
-    return emitOpError() << "failed to verify tcp.concat with dim " << axis
-                         << " != " << concatDimAcc;
-  return success();
-}
 
 LogicalResult CastOp::verify() {
   auto inputType = getIn().getType().cast<RankedTensorType>();

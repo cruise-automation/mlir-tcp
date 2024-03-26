@@ -1,13 +1,16 @@
 // RUN: tcp-opt %s -tcp-to-llvm-pipeline | FileCheck %s
 
 // CHECK-LABEL: llvm.func @main
+// CHECK:         llvm.mlir.constant
 // CHECK:         llvm.mlir.undef
 // CHECK:         llvm.insertvalue
-// CHECK:         llvm.mlir.constant
 // CHECK:         llvm.extractvalue
+// CHECK:         llvm.alloca
+// CHECK:         llvm.store
+// CHECK:         llvm.getelementptr
+// CHECK:         llvm.load
 // CHECK:         llvm.mul
 // CHECK:         llvm.mlir.zero
-// CHECK:         llvm.getelementptr
 // CHECK:         llvm.ptrtoint
 // CHECK:         llvm.add
 // CHECK:         llvm.call
@@ -18,6 +21,8 @@
 // CHECK:         llvm.icmp
 // CHECK:         llvm.cond_br
 // CHECK:         llvm.load
+// CHECK:         llvm.mul
+// CHECK:         llvm.add
 // CHECK:         llvm.fadd
 // CHECK:         llvm.store
 // CHECK:         llvm.fmul
