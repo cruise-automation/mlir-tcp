@@ -31,16 +31,19 @@ bazel build //:tcp-opt
 bazel test //...
 ```
 
-We welcome contributions to `mlir-tcp`. If you do contribute, please finalize your PR with clang-format and bazel buildifier to ensure the C++ sources and BUILD files are formatted consistently:
+We welcome contributions to `mlir-tcp`. When authoring new TCP ops with dialect conversions from/to Torch and Linalg, please include lit tests for dialect and conversions, as well as [aot_compile](https://github.com/cruise-automation/mlir-tcp/blob/main/tools/aot/README.md) generated e2e integration tests. Lastly, please finalize your PR with clang-format, black and bazel buildifier to ensure the C++/python sources and BUILD files are formatted consistently:
 ```shell
 # clang-format
 find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
+
+# black
+black .
 
 # buildifer
 bazel run //tools/buildifier:buildifier
 ```
 
-To enable clangd (for code completion, navigation and insights), generate the compilation database using [bazel-compile-commands-extractor](https://github.com/hedronvision/bazel-compile-commands-extractor):
+To enable [clangd](https://clangd.llvm.org/) (for code completion, navigation and insights), generate the compilation database using [bazel-compile-commands-extractor](https://github.com/hedronvision/bazel-compile-commands-extractor):
 ```shell
 bazel build //...
 
@@ -107,6 +110,10 @@ gdb --args bazel-bin/tcp-opt -h
 ```
 
 For help with gdb commands please refer to [gdb cheat sheet](https://gist.github.com/rkubik/b96c23bd8ed58333de37f2b8cd052c30).
+
+### `aot_compile` debugging
+
+Refer this [README](https://github.com/cruise-automation/mlir-tcp/blob/main/tools/aot/README.md) for a step-by-step guide to debugging an end-to-end compilation pipeline using the AOT Compile framework.
 
 ### Enable `llvm-symbolizer`
 

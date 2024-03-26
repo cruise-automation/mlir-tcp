@@ -61,7 +61,7 @@ TEST(AotCompiled, SingleOutput) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 3; j++) {
       float Expected = (5 + (2 + i)) * (3 + j);
-      EXPECT_EQ(Result.data[3 * i + j], Expected);
+      EXPECT_FLOAT_EQ(Result.data[3 * i + j], Expected);
     }
 
   free(Result.basePtr);
@@ -109,10 +109,10 @@ TEST(AotCompiled, MultiOutput) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 3; j++) {
       float ExpectedA = 5 + (2 + i);
-      EXPECT_EQ(Result.A.data[3 * i + j], ExpectedA);
+      EXPECT_FLOAT_EQ(Result.A.data[3 * i + j], ExpectedA);
 
       float ExpectedB = ExpectedA * (3 + j);
-      EXPECT_EQ(Result.B.data[3 * i + j], ExpectedB);
+      EXPECT_FLOAT_EQ(Result.B.data[3 * i + j], ExpectedB);
     }
 
   free(Result.A.basePtr);
@@ -129,10 +129,10 @@ TEST(AotCompiled, MixedRanks) {
   StridedMemRefType<float, 1> Result =
       func_3(&Arr0, &Arr0, 0, Arr1, Arr1, 0, 2, 1);
 
-  EXPECT_EQ(Result.sizes[0], 2);
-  EXPECT_EQ(Result.strides[0], 1);
-  EXPECT_EQ(Result.data[0], 11.0);
-  EXPECT_EQ(Result.data[1], 12.0);
+  ASSERT_EQ(Result.sizes[0], 2);
+  ASSERT_EQ(Result.strides[0], 1);
+  EXPECT_FLOAT_EQ(Result.data[0], 11.0);
+  EXPECT_FLOAT_EQ(Result.data[1], 12.0);
 
   free(Result.basePtr);
 }

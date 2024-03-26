@@ -29,11 +29,11 @@ namespace mlir::tcp {
 
 namespace {
 
-class IsolateGroups : public OpRewritePattern<GroupOp> {
+class IsolateGroups : public OpRewritePattern<tcp::GroupOp> {
 public:
-  using OpRewritePattern<GroupOp>::OpRewritePattern;
+  using OpRewritePattern::OpRewritePattern;
 
-  LogicalResult matchAndRewrite(GroupOp groupOp,
+  LogicalResult matchAndRewrite(tcp::GroupOp groupOp,
                                 PatternRewriter &rewriter) const override {
     // Collect the values used in the given GroupOp. Those will be the inputs
     // to the IsolatedGroup op. The constants used in the GroupOp are collected
@@ -57,7 +57,7 @@ public:
       defs.insert(op.getResults().begin(), op.getResults().end());
     }
 
-    auto isolatedGroupOp = rewriter.create<IsolatedGroupOp>(
+    auto isolatedGroupOp = rewriter.create<tcp::IsolatedGroupOp>(
         groupOp.getLoc(), groupOp.getResultTypes(), inputs);
     isolatedGroupOp->setAttrs(groupOp->getAttrs());
 
@@ -101,7 +101,8 @@ class TcpIsolateGroupOpsPass
     RewritePatternSet patterns(context);
 
     patterns.add<IsolateGroups>(context);
-    (void)applyPatternsAndFoldGreedily(op, std::move(patterns));
+    if (failed(applyPatternsAndFoldGreedily(op, std::move(patterns))))
+      return signalPassFailure();
   }
 };
 

@@ -22,7 +22,8 @@ RUN apt-get update && \
     lld \
     clang \
     clang-format \
-    gdb
+    gdb \
+    black
 
 # Install bazel
 ARG ARCH="x86_64"

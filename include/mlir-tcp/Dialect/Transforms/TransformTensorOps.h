@@ -10,16 +10,13 @@
 #pragma once
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
+#include <memory>
 
-namespace mlir {
+namespace mlir::tcp {
 
-#define GEN_PASS_DECL_CONVERTTCPTOLINALG
-#include "mlir-tcp/Conversion/Passes.h.inc"
+std::unique_ptr<mlir::OperationPass<func::FuncOp>>
+createDecomposeTensorOpsPass();
 
-namespace tcp {
-
-std::unique_ptr<OperationPass<func::FuncOp>> createConvertTcpToLinalgPass();
-
-} // namespace tcp
-} // namespace mlir
+} // namespace mlir::tcp

@@ -55,7 +55,19 @@ jobs:
                    mlir-tcp:ci \
                    find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
         if [ -n "$(git status --porcelain)" ]; then
-          echo "Please run clang-format 'find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i' and commit changes."
+          echo "Please run 'find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i' and commit changes."
+          exit 1
+        fi
+
+    - name: Verify black was run (py lint)
+      run: |
+        docker run --rm \
+                   -v "$(pwd)":"/opt/src/mlir-tcp" \
+                   -v "${HOME}/.cache/bazel":"${HOME}/.cache/bazel" \
+                   mlir-tcp:ci \
+                   black .
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Please run 'black .' and commit changes."
           exit 1
         fi
 

@@ -22,26 +22,30 @@
 
 namespace mlir {
 
-#define GEN_PASS_DEF_CONVERTTCPTOLINALG
+#define GEN_PASS_DEF_CONVERTTCPTOARITH
 #include "mlir-tcp/Conversion/Passes.h.inc"
 
 namespace tcp {
 
 namespace {
 
-class ConstOpConverter : public OpRewritePattern<ConstOp> {
+class ConstOpConverter : public OpRewritePattern<tcp::ConstOp> {
 public:
-  using OpRewritePattern<ConstOp>::OpRewritePattern;
+  using OpRewritePattern::OpRewritePattern;
 
-  LogicalResult matchAndRewrite(ConstOp op,
+  LogicalResult matchAndRewrite(tcp::ConstOp op,
                                 PatternRewriter &rewriter) const final {
     rewriter.replaceOpWithNewOp<arith::ConstantOp>(op, op.getValue());
     return success();
   }
 };
 
-void populateTcpToArithConversionPatterns(RewritePatternSet *patterns) {
-  patterns->add<ConstOpConverter>(patterns->getContext());
+void populateTcpToArithPatternsAndLegality(RewritePatternSet &patterns,
+                                           ConversionTarget &target) {
+  MLIRContext *context = patterns.getContext();
+
+  target.addIllegalOp<tcp::ConstOp>();
+  patterns.add<ConstOpConverter>(context);
 }
 
 class ConvertTcpToArith : public ConvertTcpToArithBase<ConvertTcpToArith> {
@@ -51,11 +55,8 @@ public:
     ConversionTarget target(*context);
     target.addLegalDialect<arith::ArithDialect>();
 
-    TypeConverter typeConverter;
-    typeConverter.addConversion([](Type type) { return type; });
-
     RewritePatternSet patterns(context);
-    populateTcpToArithConversionPatterns(&patterns);
+    populateTcpToArithPatternsAndLegality(patterns, target);
 
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns))))
@@ -65,7 +66,7 @@ public:
 
 } // namespace
 
-std::unique_ptr<Pass> createConvertTcpToArithPass() {
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertTcpToArithPass() {
   return std::make_unique<ConvertTcpToArith>();
 }
 

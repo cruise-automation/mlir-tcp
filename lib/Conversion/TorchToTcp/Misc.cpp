@@ -56,15 +56,19 @@ bool checkZerosOnesOpAttributes(AtenOpT op, RankedTensorType outType) {
   return true;
 }
 
-class ConvertAtenBroadcastToOp : public OpConversionPattern<AtenBroadcastToOp> {
+template <typename AtenOpT>
+class ConvertAtenBroadcastLikeOps : public OpConversionPattern<AtenOpT> {
 public:
-  using OpConversionPattern<AtenBroadcastToOp>::OpConversionPattern;
+  using OpConversionPattern<AtenOpT>::OpConversionPattern;
+  using OpAdaptor = typename AtenOpT::Adaptor;
 
   LogicalResult
-  matchAndRewrite(AtenBroadcastToOp op, OpAdaptor adaptor,
+  matchAndRewrite(AtenOpT op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     Value input = adaptor.getSelf();
     RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
+
+    ArrayRef<int64_t> inputShape = inputType.getShape();
 
     SmallVector<Value> newDimSizes;
     if (!getListConstructElements(op.getSize(), newDimSizes))
@@ -72,19 +76,44 @@ public:
           op, "Broadcasted shape must be a list of scalars");
 
     int64_t newLeadingDims = newDimSizes.size() - inputType.getRank();
-    if (newLeadingDims > 0) {
+    if (newLeadingDims > 0)
       input = torch_to_tcp::broadcastRankInLeadingDims(rewriter, input,
                                                        newLeadingDims);
-    }
 
     SmallVector<int64_t> axes;
     SmallVector<Value> resultShape;
     for (int64_t i = 0; i < static_cast<int64_t>(newDimSizes.size()); ++i) {
       Value newDimSize = newDimSizes[i];
+
+      // Per PyTorch, "Tensor can be also expanded to a larger number of
+      // dimensions, and the new ones will be appended at the front. For
+      // the new dimensions, the size cannot be set to -1.", so this dim is
+      // always broadcasted (no need to check for `isDimSizePreserved` below)
+      bool isNewDim = i < newLeadingDims;
+      // PyTorch semantics allow for a broadcast to a dynamic dimension;
+      // for example: `torch.broadcast_to(x, y.size())` where `y.size()` has
+      // dynamic shapes. When broadcasting to dynamic size, matchPattern for
+      // `torch.constant.int` fails, and we do not read `staticDimSize` (an int)
+      // out of `newDimSize` (an mlir::Value). In the "static" case
+      // (`torch.broadcast_to(x, (3, 3))`) matchPattern will succeed.
       int64_t staticDimSize;
-      if (i < newLeadingDims ||
-          !matchPattern(newDimSize, m_TorchConstantInt(&staticDimSize)) ||
-          staticDimSize != -1) {
+      bool isDynamicDim =
+          !matchPattern(newDimSize, m_TorchConstantInt(&staticDimSize));
+      // Per PyTorch, "passing -1 as the size for a dimension means not
+      // changing the size of that dimension". Don't evaluate if `isDynamicDim`
+      // (as `staticDimSize` won't have a valid value).
+      bool isDimSizePreserved = isDynamicDim ? false : staticDimSize == -1;
+      // Don't evaluate if `isNewDim` (to prevent out of bounds access on
+      // `inputShape`) or if `isDynamicDim` (as `staticDimSize` won't have
+      // a valid value).
+      bool doesDimSizeChange =
+          (isDynamicDim || isNewDim)
+              ? true
+              : staticDimSize != inputShape[i - newLeadingDims];
+
+      // Note: The order of checks in this boolean expression matters!
+      if (isNewDim || isDynamicDim ||
+          (!isDimSizePreserved && doesDimSizeChange)) {
         axes.push_back(i);
         newDimSize = rewriter.create<torch::TorchConversion::ToI64Op>(
             op->getLoc(), newDimSize);
@@ -94,9 +123,9 @@ public:
     }
 
     RankedTensorType resultType =
-        OpConversionPattern<AtenBroadcastToOp>::getTypeConverter()
+        OpConversionPattern<AtenOpT>::getTypeConverter()
             ->convertType(op->getResult(0).getType())
-            .cast<RankedTensorType>();
+            .template cast<RankedTensorType>();
 
     auto axesAttr = rewriter.getI64ArrayAttr(axes);
     rewriter.replaceOpWithNewOp<tcp::BroadcastOp>(op, resultType, input,
@@ -108,7 +137,7 @@ public:
 class ConvertValueTensorLiteralOp
     : public OpConversionPattern<ValueTensorLiteralOp> {
 public:
-  using OpConversionPattern<ValueTensorLiteralOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(ValueTensorLiteralOp op, OpAdaptor adaptor,
@@ -135,7 +164,7 @@ public:
 
 class ConvertAtenSizeIntOp : public OpConversionPattern<AtenSizeIntOp> {
 public:
-  using OpConversionPattern<AtenSizeIntOp>::OpConversionPattern;
+  using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
   matchAndRewrite(AtenSizeIntOp op, OpAdaptor adaptor,
@@ -257,10 +286,17 @@ void torch_to_tcp::populateMiscPatternsAndLegality(
 #define INSERT_ATEN_MISC_OP_PATTERN(AtenOp)                                    \
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<Convert##AtenOp, AtenOp>(   \
       typeConverter, patterns, target, convertTorchOpsSet)
-  INSERT_ATEN_MISC_OP_PATTERN(AtenBroadcastToOp);
   INSERT_ATEN_MISC_OP_PATTERN(ValueTensorLiteralOp);
   INSERT_ATEN_MISC_OP_PATTERN(AtenSizeIntOp);
 #undef INSERT_ATEN_MISC_OP_PATTERN
+
+#define INSERT_ATEN_BROADCAST_PATTERN(AtenOp)                                  \
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
+      ConvertAtenBroadcastLikeOps<AtenOp>, AtenOp>(typeConverter, patterns,    \
+                                                   target, convertTorchOpsSet)
+  INSERT_ATEN_BROADCAST_PATTERN(AtenBroadcastToOp);
+  INSERT_ATEN_BROADCAST_PATTERN(AtenExpandOp);
+#undef INSERT_ATEN_BROADCAST_PATTERN
 
 #define INSERT_ATEN_ZEROS_ONES_PATTERN(ConvertAtenOpPattern, AtenOp, Val)      \
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \

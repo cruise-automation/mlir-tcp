@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
@@ -18,7 +19,7 @@ namespace mlir {
 
 namespace tcp {
 
-std::unique_ptr<Pass> createConvertStablehloToTcpPass();
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertStablehloToTcpPass();
 
 } // namespace tcp
 } // namespace mlir
