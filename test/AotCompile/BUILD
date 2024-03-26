@@ -6,7 +6,8 @@
 load("//tools/aot:aot_compile.bzl", "aot_compile")
 load("@rules_cc//cc:defs.bzl", "cc_test")
 load("@rules_python//python:defs.bzl", "py_library")
-load("@pip_deps//:requirements.bzl", "requirement")
+# No need to depend on hermetic python for internal repo.
+# load("@pip_deps//:requirements.bzl", "requirement")
 
 AOT_TEST_SUITE = [
     # (test_name, skip_ci)
@@ -32,20 +33,22 @@ py_library(
     srcs = ["model_loader_lib.py"],
     visibility = ["//visibility:public"],
     deps = [
-        requirement("torch"),
+        # No need to depend on hermetic python for internal repo.
+        # requirement("torch"),
         "//tools/aot:torch_loader_utils",
     ],
 )
 
-[
-    aot_compile(
-        name = test_name,
-        skip_ci = skip_ci,
-        torch_loader_lib = ":model_loader_lib",
-        torch_loader_path = "test.AotCompile.model_loader_lib.%s_loader" % test_name,
-    )
-    for test_name, skip_ci in AOT_TEST_SUITE
-]
+# Disable aot_compile tests for internal repo.
+# [
+#     aot_compile(
+#         name = test_name,
+#         skip_ci = skip_ci,
+#         torch_loader_lib = ":model_loader_lib",
+#         torch_loader_path = "test.AotCompile.model_loader_lib.%s_loader" % test_name,
+#     )
+#     for test_name, skip_ci in AOT_TEST_SUITE
+# ]
 
 aot_compile(
     name = "basic_tcp_ops",

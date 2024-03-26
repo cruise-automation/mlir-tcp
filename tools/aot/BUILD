@@ -5,7 +5,8 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_library")
-load("@pip_deps//:requirements.bzl", "requirement")
+# No need to depend on hermetic python for internal repo.
+# load("@pip_deps//:requirements.bzl", "requirement")
 
 package(
     default_visibility = [
@@ -23,7 +24,8 @@ exports_files([
 py_library(
     name = "torch_loader_utils",
     srcs = ["torch_loader_utils.py"],
-    deps = [requirement("torch")],
+    # No need to depend on hermetic python for internal repo.
+    # deps = [requirement("torch")],
 )
 
 cc_library(

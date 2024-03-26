@@ -5,7 +5,8 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_python//python:defs.bzl", "py_binary")
-load("@pip_deps//:requirements.bzl", "requirement")
+# No need to depend on hermetic python for internal repo.
+# load("@pip_deps//:requirements.bzl", "requirement")
 
 def aot_compile(
         name,
@@ -115,9 +116,10 @@ def aot_compile(
             main = "torch_exporter_harness.py",
             deps = [
                 torch_loader_lib,
-                requirement("numpy"),
-                requirement("torch"),
-                requirement("torch-mlir"),
+                # No need to depend on hermetic python for internal repo.
+                # requirement("numpy"),
+                # requirement("torch"),
+                # requirement("torch-mlir"),
                 "//tools/aot:torch_loader_utils",
             ],
             # This is needed for testing the binary standalone
@@ -204,7 +206,8 @@ def aot_compile(
             name = execute_test_generator,
             srcs = ["//tools/aot:execute_test_generator.py"],
             main = "execute_test_generator.py",
-            deps = [requirement("numpy")],
+            # No need to depend on hermetic python for internal repo.
+            # deps = [requirement("numpy")],
             # This is needed for testing the binary standalone
             args = [
                 "--test_template_path=$(location " + test_template_file + ")",
