@@ -413,9 +413,11 @@ public:
                   ConversionPatternRewriter &rewriter) const override {
     Value input = adaptor.getSelf();
     RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
+
     if (!inputType)
       return rewriter.notifyMatchFailure(
           op, "Only Ranked Tensor types are supported in TCP");
+
     auto elementType = inputType.getElementType();
     if (!elementType.isIntOrFloat())
       return rewriter.notifyMatchFailure(
@@ -444,22 +446,33 @@ public:
                   ConversionPatternRewriter &rewriter) const override {
     Value input = adaptor.getSelf();
     RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
-    if (!inputType)
+
+    RankedTensorType resultType =
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
+
+    if (!inputType || !resultType)
       return rewriter.notifyMatchFailure(
           op, "Only Ranked Tensor types are supported in TCP");
+
     auto elementType = inputType.getElementType();
     if (!elementType.isIntOrFloat())
       return rewriter.notifyMatchFailure(
           op, "Input tensor must have integer or floating-point datatype");
 
+    Value newInput = input;
     if (elementType.isa<mlir::IntegerType>()) {
-      rewriter.create<tcp::CastOp>(op->getLoc());
+      auto inputDType = op.getSelf()
+                            .getType()
+                            .dyn_cast<torch::Torch::ValueTensorType>()
+                            .getDtype();
+      auto outputDType =
+          op.getType().dyn_cast<torch::Torch::ValueTensorType>().getDtype();
+      newInput =
+          torch_to_tcp::castTensorToDtype(rewriter, inputDType, outputDType,
+                                          input, resultType.getElementType());
     }
 
-    RankedTensorType resultType =
-        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
-
-    rewriter.replaceOpWithNewOp<tcp::SqrtOp>(op, resultType, input);
+    rewriter.replaceOpWithNewOp<tcp::SqrtOp>(op, resultType, newInput);
 
     return success();
   }
@@ -476,9 +489,11 @@ public:
                   ConversionPatternRewriter &rewriter) const override {
     Value input = adaptor.getSelf();
     RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
+
     if (!inputType)
       return rewriter.notifyMatchFailure(
           op, "Only Ranked Tensor types are supported in TCP");
+
     auto elementType = inputType.getElementType();
     if (!elementType.isIntOrFloat())
       return rewriter.notifyMatchFailure(
@@ -505,9 +520,11 @@ public:
                   ConversionPatternRewriter &rewriter) const override {
     Value input = adaptor.getSelf();
     RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
+
     if (!inputType)
       return rewriter.notifyMatchFailure(
           op, "Only Ranked Tensor types are supported in TCP");
+
     if (!inputType.getElementType().isa<mlir::FloatType>())
       return rewriter.notifyMatchFailure(
           op, "Input tensor must have floating-point datatype");
@@ -544,15 +561,14 @@ public:
 
     auto inputAType = op.getSelf()
                           .getType()
-                          .template dyn_cast<torch::Torch::ValueTensorType>()
+                          .dyn_cast<torch::Torch::ValueTensorType>()
                           .getDtype();
     auto inputBType = op.getOther()
                           .getType()
-                          .template dyn_cast<torch::Torch::ValueTensorType>()
+                          .dyn_cast<torch::Torch::ValueTensorType>()
                           .getDtype();
-    auto outputType = op.getType()
-                          .template dyn_cast<torch::Torch::ValueTensorType>()
-                          .getDtype();
+    auto outputType =
+        op.getType().dyn_cast<torch::Torch::ValueTensorType>().getDtype();
 
     rhs = torch_to_tcp::castTensorToDtype(rewriter, inputBType, outputType, rhs,
                                           resultType.getElementType());
