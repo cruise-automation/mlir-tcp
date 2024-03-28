@@ -135,8 +135,8 @@ def sub_tensor_with_alpha_loader() -> TorchLoaderOutput:
             super().__init__()
 
         def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-            add = torch.sub(x, y, alpha=2)
-            return add
+            sub = torch.sub(x, y, alpha=2)
+            return sub
 
     # Sample inputs
     x = torch.randn(2, 3)
@@ -162,8 +162,8 @@ def div_tensor_mixed_ranks_loader() -> TorchLoaderOutput:
             super().__init__()
 
         def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-            add = torch.div(x, y)
-            return add
+            div = torch.div(x, y)
+            return div
 
     # Sample inputs
     x = torch.tensor(10.0)
