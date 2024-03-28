@@ -343,7 +343,7 @@ def Tcp_SqrtOp : Tcp_UnaryElementwiseOp<"sqrt"> {
   }];
 
   let arguments = (ins
-    Tcp_FloatOrIntTensor:$in
+    Tcp_FloatTensor:$in
   );
 
   let results = (outs
@@ -522,7 +522,7 @@ def Tcp_CastOp:  Tcp_Op<"cast", [Pure, Elementwise, SameOperandsAndResultShape]>
   let summary = "TCP Cast operation";
 
   // TODO: Make the cast op handle more corner cases
-  // e.g. onversion overflows the destination type
+  // e.g. conversion overflows the destination type
   // e.g. convert negative number to unsigned destination type
   let description = [{
     Performs elementwise type conversion.
