@@ -9,22 +9,30 @@ load("@rules_python//python:defs.bzl", "py_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 
 AOT_TEST_SUITE = [
-    "add_mul_single_output",
-    "add_mul_multi_output",
-    "add_tensor_mixed_ranks",
-    "add_tensor_with_alpha",
-    "sub_tensor_with_alpha",
-    "div_tensor_mixed_ranks",
-    "add_sub_mul_div_scalar",
-    "sigmoid",
-    "tanh",
-    "clamp",
-    "relu",
-    "sqrt_float",
-    "sqrt_int",
-    "concat_float_tensors",
-    "concat_int_tensors",
-    "slice_tensor",
+    # (test_name, skip_ci)
+    ("add_mul_single_output", False),
+    ("add_mul_multi_output", False),
+    ("add_tensor_mixed_ranks", False),
+    ("add_tensor_with_alpha", False),
+    ("sub_tensor_with_alpha", False),
+    ("div_tensor_mixed_ranks", False),
+    ("add_sub_mul_div_scalar", False),
+    ("sigmoid", False),
+    ("tanh", False),
+    ("clamp", False),
+    ("relu", False),
+    ("sqrt_float", False),
+    ("sqrt_int", False),
+    ("concat_float_tensors", False),
+    ("concat_int_tensors", False),
+    ("slice_tensor", False),
+    ("broadcast_unit_dim_to_static_with_explicit_dim_static", False),
+    ("broadcast_unit_dim_to_static_with_unchanged_dim_static", False),
+    ("broadcast_unit_dim_to_static_with_unchanged_dim_dynamic", False),
+    ("broadcast_unit_dim_to_dynamic_with_unchanged_dim_static", False),
+    ("broadcast_unit_dim_to_dynamic_with_unchanged_dim_dynamic", False),
+    ("broadcast_unit_dim_to_static_with_rank_increase", False),
+    ("broadcast_unit_dim_to_dynamic_with_rank_increase", False),
 ]
 
 py_library(
@@ -39,11 +47,12 @@ py_library(
 
 [
     aot_compile(
-        name = test,
+        name = test_name,
+        skip_ci = skip_ci,
         torch_loader_lib = ":model_loader_lib",
-        torch_loader_path = "test.AotCompile.model_loader_lib.%s_loader" % test,
+        torch_loader_path = "test.AotCompile.model_loader_lib.%s_loader" % test_name,
     )
-    for test in AOT_TEST_SUITE
+    for test_name, skip_ci in AOT_TEST_SUITE
 ]
 
 aot_compile(
