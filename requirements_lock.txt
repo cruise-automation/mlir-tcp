@@ -6,15 +6,15 @@
 #
 --find-links https://github.com/llvm/torch-mlir-release/releases/expanded_assets/dev-wheels
 
-filelock==3.13.1 \
-    --hash=sha256:521f5f56c50f8426f5e03ad3b281b490a87ef15bc6c526f168290f0c7148d44e \
-    --hash=sha256:57dbda9b35157b05fb3e58ee91448612eb674172fab98ee235ccb0b5bee19a1c
+filelock==3.13.3 \
+    --hash=sha256:5ffa845303983e7a0b7ae17636509bc97997d58afeafa72fb141a17b152284cb \
+    --hash=sha256:a79895a25bbefdf55d1a2a0a80968f7dbb28edcd6d4234a0afb3f37ecde4b546
     # via
     #   torch
     #   triton
-fsspec==2024.2.0 \
-    --hash=sha256:817f969556fa5916bc682e02ca2045f96ff7f586d45110fcb76022063ad2c7d8 \
-    --hash=sha256:b6ad1a679f760dda52b1168c859d01b7b80648ea6f7f7c7f5a8a91dc3f3ecb84
+fsspec==2024.3.1 \
+    --hash=sha256:918d18d41bf73f0e2b261824baeb1b124bcf771767e3a26425cd7dec3332f512 \
+    --hash=sha256:f39780e282d7d117ffb42bb96992f8a90795e4d0fb0f661a70ca39fe9c43ded9
     # via torch
 jinja2==3.1.3 \
     --hash=sha256:7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa \
@@ -86,9 +86,9 @@ mpmath==1.3.0 \
     --hash=sha256:7a28eb2a9774d00c7bc92411c19a89209d5da7c4c9a9e227be8330a23a25b91f \
     --hash=sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c
     # via sympy
-networkx==3.2.1 \
-    --hash=sha256:9f1bb5cf3409bf324e0a722c20bdb4c20ee39bf1c30ce8ae499c8502b0b5e0c6 \
-    --hash=sha256:f18c69adc97877c42332c170849c96cefa91881c99a7cb3e95b7c659ebdc1ec2
+networkx==3.3 \
+    --hash=sha256:0c127d8b2f4865f59ae9cb8aafcd60b5c70f3241ebd66f7defad7c4ab90126c9 \
+    --hash=sha256:28575580c6ebdaf4505b22c6256a2b9de86b316dc63ba9e93abde3d78dfdbcf2
     # via torch
 numpy==1.26.4 \
     --hash=sha256:03a8c78d01d9781b28a6989f6fa1bb2c4f2d51201cf99d3dd875df6fbd96b23b \
@@ -138,17 +138,17 @@ sympy==1.12 \
     --hash=sha256:c3588cd4295d0c0f603d0f2ae780587e64e2efeedb3521e46b9bb1d08d184fa5 \
     --hash=sha256:ebf595c8dac3e0fdc4152c51878b498396ec7f30e7a914d6071e674d49420fb8
     # via torch
-torch==2.3.0.dev20240307+cpu \
-    --hash=sha256:a2f80665c1a677f30f285ee3470425e3880fbcf32f440f1ed243677bcd9e726c \
-    --hash=sha256:e4287a72966b9d9922372aae4ee8d2ef26121590b908ba1f604139c1079eb0ee
+torch==2.4.0.dev20240318+cpu \
+    --hash=sha256:ed61465ecaebfa1ec7025429a4032c93638f6caab09de5f79992214ded135d9e \
+    --hash=sha256:f6dfe8b0a315c954b0a5b3b0a73a5a442209f1c34164e459bd524cf63df2797e
     # via
     #   -r requirements.txt
     #   torch-mlir
-torch-mlir==20240314.38 \
-    --hash=sha256:e8eba263428ab0a53d06a2653e880a0641990a24106a97a42fe736b669aeb9f4 \
-    --hash=sha256:fbc614ad2186766e6060b086d6744608f7d7066b9f9d35bf2fc4bfa4e5d270c8
+torch-mlir==20240402.57 \
+    --hash=sha256:30abf84ed99aabe3fa51120acddcc933dc0ef7ac54eb59d4cc7e515a05d908be \
+    --hash=sha256:b419efa8f1a19fcca27b34cff2e8fe8eaa409d927b3d2208e45a84e5ac5d1287
     # via -r requirements.txt
-typing-extensions==4.10.0 \
-    --hash=sha256:69b1a937c3a517342112fb4c6df7e72fc39a38e7891a5730ed4985b5214b5475 \
-    --hash=sha256:b0abd7c89e8fb96f98db18d86106ff1d90ab692004eb746cf6eda2682f91b3cb
+typing-extensions==4.11.0 \
+    --hash=sha256:83f085bd5ca59c80295fc2a82ab5dac679cbe02b9f33f7d83af68e241bea51b0 \
+    --hash=sha256:c1f94d72897edaf4ce775bb7558d5b79d8126906a14ea5ed1635921406c0387a
     # via torch
