@@ -3,6 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Also available under a BSD-style license. See LICENSE.
 
+# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
+# https://bazel.build/external/migration
+common --noenable_bzlmod
+
+# Automatically detect host platform to pick config
+common --enable_platform_specific_config
+
 ###############################################################################
 # Options for "generic_clang" builds: these options should generally apply to
 # builds using a Clang-based compiler, and default to the `clang` executable on
@@ -28,8 +35,6 @@ build:generic_clang --cxxopt=-Wno-range-loop-analysis --host_cxxopt=-Wno-range-l
 # not the point of the Bazel build to catch usage of deprecated APIs.
 build:generic_clang --copt=-Wno-deprecated --host_copt=-Wno-deprecated
 
-# Automatically detect host platform to pick config
-common --enable_platform_specific_config
 
 # lld links faster than other linkers. Assume that anybody using clang on linux
 # also has lld available.
@@ -45,9 +50,6 @@ build:dbg --compilation_mode=dbg
 # GDB builds in dbg mode
 build:gdb --config=dbg
 
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://bazel.build/external/migration
-common --noenable_bzlmod
 
 # Continue running tests for targets that build without having
 # AOT compile genrules failing to build from terminating the rest
