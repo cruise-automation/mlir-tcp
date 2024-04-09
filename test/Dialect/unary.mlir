@@ -109,6 +109,28 @@ func.func @test_floor_f32(%arg0 : tensor<?x?xf32>) -> tensor<?x?xf32> {
 
 // -----
 
+// CHECK-LABEL: func.func @test_round_f32(
+// CHECK-SAME:               %[[ARG:.*]]: tensor<?x?xf32>) -> tensor<?x?xf32>
+// CHECK:         %[[ROUND:.*]] = tcp.round %[[ARG]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:         return %[[ROUND]] : tensor<?x?xf32>
+func.func @test_round_f32(%arg0 : tensor<?x?xf32>) -> tensor<?x?xf32> {
+  %0 = tcp.round %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  return %0 : tensor<?x?xf32>
+}
+
+// -----
+
+// CHECK-LABEL: func.func @test_round_even_f32(
+// CHECK-SAME:               %[[ARG:.*]]: tensor<?x?xf32>) -> tensor<?x?xf32>
+// CHECK:         %[[ROUND:.*]] = tcp.round_even %[[ARG]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:         return %[[ROUND]] : tensor<?x?xf32>
+func.func @test_round_even_f32(%arg0 : tensor<?x?xf32>) -> tensor<?x?xf32> {
+  %0 = tcp.round_even %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  return %0 : tensor<?x?xf32>
+}
+
+// -----
+
 // CHECK-LABEL: func.func @test_sin_f32(
 // CHECK-SAME:               %[[ARG:.*]]: tensor<?x?xf32>) -> tensor<?x?xf32>
 // CHECK:         %[[SIN:.*]] = tcp.sin %[[ARG]] : tensor<?x?xf32> -> tensor<?x?xf32>
