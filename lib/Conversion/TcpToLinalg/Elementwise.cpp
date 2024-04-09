@@ -119,6 +119,14 @@ createLinalgPayloadForElementwiseOp(Operation *op,
     return {b.create<math::FloorOp>(loc, payloadArgs[0])};
   }
 
+  if (isa<RoundOp>(op)) {
+    return {b.create<math::RoundOp>(loc, payloadArgs[0])};
+  }
+
+  if (isa<RoundEvenOp>(op)) {
+    return {b.create<math::RoundEvenOp>(loc, payloadArgs[0])};
+  }
+
   if (isa<SinOp>(op)) {
     return {b.create<math::SinOp>(loc, payloadArgs[0])};
   }
@@ -328,6 +336,8 @@ void mlir::TcpToLinalg::populateElementwisePatternsAndLegality(
   INSERT_TCP_TO_LINALG_PATTERN(SqrtOp);
   INSERT_TCP_TO_LINALG_PATTERN(CeilOp);
   INSERT_TCP_TO_LINALG_PATTERN(FloorOp);
+  INSERT_TCP_TO_LINALG_PATTERN(RoundOp);
+  INSERT_TCP_TO_LINALG_PATTERN(RoundEvenOp);
   INSERT_TCP_TO_LINALG_PATTERN(SinOp);
   INSERT_TCP_TO_LINALG_PATTERN(CosOp);
   INSERT_TCP_TO_LINALG_PATTERN(AbsOp);

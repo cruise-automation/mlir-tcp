@@ -722,6 +722,7 @@ void torch_to_tcp::populateElementwisePatternsAndLegality(
       typeConverter, patterns, target, convertTorchOpsSet)
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenCeilOp, tcp::CeilOp);
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenFloorOp, tcp::FloorOp);
+  INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenRoundOp, tcp::RoundEvenOp);
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenSigmoidOp, tcp::SigmoidOp);
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenTanhOp, tcp::TanhOp);
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenSinOp, tcp::SinOp);
