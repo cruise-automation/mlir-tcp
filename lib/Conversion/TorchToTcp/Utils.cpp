@@ -28,6 +28,16 @@ using namespace mlir::torch::Torch;
 
 namespace mlir::torch_to_tcp {
 
+SignednessAttr
+getTcpSignednessAttr(MLIRContext *context,
+                     IntegerType::SignednessSemantics signednessInfo) {
+  if (signednessInfo == IntegerType::SignednessSemantics::Signless)
+    return SignednessAttr::get(context, Signedness::Signless);
+  if (signednessInfo == IntegerType::SignednessSemantics::Signed)
+    return SignednessAttr::get(context, Signedness::Signed);
+  return SignednessAttr::get(context, Signedness::Unsigned);
+}
+
 // The parameter input is expected to be of RankedTensorType.
 Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
                                  Value input, int64_t rankIncrease) {
@@ -241,16 +251,6 @@ Value castTensorToDtype(ConversionPatternRewriter &rewriter, Type srcType,
 
   RankedTensorType inputType = input.getType().cast<RankedTensorType>();
   auto resultType = inputType.cloneWith(inputType.getShape(), convertedType);
-
-  auto getTcpSignednessAttr =
-      [](MLIRContext *context,
-         IntegerType::SignednessSemantics signednessInfo) {
-        if (signednessInfo == IntegerType::SignednessSemantics::Signless)
-          return SignednessAttr::get(context, Signedness::Signless);
-        if (signednessInfo == IntegerType::SignednessSemantics::Signed)
-          return SignednessAttr::get(context, Signedness::Signed);
-        return SignednessAttr::get(context, Signedness::Unsigned);
-      };
 
   SignednessAttr inputSignedness;
   SignednessAttr outputSignedness;

@@ -40,9 +40,9 @@ public:
   LogicalResult matchAndRewrite(BroadcastOp op, OpAdaptor adaptor,
                                 ConversionPatternRewriter &b) const override {
     Location loc = op->getLoc();
-    auto resultTensorType = OpConversionPattern::getTypeConverter()
+    auto resultTensorType = getTypeConverter()
                                 ->convertType(op->getResult(0).getType())
-                                .template cast<RankedTensorType>();
+                                .cast<RankedTensorType>();
     auto inputTensor = op->getOperands()[0];
 
     SmallVector<int64_t> axes = getValuesFromIndexArrayAttribute(op.getAxes());

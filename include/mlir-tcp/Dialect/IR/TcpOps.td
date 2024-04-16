@@ -346,7 +346,7 @@ def Tcp_SqrtOp : Tcp_UnaryElementwiseOp<"sqrt"> {
   }];
 
   let arguments = (ins
-    Tcp_FloatOrIntTensor:$in
+    Tcp_FloatTensor:$in
   );
 
   let results = (outs
@@ -379,6 +379,44 @@ def Tcp_FloorOp : Tcp_UnaryElementwiseOp<"floor", [SameOperandsAndResultElementT
 
   let description = [{
     Computes elementwise floor of the input tensor.
+  }];
+
+  let arguments = (ins
+    Tcp_FloatTensor:$in
+  );
+
+  let results = (outs
+    Tcp_FloatTensor:$out
+  );
+
+  let assemblyFormat = "$in attr-dict `:` type($in) `->` type($out)";
+}
+
+def Tcp_RoundOp : Tcp_UnaryElementwiseOp<"round", [SameOperandsAndResultElementType]> {
+  let summary = "Computes elementwise rounding of input, with ties rounded away from zero";
+
+  let description = [{
+    Computes elementwise rounding of the input float tensor to the nearest integer value
+    in float, with halfway values rounded away from zero.
+  }];
+
+  let arguments = (ins
+    Tcp_FloatTensor:$in
+  );
+
+  let results = (outs
+    Tcp_FloatTensor:$out
+  );
+
+  let assemblyFormat = "$in attr-dict `:` type($in) `->` type($out)";
+}
+
+def Tcp_RoundEvenOp : Tcp_UnaryElementwiseOp<"round_even", [SameOperandsAndResultElementType]> {
+  let summary = "Computes elementwise rounding of input, with ties rounded to nearest even";
+
+  let description = [{
+    Computes elementwise rounding of the input float tensor to the nearest integer value
+    in float, with halfway values rounded to the nearest even integer.
   }];
 
   let arguments = (ins
@@ -525,7 +563,7 @@ def Tcp_CastOp:  Tcp_Op<"cast", [Pure, Elementwise, SameOperandsAndResultShape]>
   let summary = "TCP Cast operation";
 
   // TODO: Make the cast op handle more corner cases
-  // e.g. onversion overflows the destination type
+  // e.g. conversion overflows the destination type
   // e.g. convert negative number to unsigned destination type
   let description = [{
     Performs elementwise type conversion.
