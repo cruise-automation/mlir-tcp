@@ -145,8 +145,12 @@ public:
     auto newOp = rewriter.replaceOpWithNewOp<tcp::CustomOp>(
         op, resultTypes, tensorOperands,
         customTypeOperand.getDefiningOp()->getAttrs());
-    newOp.setOpName(op->getName().getStringRef());
-
+    // set generic name for executing tensor-rt engine
+    if (op->getName().getStringRef() ==
+        "torch.tensorrt.execute_engine_variadic")
+      newOp.setOpName("tensorrt.execute_engine");
+    else
+      newOp.setOpName(op->getName().getStringRef());
     return success();
   }
 };

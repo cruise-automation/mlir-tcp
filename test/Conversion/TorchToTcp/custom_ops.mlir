@@ -1,7 +1,7 @@
 // RUN: tcp-opt <%s -convert-torch-to-tcp-cruise-internal -split-input-file -verify-diagnostics | FileCheck %s
 
 // CHECK-LABEL: execute_engine_variadic
-//       CHECK:    tcp.custom_op("torch.tensorrt.execute_engine_variadic")
+//       CHECK:    tcp.custom_op("tensorrt.execute_engine")
 //  CHECK-SAME:       engine = dense<[238, 254]> : tensor<2xui8>
 //  CHECK-SAME:       precision = "fp32"
 //  CHECK-SAME:       shape_info = "inputs=(input_0:f32[8,8];input_1:f32[8]),outputs=(output_0:f32[8,8];output_1:f32[8])"
