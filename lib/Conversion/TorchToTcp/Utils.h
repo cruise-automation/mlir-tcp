@@ -9,12 +9,19 @@
 
 #include "mlir/Transforms/DialectConversion.h"
 
+#include "mlir-tcp/Dialect/IR/TcpOps.h"
 #include "torch-mlir/Dialect/Torch/Transforms/Passes.h"
 
 #include "llvm/ADT/StringSet.h"
 
 namespace mlir {
 namespace torch_to_tcp {
+
+// Helper function to get SignednessAttr on the op from signedness
+// on the type.
+mlir::tcp::SignednessAttr
+getTcpSignednessAttr(MLIRContext *context,
+                     IntegerType::SignednessSemantics signednessInfo);
 
 // Helper function to expand the rank of the input tensor. Works by
 // adding 1-dim shape to the leading dims using `tensor::ExpandShapeOp`.

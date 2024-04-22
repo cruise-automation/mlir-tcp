@@ -12,13 +12,15 @@
 
 #include "gtest/gtest.h"
 
+#include <cmath>
+
 using namespace mlir::tcp;
 
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 
-extern "C" StridedMemRefType<float, 2> func_1(DECL_RANK_2_MEMREF_ABI(float),
-                                              DECL_RANK_2_MEMREF_ABI(float),
-                                              DECL_RANK_2_MEMREF_ABI(float));
+extern "C" StridedMemRefType<float, 2>
+    func_add_mul_1(DECL_RANK_2_MEMREF_ABI(float), DECL_RANK_2_MEMREF_ABI(float),
+                   DECL_RANK_2_MEMREF_ABI(float));
 
 static StridedMemRefType<float, 2> CreateRank2Memref(float *Ptr) {
   StridedMemRefType<float, 2> Result;
@@ -50,8 +52,8 @@ TEST(AotCompiled, SingleOutput) {
   StridedMemRefType<float, 2> Input3 = CreateRank2Memref(&Arr3[0][0]);
 
   StridedMemRefType<float, 2> Result =
-      func_1(PASS_RANK_2_MEMREF(Input1), PASS_RANK_2_MEMREF(Input2),
-             PASS_RANK_2_MEMREF(Input3));
+      func_add_mul_1(PASS_RANK_2_MEMREF(Input1), PASS_RANK_2_MEMREF(Input2),
+                     PASS_RANK_2_MEMREF(Input3));
 
   ASSERT_EQ(Result.sizes[0], 2);
   ASSERT_EQ(Result.sizes[1], 3);
@@ -72,9 +74,9 @@ struct TwoMemRefs {
   StridedMemRefType<float, 2> B;
 };
 
-extern "C" TwoMemRefs func_2(DECL_RANK_2_MEMREF_ABI(float),
-                             DECL_RANK_2_MEMREF_ABI(float),
-                             DECL_RANK_2_MEMREF_ABI(float));
+extern "C" TwoMemRefs func_add_mul_2(DECL_RANK_2_MEMREF_ABI(float),
+                                     DECL_RANK_2_MEMREF_ABI(float),
+                                     DECL_RANK_2_MEMREF_ABI(float));
 
 TEST(AotCompiled, MultiOutput) {
   float Arr1[2][3];
@@ -93,8 +95,8 @@ TEST(AotCompiled, MultiOutput) {
   StridedMemRefType<float, 2> Input3 = CreateRank2Memref(&Arr3[0][0]);
 
   TwoMemRefs Result =
-      func_2(PASS_RANK_2_MEMREF(Input1), PASS_RANK_2_MEMREF(Input2),
-             PASS_RANK_2_MEMREF(Input3));
+      func_add_mul_2(PASS_RANK_2_MEMREF(Input1), PASS_RANK_2_MEMREF(Input2),
+                     PASS_RANK_2_MEMREF(Input3));
 
   ASSERT_EQ(Result.A.sizes[0], 2);
   ASSERT_EQ(Result.A.sizes[1], 3);
@@ -119,20 +121,50 @@ TEST(AotCompiled, MultiOutput) {
   free(Result.B.basePtr);
 }
 
-extern "C" StridedMemRefType<float, 1> func_3(DECL_RANK_0_MEMREF_ABI(float),
-                                              DECL_RANK_1_MEMREF_ABI(float));
+extern "C" StridedMemRefType<float, 1>
+    func_broadcast_add(DECL_RANK_0_MEMREF_ABI(float),
+                       DECL_RANK_1_MEMREF_ABI(float));
 
 TEST(AotCompiled, MixedRanks) {
   float Arr0 = 10.0;
   float Arr1[2] = {1.0, 2.0};
 
   StridedMemRefType<float, 1> Result =
-      func_3(&Arr0, &Arr0, 0, Arr1, Arr1, 0, 2, 1);
+      func_broadcast_add(&Arr0, &Arr0, 0, Arr1, Arr1, 0, 2, 1);
 
   ASSERT_EQ(Result.sizes[0], 2);
   ASSERT_EQ(Result.strides[0], 1);
   EXPECT_FLOAT_EQ(Result.data[0], 11.0);
   EXPECT_FLOAT_EQ(Result.data[1], 12.0);
+
+  free(Result.basePtr);
+}
+
+extern "C" StridedMemRefType<float, 2>
+    func_round(DECL_RANK_2_MEMREF_ABI(float));
+
+TEST(AotCompiled, RoundOp) {
+  float Arr1[2][3];
+
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 3; j++) {
+      Arr1[i][j] = 2.71 + i * j * 0.37;
+    }
+
+  StridedMemRefType<float, 2> Input1 = CreateRank2Memref(&Arr1[0][0]);
+
+  StridedMemRefType<float, 2> Result = func_round(PASS_RANK_2_MEMREF(Input1));
+
+  ASSERT_EQ(Result.sizes[0], 2);
+  ASSERT_EQ(Result.sizes[1], 3);
+  ASSERT_EQ(Result.strides[0], 3);
+  ASSERT_EQ(Result.strides[1], 1);
+
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 3; j++) {
+      float Expected = std::round(Arr1[i][j]);
+      EXPECT_FLOAT_EQ(Result.data[3 * i + j], Expected);
+    }
 
   free(Result.basePtr);
 }

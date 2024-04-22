@@ -143,9 +143,7 @@ public:
   matchAndRewrite(ValueTensorLiteralOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     RankedTensorType resultType =
-        OpConversionPattern<ValueTensorLiteralOp>::getTypeConverter()
-            ->convertType(op.getType())
-            .cast<RankedTensorType>();
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
 
     if (auto elements = op.getValueAttr().dyn_cast<DenseIntElementsAttr>()) {
       Type elementType = resultType.getElementType();
