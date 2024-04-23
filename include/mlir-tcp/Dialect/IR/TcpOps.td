@@ -595,4 +595,27 @@ def Tcp_CastOp:  Tcp_Op<"cast", [Pure, Elementwise, SameOperandsAndResultShape]>
   let hasVerifier = 1;
 }
 
+def Tcp_GatherOp : Tcp_Op<"gather", [Pure, AllElementTypesMatch<["input", "out"]>]> {
+
+  let summary = "Gather elements from input based on indices";
+
+  let description = [{
+    Gathers elements from a given tensor based on indices that index along a given dim.
+
+    More details regarding this op: docs/gather.md
+  }];
+
+  let arguments = (ins
+    Tcp_Tensor:$input,
+    Tcp_IntTensor:$indices,
+    IndexAttr:$dim
+  );
+
+  let results = (outs
+    Tcp_Tensor:$out
+  );
+
+  let assemblyFormat = "$input `,` $indices attr-dict `:` type($input) `,` type($indices) `->` type($out)";
+}
+
 #endif // TCP_OPS
