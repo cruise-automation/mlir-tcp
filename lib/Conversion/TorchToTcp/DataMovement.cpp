@@ -22,6 +22,7 @@
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
 
 #include "llvm/ADT/StringSet.h"
+#include "llvm/Support/Debug.h"
 
 using namespace mlir;
 using namespace mlir::tcp;
@@ -207,6 +208,39 @@ public:
     return success();
   }
 };
+
+class ConvertAtenGatherOp : public OpConversionPattern<AtenGatherOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenGatherOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto input = adaptor.getSelf();
+    auto indices = adaptor.getIndex();
+    RankedTensorType resultType = getTypeConverter()
+                                      ->convertType(op->getResult(0).getType())
+                                      .template cast<RankedTensorType>();
+
+    int64_t dim = 0;
+    if (!matchPattern(op.getDim(), m_TorchConstantInt(&dim)))
+      return op.emitError("dim on torch.gather must be an int constant");
+    auto inputType = input.getType().cast<RankedTensorType>();
+    dim = Torch::toPositiveDim(dim, inputType.getRank());
+
+    bool sparseGrad = false;
+    if (!matchPattern(op.getSparseGrad(), m_TorchConstantBool(&sparseGrad)))
+      return op.emitError(
+          "sparse_grad on torch.gather must be a bool constant");
+    if (sparseGrad)
+      return op.emitError("unimplemented: sparse_grad is not supported yet");
+
+    rewriter.replaceOpWithNewOp<tcp::GatherOp>(op, resultType, input, indices,
+                                               rewriter.getIndexAttr(dim));
+    return success();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateDataMovementPatternsAndLegality(
@@ -216,5 +250,8 @@ void torch_to_tcp::populateDataMovementPatternsAndLegality(
       typeConverter, patterns, target, convertTorchOpsSet);
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenSliceTensorOp,
                                                    AtenSliceTensorOp>(
+      typeConverter, patterns, target, convertTorchOpsSet);
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenGatherOp,
+                                                   AtenGatherOp>(
       typeConverter, patterns, target, convertTorchOpsSet);
 }
