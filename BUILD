@@ -246,6 +246,7 @@ cc_library(
     name = "TcpToLinalg",
     srcs = [
         "lib/Conversion/PassDetail.h",
+        "lib/Conversion/TcpToLinalg/DataMovement.cpp",
         "lib/Conversion/TcpToLinalg/Elementwise.cpp",
         "lib/Conversion/TcpToLinalg/Misc.cpp",
         "lib/Conversion/TcpToLinalg/PopulatePatterns.h",
