@@ -620,3 +620,29 @@ def broadcast_unit_dim_to_dynamic_with_rank_increase_loader() -> TorchLoaderOutp
         inputs=(x, y),
         dynamic_shapes=dynamic_shapes,
     )
+
+
+def gather_elements_loader() -> TorchLoaderOutput:
+    class GatherElements(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            return torch.gather(x, 0, y)
+
+    # Sample inputs
+    x = torch.randn(4, 3)
+    y = torch.tensor([[0, 0, 0], [1, 1, 1]])
+
+    # Dynamic dim constraints
+    batch = Dim("batch", min=3)
+    dynamic_shapes = {
+        "x": {0: batch},
+        "y": {},
+    }
+
+    return TorchLoaderOutput(
+        model=GatherElements(),
+        inputs=(x,y),
+        dynamic_shapes=dynamic_shapes,
+    )
