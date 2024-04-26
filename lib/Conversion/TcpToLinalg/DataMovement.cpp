@@ -32,36 +32,36 @@ class ConvertGatherOp : public OpConversionPattern<GatherOp> {
 public:
   using OpConversionPattern::OpConversionPattern;
 
-  LogicalResult matchAndRewrite(GatherOp op, OpAdaptor adaptor,
-                                ConversionPatternRewriter &b) const override {
+  LogicalResult
+  matchAndRewrite(GatherOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
     Location loc = op->getLoc();
     auto resultTensorType = getTypeConverter()
-                                ->convertType(op->getResult(0).getType())
+                                ->convertType(op.getOut().getType())
                                 .cast<RankedTensorType>();
 
-    auto inputTensor = op->getOperands()[0];
-    auto indicesTensor = op->getOperands()[1];
-
-    int64_t gatherDim = op.getDimAttr().getValue().getSExtValue();
+    auto inputTensor = adaptor.getInput();
+    auto indicesTensor = adaptor.getIndices();
+    int64_t gatherDim = adaptor.getDimAttr().getValue().getSExtValue();
 
     auto resultRank = resultTensorType.getRank();
 
     SmallVector<Value> resultDimSizes;
     for (int64_t i = 0; i < resultRank; ++i) {
       resultDimSizes.push_back(
-          b.createOrFold<tensor::DimOp>(loc, indicesTensor, i));
+          rewriter.createOrFold<tensor::DimOp>(loc, indicesTensor, i));
     }
 
     SmallVector<AffineMap, 2> indexingMaps;
-    indexingMaps.push_back(b.getMultiDimIdentityMap(resultRank));
-    indexingMaps.push_back(b.getMultiDimIdentityMap(resultRank));
+    indexingMaps.push_back(rewriter.getMultiDimIdentityMap(resultRank));
+    indexingMaps.push_back(rewriter.getMultiDimIdentityMap(resultRank));
 
     SmallVector<utils::IteratorType> iteratorTypes(
         resultRank, utils::IteratorType::parallel);
 
     Value emptyTensor =
-        b.create<tensor::EmptyOp>(loc, getAsOpFoldResult(resultDimSizes),
-                                  resultTensorType.getElementType());
+        rewriter.create<tensor::EmptyOp>(loc, getAsOpFoldResult(resultDimSizes),
+                                         resultTensorType.getElementType());
 
     auto bodyBuilder = [&](OpBuilder &b, Location loc, ValueRange payloadArgs) {
       SmallVector<Value> extractIndices;
@@ -80,11 +80,13 @@ public:
           loc, resultTensorType.getElementType(), inputTensor, extractIndices);
       b.create<linalg::YieldOp>(loc, extract.getResult());
     };
-    Value generic = b.create<linalg::GenericOp>(
-                         loc, emptyTensor.getType(), indicesTensor, emptyTensor,
-                         indexingMaps, iteratorTypes, bodyBuilder)
-                        .getResult(0);
-    b.replaceOp(op, generic);
+    Value generic =
+        rewriter
+            .create<linalg::GenericOp>(loc, emptyTensor.getType(),
+                                       indicesTensor, emptyTensor, indexingMaps,
+                                       iteratorTypes, bodyBuilder)
+            .getResult(0);
+    rewriter.replaceOp(op, generic);
     return success();
   }
 };
