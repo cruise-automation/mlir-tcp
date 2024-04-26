@@ -36,9 +36,7 @@ def add_mul_single_output_loader() -> TorchLoaderOutput:
     }
 
     return TorchLoaderOutput(
-        model=AddMulSingleOutput(),
-        inputs=(x, y, z),
-        dynamic_shapes=dynamic_shapes,
+        model=AddMulSingleOutput(), inputs=(x, y, z), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -69,9 +67,7 @@ def add_mul_multi_output_loader() -> TorchLoaderOutput:
     }
 
     return TorchLoaderOutput(
-        model=AddMulMultiOutput(),
-        inputs=(x, y, z),
-        dynamic_shapes=dynamic_shapes,
+        model=AddMulMultiOutput(), inputs=(x, y, z), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -90,15 +86,10 @@ def add_tensor_mixed_ranks_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": None,
-        "y": {0: batch},
-    }
+    dynamic_shapes = {"x": None, "y": {0: batch}}
 
     return TorchLoaderOutput(
-        model=AddTensorMixedRanks(),
-        inputs=(x, y),
-        dynamic_shapes=dynamic_shapes,
+        model=AddTensorMixedRanks(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -117,15 +108,10 @@ def add_tensor_with_alpha_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-        "y": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}, "y": {0: batch}}
 
     return TorchLoaderOutput(
-        model=AddTensorWithAlpha(),
-        inputs=(x, y),
-        dynamic_shapes=dynamic_shapes,
+        model=AddTensorWithAlpha(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -144,15 +130,10 @@ def sub_tensor_with_alpha_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-        "y": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}, "y": {0: batch}}
 
     return TorchLoaderOutput(
-        model=SubTensorWithAlpha(),
-        inputs=(x, y),
-        dynamic_shapes=dynamic_shapes,
+        model=SubTensorWithAlpha(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -171,15 +152,10 @@ def div_tensor_mixed_ranks_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": None,
-        "y": {0: batch},
-    }
+    dynamic_shapes = {"x": None, "y": {0: batch}}
 
     return TorchLoaderOutput(
-        model=DivTensorMixedRanks(),
-        inputs=(x, y),
-        dynamic_shapes=dynamic_shapes,
+        model=DivTensorMixedRanks(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -204,14 +180,10 @@ def add_sub_mul_div_scalar_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
     return TorchLoaderOutput(
-        model=AddSubMulDivScalar(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
+        model=AddSubMulDivScalar(), inputs=(x,), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -228,14 +200,10 @@ def sigmoid_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
     return TorchLoaderOutput(
-        model=Sigmoid(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
+        model=Sigmoid(), inputs=(x,), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -252,15 +220,9 @@ def tanh_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
-    return TorchLoaderOutput(
-        model=Tanh(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
-    )
+    return TorchLoaderOutput(model=Tanh(), inputs=(x,), dynamic_shapes=dynamic_shapes)
 
 
 def clamp_loader() -> TorchLoaderOutput:
@@ -278,15 +240,9 @@ def clamp_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
-    return TorchLoaderOutput(
-        model=Clamp(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
-    )
+    return TorchLoaderOutput(model=Clamp(), inputs=(x,), dynamic_shapes=dynamic_shapes)
 
 
 def relu_loader() -> TorchLoaderOutput:
@@ -302,15 +258,9 @@ def relu_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
-    return TorchLoaderOutput(
-        model=Relu(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
-    )
+    return TorchLoaderOutput(model=Relu(), inputs=(x,), dynamic_shapes=dynamic_shapes)
 
 
 def round_even_loader() -> TorchLoaderOutput:
@@ -326,14 +276,10 @@ def round_even_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
     return TorchLoaderOutput(
-        model=RoundEven(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
+        model=RoundEven(), inputs=(x,), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -350,14 +296,10 @@ def sqrt_float_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
     return TorchLoaderOutput(
-        model=SqrtFloat(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
+        model=SqrtFloat(), inputs=(x,), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -374,14 +316,10 @@ def sqrt_int_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch")
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
     return TorchLoaderOutput(
-        model=SqrtInt(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
+        model=SqrtInt(), inputs=(x,), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -400,15 +338,10 @@ def concat_float_tensors_loader() -> TorchLoaderOutput:
     # Dynamic dim constraints
     batch_x = Dim("batch_x")
     batch_y = Dim("batch_y")
-    dynamic_shapes = {
-        "x": {0: batch_x},
-        "y": {0: batch_y},
-    }
+    dynamic_shapes = {"x": {0: batch_x}, "y": {0: batch_y}}
 
     return TorchLoaderOutput(
-        model=ConcatFloatTensors(),
-        inputs=(x, y),
-        dynamic_shapes=dynamic_shapes,
+        model=ConcatFloatTensors(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -427,15 +360,10 @@ def concat_int_tensors_loader() -> TorchLoaderOutput:
     # Dynamic dim constraints
     batch_x = Dim("batch_x")
     batch_y = Dim("batch_y")
-    dynamic_shapes = {
-        "x": {0: batch_x},
-        "y": {0: batch_y},
-    }
+    dynamic_shapes = {"x": {0: batch_x}, "y": {0: batch_y}}
 
     return TorchLoaderOutput(
-        model=ConcatIntTensors(),
-        inputs=(x, y),
-        dynamic_shapes=dynamic_shapes,
+        model=ConcatIntTensors(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -452,14 +380,10 @@ def slice_tensor_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch", min=3)
-    dynamic_shapes = {
-        "x": {0: batch},
-    }
+    dynamic_shapes = {"x": {0: batch}}
 
     return TorchLoaderOutput(
-        model=SliceTensor(),
-        inputs=(x,),
-        dynamic_shapes=dynamic_shapes,
+        model=SliceTensor(), inputs=(x,), dynamic_shapes=dynamic_shapes
     )
 
 
@@ -475,8 +399,7 @@ def broadcast_unit_dim_to_static_with_explicit_dim_static_loader() -> TorchLoade
     x = torch.randn(1, 2)
 
     return TorchLoaderOutput(
-        model=BroadcastUnitDimToStaticWithExplicitDimStatic(),
-        inputs=(x,),
+        model=BroadcastUnitDimToStaticWithExplicitDimStatic(), inputs=(x,)
     )
 
 
@@ -494,8 +417,7 @@ def broadcast_unit_dim_to_static_with_unchanged_dim_static_loader() -> (
     x = torch.randn(1, 2)
 
     return TorchLoaderOutput(
-        model=BroadcastUnitDimToStaticWithUnchangedDimStatic(),
-        inputs=(x,),
+        model=BroadcastUnitDimToStaticWithUnchangedDimStatic(), inputs=(x,)
     )
 
 
@@ -513,9 +435,7 @@ def broadcast_unit_dim_to_static_with_unchanged_dim_dynamic_loader() -> (
     x = torch.randn(1, 2)
 
     dim_1 = Dim("dim_1")
-    dynamic_shapes = {
-        "x": {1: dim_1},
-    }
+    dynamic_shapes = {"x": {1: dim_1}}
 
     return TorchLoaderOutput(
         model=BroadcastUnitDimToStaticWithUnchangedDimDynamic(),
@@ -539,10 +459,7 @@ def broadcast_unit_dim_to_dynamic_with_unchanged_dim_static_loader() -> (
     y = torch.randn(10)
 
     dim_0 = Dim("dim_0")
-    dynamic_shapes = {
-        "x": {},
-        "y": {0: dim_0},
-    }
+    dynamic_shapes = {"x": {}, "y": {0: dim_0}}
 
     return TorchLoaderOutput(
         model=BroadcastUnitDimToDynamicWithUnchangedDimStatic(),
@@ -567,10 +484,7 @@ def broadcast_unit_dim_to_dynamic_with_unchanged_dim_dynamic_loader() -> (
 
     dim_0 = Dim("dim_0")
     dim_1 = Dim("dim_1")
-    dynamic_shapes = {
-        "x": {1: dim_1},
-        "y": {0: dim_0},
-    }
+    dynamic_shapes = {"x": {1: dim_1}, "y": {0: dim_0}}
 
     return TorchLoaderOutput(
         model=BroadcastUnitDimToDynamicWithUnchangedDimDynamic(),
@@ -592,8 +506,7 @@ def broadcast_unit_dim_to_static_with_rank_increase_loader() -> TorchLoaderOutpu
     y = torch.randn(4, 3, 2)
 
     return TorchLoaderOutput(
-        model=BroadcastUnitDimToStaticWithRankIncrease(),
-        inputs=(x, y),
+        model=BroadcastUnitDimToStaticWithRankIncrease(), inputs=(x, y)
     )
 
 
@@ -610,10 +523,7 @@ def broadcast_unit_dim_to_dynamic_with_rank_increase_loader() -> TorchLoaderOutp
     y = torch.randn(4, 3, 2)
 
     dim_0 = Dim("dim_0")
-    dynamic_shapes = {
-        "x": {},
-        "y": {0: dim_0},
-    }
+    dynamic_shapes = {"x": {}, "y": {0: dim_0}}
 
     return TorchLoaderOutput(
         model=BroadcastUnitDimToDynamicWithRankIncrease(),
@@ -636,13 +546,8 @@ def gather_elements_loader() -> TorchLoaderOutput:
 
     # Dynamic dim constraints
     batch = Dim("batch", min=3)
-    dynamic_shapes = {
-        "x": {0: batch},
-        "y": {},
-    }
+    dynamic_shapes = {"x": {0: batch}, "y": {}}
 
     return TorchLoaderOutput(
-        model=GatherElements(),
-        inputs=(x,y),
-        dynamic_shapes=dynamic_shapes,
+        model=GatherElements(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
