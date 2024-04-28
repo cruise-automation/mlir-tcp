@@ -18,6 +18,9 @@ void populateElementwisePatternsAndLegality(TypeConverter &typeConverter,
 void populateMiscPatternsAndLegality(TypeConverter &typeConverter,
                                      RewritePatternSet &patterns,
                                      ConversionTarget &target);
+void populateDataMovementPatternsAndLegality(TypeConverter &typeConverter,
+                                             RewritePatternSet &patterns,
+                                             ConversionTarget &target);
 
 } // namespace TcpToLinalg
 } // namespace mlir
