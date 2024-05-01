@@ -290,6 +290,25 @@ public:
   }
 };
 
+class ConvertCreateTensorFromIntOp : public OpConversionPattern<Torch::CreateTensorFromIntOp> {
+public:
+  using OpConversionPattern<Torch::CreateTensorFromIntOp>::OpConversionPattern;
+  using OpAdaptor = typename Torch::CreateTensorFromIntOp::Adaptor;
+
+  LogicalResult
+  matchAndRewrite(Torch::CreateTensorFromIntOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    SmallVector<Type> resultTypes;
+    if (failed(OpConversionPattern<Torch::CreateTensorFromIntOp>::getTypeConverter()->convertTypes(
+            op->getResultTypes(), resultTypes))) {
+      return failure();
+    }
+    rewriter.replaceOpWithNewOp<tcp::CreateTensorFromIntOp>(
+        op, resultTypes, adaptor.getIndex());
+    return success();
+  }
+};
+
 class ConvertValueTensorLiteralOp
     : public OpConversionPattern<ValueTensorLiteralOp> {
 public:
@@ -356,10 +375,12 @@ void torch_to_tcp::cruise::populateCruiseInternalPatternsAndLegality(TypeConvert
   target.addIllegalOp<BindTensorShapeOp>();
   target.addIllegalOp<CasprShapeTensorDimOp>();
   target.addIllegalOp<CasprConstIndexOp>();
+  target.addIllegalOp<Torch::CreateTensorFromIntOp>();
 
   patterns.add<ConvertAxisAlignedHardNMS2dOp>(typeConverter, context);
   patterns.add<ConvertTensorDimOp>(typeConverter, context);
   patterns.add<ConvertCreateIndexArrayOp>(typeConverter, context);
+  patterns.add<ConvertCreateTensorFromIntOp>(typeConverter, context);
   patterns.add<ConvertBindTensorShapeOp>(typeConverter, context);
   patterns.add<ConvertCasprShapeTensorDimOp>(typeConverter, context);
   patterns.add<ConvertCasprConstIndexOp>(typeConverter, context);
