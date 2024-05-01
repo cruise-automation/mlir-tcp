@@ -31,5 +31,19 @@ def Tcp_BindTensorShape : Tcp_Op<"bind_tensor_shape", []> {
     );
 }
 
+// caspr CreateTensorFromIntOp : used for encapsulating result of tensor_dim_op in tensor
+def Tcp_CreateTensorFromIntOp : Tcp_Op<"create_tensor_from_int"> {
+    let arguments = (ins
+      Index:$index
+    );
+
+    let results = (outs
+      AnyType:$result
+    );
+
+  let assemblyFormat = [{
+    `(` operands `)` `:` attr-dict-with-keyword functional-type(operands, results)
+  }];
+}
 
 #endif // TCP_OPS_CRUISE_INTERNAL
