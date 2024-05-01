@@ -6,9 +6,9 @@
 #
 --find-links https://github.com/llvm/torch-mlir-release/releases/expanded_assets/dev-wheels
 
-filelock==3.13.3 \
-    --hash=sha256:5ffa845303983e7a0b7ae17636509bc97997d58afeafa72fb141a17b152284cb \
-    --hash=sha256:a79895a25bbefdf55d1a2a0a80968f7dbb28edcd6d4234a0afb3f37ecde4b546
+filelock==3.14.0 \
+    --hash=sha256:43339835842f110ca7ae60f1e1c160714c5a6afd15a2873419ab185334975c0f \
+    --hash=sha256:6ea72da3be9b8c82afd3edcf99f2fffbb5076335a5ae4d03248bb5b6c3eae78a
     # via
     #   torch
     #   triton
@@ -138,15 +138,15 @@ sympy==1.12 \
     --hash=sha256:c3588cd4295d0c0f603d0f2ae780587e64e2efeedb3521e46b9bb1d08d184fa5 \
     --hash=sha256:ebf595c8dac3e0fdc4152c51878b498396ec7f30e7a914d6071e674d49420fb8
     # via torch
-torch==2.4.0.dev20240401+cpu \
-    --hash=sha256:1e6e8f79dd48b7379fa9f0cd2519035d17b862de67c5071b71ea863b2044600a \
-    --hash=sha256:927238d97719242dc5ac0052334c0014d1b22bd48723ba748430002716114d5a
+torch==2.4.0.dev20240428+cpu \
+    --hash=sha256:2528bdfa7dc56208c06d576f6f9ac69a75caf5b6a2c22ae44c82ac001e2e6f3e \
+    --hash=sha256:fbae9a5092288805b4eb9d8882481343aa2637bc5c6876ae0c50d93275dafe7d
     # via
     #   -r requirements.txt
     #   torch-mlir
-torch-mlir==20240409.64 \
-    --hash=sha256:4d21b8ad7a9ecdf73be6c27e54670709388d159a212f1ee17f92a579b5e86ac1 \
-    --hash=sha256:885bf40dd74fef46b8fbc7442baac255779cda8835e18face54c93725a7c756b
+torch-mlir==20240430.86 \
+    --hash=sha256:9f7f2c23a5f21c63b50738202e39809bbb11f32e73edbde6c8b20ec4b0af0d8c \
+    --hash=sha256:b161e02ff11035a8444a165ed1731ac602718d55ca542bc6b3e513182b8a05b4
     # via -r requirements.txt
 typing-extensions==4.11.0 \
     --hash=sha256:83f085bd5ca59c80295fc2a82ab5dac679cbe02b9f33f7d83af68e241bea51b0 \
