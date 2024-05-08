@@ -31,14 +31,28 @@ def Tcp_BindTensorShape : Tcp_Op<"bind_tensor_shape", []> {
     );
 }
 
-// caspr CreateTensorFromIntOp : used for encapsulating result of tensor_dim_op in tensor
-def Tcp_CreateTensorFromIntOp : Tcp_Op<"create_tensor_from_int"> {
+// caspr CreateTensorFromIndexOp : used for encapsulating result of tensor_dim_op in tensor
+def Tcp_CreateTensorFromIndexOp : Tcp_Op<"create_tensor_from_index"> {
     let arguments = (ins
       Index:$index
     );
 
     let results = (outs
       AnyType:$result
+    );
+
+  let assemblyFormat = [{
+    `(` operands `)` `:` attr-dict-with-keyword functional-type(operands, results)
+  }];
+}
+
+def Tcp_IndexFromTensorOp : Tcp_Op<"index_from_tensor"> {
+    let arguments = (ins
+      AnyType:$input
+    );
+
+    let results = (outs
+      Index:$index
     );
 
   let assemblyFormat = [{
