@@ -31,8 +31,8 @@ def Tcp_BindTensorShape : Tcp_Op<"bind_tensor_shape", []> {
     );
 }
 
-// caspr CreateTensorFromIndexOp : used for encapsulating result of tensor_dim_op in tensor
-def Tcp_CreateTensorFromIndexOp : Tcp_Op<"create_tensor_from_index"> {
+// caspr CasprCreateTensorFromIndexOp : used for encapsulating result of tensor_dim_op in tensor
+def Tcp_CasprCreateTensorFromIndexOp : Tcp_Op<"caspr_create_tensor_from_index"> {
     let arguments = (ins
       Index:$index
     );
@@ -46,7 +46,7 @@ def Tcp_CreateTensorFromIndexOp : Tcp_Op<"create_tensor_from_index"> {
   }];
 }
 
-def Tcp_IndexFromTensorOp : Tcp_Op<"index_from_tensor"> {
+def Tcp_CasprIndexFromTensorOp : Tcp_Op<"caspr_index_from_tensor"> {
     let arguments = (ins
       AnyType:$input
     );
