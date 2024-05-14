@@ -716,10 +716,24 @@ void torch_to_tcp::populateElementwisePatternsAndLegality(
   INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN(ConvertAtenDivOp, AtenDivScalarOp);
 #undef INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN
 
+// We only convert torch ops with fp inputs here. Hence marking torch ops
+// with non-fp inputs as dynamically legal (in Torch dialect) i.e. leave
+// them in Torch, to be handled by Torch -> TOSA later. This helps avoid
+// legalization errors after Torch -> TCP.
 #define INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenOp, TcpOp)                       \
-  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
-      ConvertAtenUnaryFpOnlyOp<AtenOp, TcpOp>, AtenOp>(                        \
-      typeConverter, patterns, target, convertTorchOpsSet)
+  {                                                                            \
+    auto isFpOnlyOp = [](AtenOp op) {                                          \
+      auto inputTy =                                                           \
+          cast<torch::Torch::ValueTensorType>(op.getSelf().getType());         \
+      auto inputDTy = inputTy.toBuiltinTensor().getElementType();              \
+      return isa<mlir::FloatType>(inputDTy);                                   \
+    };                                                                         \
+    torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                          \
+        ConvertAtenUnaryFpOnlyOp<AtenOp, TcpOp>, AtenOp>(                      \
+        typeConverter, patterns, target, convertTorchOpsSet,                   \
+        [&](AtenOp op) { return !isFpOnlyOp(op); });                           \
+  }
+
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenCeilOp, tcp::CeilOp);
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenFloorOp, tcp::FloorOp);
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenRoundOp, tcp::RoundEvenOp);
