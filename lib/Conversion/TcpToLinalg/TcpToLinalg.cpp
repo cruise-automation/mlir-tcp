@@ -50,6 +50,8 @@ public:
                                                         target);
     TcpToLinalg::populateMiscPatternsAndLegality(typeConverter, patterns,
                                                  target);
+    TcpToLinalg::populateDataMovementPatternsAndLegality(typeConverter,
+                                                         patterns, target);
 
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns))))
