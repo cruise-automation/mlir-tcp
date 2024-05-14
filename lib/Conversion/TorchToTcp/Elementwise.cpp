@@ -717,9 +717,19 @@ void torch_to_tcp::populateElementwisePatternsAndLegality(
 #undef INSERT_ATEN_ELEMENTWISE_MUL_DIV_PATTERN
 
 #define INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenOp, TcpOp)                       \
-  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                            \
-      ConvertAtenUnaryFpOnlyOp<AtenOp, TcpOp>, AtenOp>(                        \
-      typeConverter, patterns, target, convertTorchOpsSet)
+  {                                                                            \
+    auto isFpOnlyOp = [](AtenOp op) {                                          \
+      auto inputTy =                                                           \
+          cast<torch::Torch::ValueTensorType>(op.getSelf().getType());         \
+      auto inputDTy = inputTy.toBuiltinTensor().getElementType();              \
+      return isa<mlir::FloatType>(inputDTy);                                   \
+    };                                                                         \
+    torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<                          \
+        ConvertAtenUnaryFpOnlyOp<AtenOp, TcpOp>, AtenOp>(                      \
+        typeConverter, patterns, target, convertTorchOpsSet,                   \
+        [&](AtenOp op) { return !isFpOnlyOp(op); });                           \
+  }
+
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenCeilOp, tcp::CeilOp);
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenFloorOp, tcp::FloorOp);
   INSERT_ATEN_UNARY_FP_ONLY_PATTERN(AtenRoundOp, tcp::RoundEvenOp);
