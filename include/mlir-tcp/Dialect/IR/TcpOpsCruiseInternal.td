@@ -10,7 +10,7 @@
 #ifndef TCP_OPS_CRUISE_INTERNAL
 #define TCP_OPS_CRUISE_INTERNAL
 
-def Tcp_CreateIndexArrayOp : Tcp_Op<"create_index_array", []> {
+def Tcp_CreateIndexArrayOp : Tcp_Op<"create_index_array"> {
     let summary = "Creates index_arry type given variadic number of input indices";
 
     let arguments = (ins
@@ -20,6 +20,10 @@ def Tcp_CreateIndexArrayOp : Tcp_Op<"create_index_array", []> {
     let results = (outs
         Tcp_IndexArrayType : $outputs
     );
+  
+  let assemblyFormat = [{
+    `(` operands `)` `:` attr-dict-with-keyword functional-type(operands, results)
+  }];
 }
 
 def Tcp_BindTensorShape : Tcp_Op<"bind_tensor_shape", []> {
@@ -46,6 +50,21 @@ def Tcp_CasprCreateTensorFromIndexOp : Tcp_Op<"caspr_create_tensor_from_index"> 
   }];
 }
 
+// caspr CasprCreateTensorFromIndexArrayOp : used for encapsulating result of tensor_dim_op in tensor
+def Tcp_CasprCreateTensorFromIndexArrayOp : Tcp_Op<"caspr_create_tensor_from_index_array"> {
+    let arguments = (ins
+      Tcp_IndexArrayType:$shape_array
+    );
+
+    let results = (outs
+      AnyType:$result
+    );
+
+  let assemblyFormat = [{
+    `(` operands `)` `:` attr-dict-with-keyword functional-type(operands, results)
+  }];
+}
+
 def Tcp_CasprIndexFromTensorOp : Tcp_Op<"caspr_index_from_tensor"> {
     let arguments = (ins
       AnyType:$input
@@ -59,5 +78,6 @@ def Tcp_CasprIndexFromTensorOp : Tcp_Op<"caspr_index_from_tensor"> {
     `(` operands `)` `:` attr-dict-with-keyword functional-type(operands, results)
   }];
 }
+
 
 #endif // TCP_OPS_CRUISE_INTERNAL
