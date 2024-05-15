@@ -65,6 +65,12 @@ def Tcp_FloatOrIntTensor : RankedTensorOf<[AnyFloat, AnySignlessInteger]>;
 
 def Tcp_IndexArrayType : Tcp_Type<"IndexArray", "index_array"> {
     let summary = "IndexArray TCP type, to holds a list of index builtin type to represent shape";
+
+    let parameters = (ins
+        "int":$elements
+    );
+
+    let assemblyFormat = "`<` `[` $elements `]` `>`";
 }
 
 #endif // TCP_TYPES
