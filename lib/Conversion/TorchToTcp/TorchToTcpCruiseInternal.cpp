@@ -48,8 +48,8 @@ public:
 
     TypeConverter typeConverter;
     typeConverter.addConversion([](Type type) { return type; });
-    typeConverter.addConversion([&](Torch::IndexArrayType) {
-      return tcp::IndexArrayType::get(context);
+    typeConverter.addConversion([&](Torch::IndexArrayType ty) {
+      return tcp::IndexArrayType::get(context, ty.getElements());
     });
     typeConverter.addConversion(
         [&](Torch::TorchIndexType) { return ::mlir::IndexType::get(context); });
