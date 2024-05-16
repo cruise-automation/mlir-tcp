@@ -85,3 +85,26 @@ func.func @index_from_tensor_tensor_from_index(%arg0: !torch.vtensor<[1],si64>) 
   %1 = torch.caspr_create_tensor_from_index(%0) : (!torch.index) -> !torch.vtensor<[1],si64>
   return %1 : !torch.vtensor<[1],si64>
 }
+
+// -----
+
+// Since function arguments are not yet converted, casts will be added which will be
+// resolved in the next pass
+// CHECK:  @create_tensor_from_index_array(
+// CHECK:   %[[ARG0:.+]]: !torch.vtensor<[?,?],f32>
+// CHECK:        %[[CAST:.+]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
+// CHECK:        %[[DIM0:.+]] = tensor.dim %[[CAST]], %[[C0:.+]] : tensor<?x?xf32>
+// CHECK:        %[[DIM1:.+]] = tensor.dim %[[CAST]], %[[C1:.+]] : tensor<?x?xf32>
+// CHECK:        %[[ARRAY:.+]] = tcp.create_index_array(%[[DIM0]], %[[DIM1]]) : (index, index) -> !tcp.index_array<[2]>
+// CHECK:        %[[T:.+]] = tcp.caspr_create_tensor_from_index_array(%[[ARRAY]]) : (!tcp.index_array<[2]>) -> tensor<2xi64>
+// CHECK:        %[[CAST2:.+]] = torch_c.from_builtin_tensor %[[T]] : tensor<2xi64> -> !torch.vtensor<[2],si64>
+// CHECK:        return %[[CAST2]] : !torch.vtensor<[2],si64>
+func.func @create_tensor_from_index_array(%arg0: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[2],si64> {
+  %int1 = torch.constant.int 1
+  %int0 = torch.constant.int 0
+  %0 = torch.caspr_shapes.tensor_dim_op(%arg0, %int0) : (!torch.vtensor<[?,?],f32>, !torch.int) -> !torch.index
+  %1 = torch.caspr_shapes.tensor_dim_op(%arg0, %int1) : (!torch.vtensor<[?,?],f32>, !torch.int) -> !torch.index
+  %2 = torch.create_index_array(%0, %1) : (!torch.index, !torch.index) -> !torch.index_array<[2]>
+  %3 = torch.caspr_create_tensor_from_index_array(%2) : (!torch.index_array<[2]>) -> !torch.vtensor<[2],si64>
+  return %3: !torch.vtensor<[2],si64>
+}
