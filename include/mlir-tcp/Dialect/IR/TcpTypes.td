@@ -14,7 +14,7 @@ include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/DialectBase.td"
 
 include "mlir-tcp/Dialect/IR/TcpBase.td"
-
+include "mlir-tcp/Dialect/IR/TcpTypesCruiseInternal.td"
 
 //===----------------------------------------------------------------------===//
 // Tcp Quantized Types
@@ -57,20 +57,5 @@ def Tcp_TensorOrScalar : AnyTypeOf<[Tcp_Tensor, Tcp_Scalar]>;
 def Tcp_FloatTensor : RankedTensorOf<[AnyFloat]>;
 def Tcp_IntTensor : RankedTensorOf<[AnySignlessInteger]>;
 def Tcp_FloatOrIntTensor : RankedTensorOf<[AnyFloat, AnySignlessInteger]>;
-
-
-//===----------------------------------------------------------------------===//
-// Tcp Custom Types
-//===----------------------------------------------------------------------===//
-
-def Tcp_IndexArrayType : Tcp_Type<"IndexArray", "index_array"> {
-    let summary = "IndexArray TCP type, to holds a list of index builtin type to represent shape";
-
-    let parameters = (ins
-        "int":$elements
-    );
-
-    let assemblyFormat = "`<` `[` $elements `]` `>`";
-}
 
 #endif // TCP_TYPES

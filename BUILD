@@ -24,7 +24,8 @@ td_library(
         "include/mlir-tcp/Dialect/IR/TcpOps.td",
         "include/mlir-tcp/Dialect/IR/TcpTypes.td",
         "include/mlir-tcp/Dialect/IR/TcpOpsCruiseInternal.td",
-    ],
+        "include/mlir-tcp/Dialect/IR/TcpTypesCruiseInternal.td",
+        ],
     includes = ["include"],
     deps = [
         "@llvm-project//mlir:OpBaseTdFiles",
