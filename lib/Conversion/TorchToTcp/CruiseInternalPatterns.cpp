@@ -280,6 +280,25 @@ public:
   }
 };
 
+class ConvertCasprCreateTensorFromIndexArrayOp : public OpConversionPattern<Torch::CasprCreateTensorFromIndexArrayOp> {
+public:
+  using OpConversionPattern<Torch::CasprCreateTensorFromIndexArrayOp>::OpConversionPattern;
+  using OpAdaptor = typename Torch::CasprCreateTensorFromIndexArrayOp::Adaptor;
+
+  LogicalResult
+  matchAndRewrite(Torch::CasprCreateTensorFromIndexArrayOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    SmallVector<Type> resultTypes;
+    if (failed(OpConversionPattern<Torch::CasprCreateTensorFromIndexArrayOp>::getTypeConverter()->convertTypes(
+            op->getResultTypes(), resultTypes))) {
+      return failure();
+    }
+    rewriter.replaceOpWithNewOp<tcp::CasprCreateTensorFromIndexArrayOp>(
+        op, resultTypes, adaptor.getShapeArray());
+    return success();
+  }
+};
+
 class ConvertCasprIndexFromTensorOp : public OpConversionPattern<Torch::CasprIndexFromTensorOp> {
 public:
   using OpConversionPattern<Torch::CasprIndexFromTensorOp>::OpConversionPattern;
@@ -370,6 +389,7 @@ void torch_to_tcp::cruise::populateCruiseInternalPatternsAndLegality(TypeConvert
   patterns.add<ConvertAxisAlignedHardNMS2dOp>(typeConverter, context);
   patterns.add<ConvertCreateIndexArrayOp>(typeConverter, context);
   patterns.add<ConvertCasprCreateTensorFromIndexOp>(typeConverter, context);
+  patterns.add<ConvertCasprCreateTensorFromIndexArrayOp>(typeConverter, context);
   patterns.add<ConvertCasprIndexFromTensorOp>(typeConverter, context);
   patterns.add<ConvertBindTensorShapeOp>(typeConverter, context);
   patterns.add<ConvertCasprShapeTensorDimOp>(typeConverter, context);
