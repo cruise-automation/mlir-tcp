@@ -58,13 +58,4 @@ def Tcp_FloatTensor : RankedTensorOf<[AnyFloat]>;
 def Tcp_IntTensor : RankedTensorOf<[AnySignlessInteger]>;
 def Tcp_FloatOrIntTensor : RankedTensorOf<[AnyFloat, AnySignlessInteger]>;
 
-
-//===----------------------------------------------------------------------===//
-// Tcp Custom Types
-//===----------------------------------------------------------------------===//
-
-def Tcp_IndexArrayType : Tcp_Type<"IndexArray", "index_array"> {
-    let summary = "IndexArray TCP type, to holds a list of index builtin type to represent shape";
-}
-
 #endif // TCP_TYPES
