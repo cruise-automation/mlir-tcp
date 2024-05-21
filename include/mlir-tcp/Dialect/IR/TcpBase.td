@@ -33,10 +33,6 @@ def Tcp_Dialect : Dialect {
     void printAttribute(
         Attribute attr, DialectAsmPrinter &printer) const override;
   }]; 
-
-  let dependentDialects = [];
-
-  let useDefaultTypePrinterParser = 1;
 }
 
 //===----------------------------------------------------------------------===//
@@ -59,14 +55,6 @@ class Tcp_BinaryElementwiseOp<string mnemonic, list<Trait> traits = []> :
         NoMemoryEffect,
         Elementwise,
         SameOperandsAndResultShape])> {
-}
-
-//===----------------------------------------------------------------------===//
-// Tcp Types Base
-//===----------------------------------------------------------------------===//
-
-class Tcp_Type<string name, string typeMnemonic> : TypeDef<Tcp_Dialect, name> {
-    let mnemonic = typeMnemonic;
 }
 
 #endif // TCP_BASE
