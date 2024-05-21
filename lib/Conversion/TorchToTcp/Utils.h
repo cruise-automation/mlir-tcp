@@ -28,6 +28,13 @@ getTcpSignednessAttr(MLIRContext *context,
 Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
                                  Value input, int64_t rankIncrease);
 
+Value broadcastRank0Dor1DToND(ConversionPatternRewriter &rewriter, Value input,
+                              int64_t targetRank, int64_t axisInOutput);
+
+Value broadcastShapeExceptDims(ConversionPatternRewriter &rewriter, Value input,
+                               Value target,
+                               llvm::SmallDenseSet<int64_t> dimsToExclude);
+
 // Helper function to do both rank and shape all-dim broadcasting
 // of the inputs to match each other.
 std::pair<Value, Value>

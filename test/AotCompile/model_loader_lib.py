@@ -551,3 +551,24 @@ def gather_elements_loader() -> TorchLoaderOutput:
     return TorchLoaderOutput(
         model=GatherElements(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
+
+
+def gather_slices_loader() -> TorchLoaderOutput:
+    class GatherSlices(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            return torch.index_select(x, 1, y)
+
+    # Sample inputs
+    x = torch.randn(4, 3)
+    y = torch.tensor([2, 0])
+
+    # Dynamic dim constraints
+    batch = Dim("batch", min=3)
+    dynamic_shapes = {"x": {0: batch}, "y": {}}
+
+    return TorchLoaderOutput(
+        model=GatherSlices(), inputs=(x, y), dynamic_shapes=dynamic_shapes
+    )
