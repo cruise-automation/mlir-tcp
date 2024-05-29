@@ -376,8 +376,6 @@ void torch_to_tcp::cruise::populateCruiseInternalPatternsAndLegality(TypeConvert
   target.addIllegalOp<BuildNeighborMapConfigOp>();
   target.addIllegalOp<OclCasprCustomVariadicOp>();
   target.addIllegalOp<AxisAlignedHardNMS2dOp>();
-  target.addIllegalOp<LRDPrefilterPredictionOp>();
-  target.addIllegalOp<LRDPrefilterPredictionConfigOp>();
   target.addIllegalOp<OclCasprCustomVariadicOp>();
   target.addIllegalOp<Torch::CreateIndexArrayOp>();
   target.addIllegalOp<BindTensorShapeOp>();
@@ -407,12 +405,9 @@ void torch_to_tcp::cruise::populateCruiseInternalPatternsAndLegality(TypeConvert
                    SparseArrayToDenseMapOp, SparseArrayToDenseMapConfigType>,
                ConvertTorchCustomOpWithSingleConfig<BuildNeighborMapOp,
                                                     BuildNeighborMapConfigType>,
-               ConvertTorchCustomOpWithSingleConfig<LRDPrefilterPredictionOp,
-                                                    LRDPrefilterPredictionConfigType>,
                EraseOpConverter<TRTEngineCreateOp>,
                EraseOpConverter<FusedGatherSubmanifoldConv3DConfigOp>,
                EraseOpConverter<BuildNeighborMapConfigOp>,
-               EraseOpConverter<SparseArrayToDenseMapConfigOp>,
-               EraseOpConverter<LRDPrefilterPredictionConfigOp>>(typeConverter,
+               EraseOpConverter<SparseArrayToDenseMapConfigOp>>(typeConverter,
                                                                 context);
 }
