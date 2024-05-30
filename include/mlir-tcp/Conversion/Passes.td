@@ -97,4 +97,21 @@ def ConvertTcpToArith
   ];
 }
 
+//===----------------------------------------------------------------------===//
+// TcpToTensor
+//===----------------------------------------------------------------------===//
+
+def ConvertTcpToTensor
+      : Pass<"convert-tcp-to-tensor", "func::FuncOp"> {
+  let summary = "Lower TCP to Tensor";
+  let description = [{
+    Pass that converts TCP operations to equivalent operations in Tensor.
+  }];
+
+  let constructor = "mlir::tcp::createConvertTcpToTensorPass()";
+  let dependentDialects = [
+    "mlir::tensor::TensorDialect",
+  ];
+}
+
 #endif // TCP_CONVERSION_PASSES

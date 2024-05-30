@@ -11,6 +11,7 @@
 
 #include "mlir-tcp/Conversion/TcpToArith/TcpToArith.h"
 #include "mlir-tcp/Conversion/TcpToLinalg/TcpToLinalg.h"
+#include "mlir-tcp/Conversion/TcpToTensor/TcpToTensor.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h"
 #include "mlir-tcp/Dialect/Transforms/TransformTensorOps.h"
@@ -67,6 +68,7 @@ static void createTcpToLlvmPipeline(OpPassManager &pm) {
 
   // TCP -> Linalg/Arith conversions.
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToLinalgPass());
+  pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToTensorPass());
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToArithPass());
 
   // Bufferize tensor -> memref.

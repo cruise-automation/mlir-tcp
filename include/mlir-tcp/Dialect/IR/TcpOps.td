@@ -618,4 +618,26 @@ def Tcp_GatherOp : Tcp_Op<"gather", [Pure, AllElementTypesMatch<["input", "out"]
   let assemblyFormat = "$input `,` $indices attr-dict `:` type($input) `,` type($indices) `->` type($out)";
 }
 
+def Tcp_SliceOp : Tcp_Op<"slice", [Pure, AllElementTypesMatch<["in", "out"]>, SameVariadicOperandSize]> {
+
+  let summary = "Extracts a slice of the input tensor";
+
+  let description = [{
+    Extracts a slice of the input tensor based on the given starts, sizes, and strides.
+  }];
+
+  let arguments = (ins
+    Tcp_Tensor:$in,
+    Variadic<Index>:$starts,
+    Variadic<Index>:$sizes,
+    Variadic<Index>:$strides
+  );
+
+  let results = (outs
+    Tcp_Tensor:$out
+  );
+
+  let assemblyFormat = "$in `(` $starts `)` `(` $sizes `)` `(` $strides `)` attr-dict `:` type($in) `->` type($out)";
+}
+
 #endif // TCP_OPS

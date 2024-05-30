@@ -9,17 +9,17 @@
 
 #pragma once
 
-#include "mlir-tcp/Dialect/IR/TcpDialect.h"
-
-#include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
-#include "mlir/Dialect/Linalg/IR/Linalg.h"
-#include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
 
-#define GEN_PASS_CLASSES
+#define GEN_PASS_DECL_CONVERTTCPTOTENSOR
 #include "mlir-tcp/Conversion/Passes.h.inc"
 
-} // end namespace mlir
+namespace tcp {
+
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertTcpToTensorPass();
+
+} // namespace tcp
+} // namespace mlir
