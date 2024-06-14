@@ -637,7 +637,7 @@ def Tcp_SliceOp : Tcp_Op<"slice", [Pure, AllElementTypesMatch<["in", "out"]>, Sa
     Tcp_Tensor:$out
   );
 
-  let assemblyFormat = "$in `(` $starts `)` `(` $sizes `)` `(` $strides `)` attr-dict `:` type($in) `->` type($out)";
+  let assemblyFormat = "$in `starts` `(` $starts `)` `sizes` `(` $sizes `)` `strides` `(` $strides `)` attr-dict `:` type($in) `->` type($out)";
 }
 
 #endif // TCP_OPS

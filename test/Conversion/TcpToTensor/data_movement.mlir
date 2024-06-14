@@ -16,6 +16,6 @@ func.func @test_slice(%arg0: tensor<1x56x?x?xf32>) -> tensor<1x28x?x?xf32> {
   %c0 = arith.constant 0 : index
   %dim = tensor.dim %arg0, %c2 : tensor<1x56x?x?xf32>
   %dim_0 = tensor.dim %arg0, %c3 : tensor<1x56x?x?xf32>
-  %1 = tcp.slice %arg0 ( %c0, %c0, %c0, %c0 ) ( %c1, %c28, %dim, %dim_0 ) ( %c1, %c2, %c1, %c1 ) : tensor<1x56x?x?xf32> -> tensor<1x28x?x?xf32>
+  %1 = tcp.slice %arg0 starts( %c0, %c0, %c0, %c0 ) sizes( %c1, %c28, %dim, %dim_0 ) strides( %c1, %c2, %c1, %c1 ) : tensor<1x56x?x?xf32> -> tensor<1x28x?x?xf32>
   return %1 : tensor<1x28x?x?xf32>
 }
