@@ -188,6 +188,7 @@ cc_library(
         ":StablehloToTcp",
         ":TcpToArith",
         ":TcpToLinalg",
+        ":TcpToTensor",
         ":TorchToTcp",
     ],
 )
@@ -283,6 +284,27 @@ cc_library(
         "@llvm-project//mlir:FuncDialect",
         "@llvm-project//mlir:LinalgDialect",
         "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Transforms",
+    ],
+)
+
+cc_library(
+    name = "TcpToTensor",
+    srcs = [
+        "lib/Conversion/PassDetail.h",
+        "lib/Conversion/TcpToTensor/TcpToTensor.cpp",
+    ],
+    hdrs = ["include/mlir-tcp/Conversion/TcpToTensor/TcpToTensor.h"],
+    strip_include_prefix = "include",
+    deps = [
+        ":TcpConversionPassesIncGen",
+        ":TcpDialect",
+        "@llvm-project//mlir:ArithDialect",
+        "@llvm-project//mlir:Dialect",
+        "@llvm-project//mlir:FuncDialect",
+        "@llvm-project//mlir:LinalgDialect",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:TensorDialect",
         "@llvm-project//mlir:Transforms",
     ],
 )

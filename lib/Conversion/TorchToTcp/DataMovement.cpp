@@ -184,13 +184,10 @@ public:
     if (failed(verifyLinalgCompatibleTypes(op, rewriter)))
       return failure();
 
-    Location loc = op.getLoc();
-    const TypeConverter *typeConverter = getTypeConverter();
-
     auto input = adaptor.getSelf();
-    RankedTensorType resultType =
-        typeConverter->convertType(op->getResult(0).getType())
-            .cast<RankedTensorType>();
+    RankedTensorType resultType = getTypeConverter()
+                                      ->convertType(op->getResult(0).getType())
+                                      .cast<RankedTensorType>();
 
     SmallVector<Value> resultShape;
     SmallVector<Value> offsets;
@@ -201,10 +198,8 @@ public:
       return failure();
     }
 
-    Value result = rewriter.create<tensor::ExtractSliceOp>(
-        loc, input, offsets, resultShape, strides);
-
-    rewriter.replaceOpWithNewOp<tensor::CastOp>(op, resultType, result);
+    rewriter.replaceOpWithNewOp<tcp::SliceOp>(op, resultType, input, offsets,
+                                              resultShape, strides);
     return success();
   }
 };

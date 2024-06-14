@@ -18,9 +18,8 @@ func.func @torch.aten.cat(%arg0: !torch.vtensor<[?,?],f32>, %arg1: !torch.vtenso
 // CHECK-LABEL: @torch.aten.slice.Tensor
 //   CHECK-SAME:   %[[ARG0:.+]]: !torch.vtensor<[1,56,?,?],f32>) -> !torch.vtensor<[1,28,?,?],f32>
 //        CHECK:   %[[V1:.+]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,56,?,?],f32> -> tensor<1x56x?x?xf32>
-//        CHECK:   %[[V2:.+]] = tensor.extract_slice %[[V1]][%{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}] [%{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}] [%{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}] : tensor<1x56x?x?xf32> to tensor<?x?x?x?xf32>
-//        CHECK:   %[[V3:.+]] = tensor.cast %[[V2]] : tensor<?x?x?x?xf32> to tensor<1x28x?x?xf32>
-//        CHECK:   %[[V4:.+]] = torch_c.from_builtin_tensor %[[V3]] : tensor<1x28x?x?xf32> -> !torch.vtensor<[1,28,?,?],f32>
+//        CHECK:   %[[V2:.+]] = tcp.slice %[[V1]] starts(%{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}) sizes(%{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}) strides(%{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}) : tensor<1x56x?x?xf32> -> tensor<1x28x?x?xf32>
+//        CHECK:   %[[V3:.+]] = torch_c.from_builtin_tensor %[[V2]] : tensor<1x28x?x?xf32> -> !torch.vtensor<[1,28,?,?],f32>
 func.func @torch.aten.slice.Tensor(%arg0: !torch.vtensor<[1,56,?,?],f32>) -> !torch.vtensor<[1,28,?,?],f32> {
   %int100 = torch.constant.int 100
   %int1 = torch.constant.int 1
