@@ -11,6 +11,7 @@
 
 #include "mlir-tcp/Conversion/Passes.h"
 #include "mlir-tcp/Dialect/IR/TcpDialect.h"
+#include "mlir-tcp/Dialect/IR/TcpTilingInterfaceImpl.h"
 #include "mlir-tcp/Dialect/Transforms/Passes.h"
 
 #include "mlir/Dialect/Func/Extensions/InlinerExtension.h"
@@ -22,6 +23,7 @@ void mlir::tcp::registerAllDialects(mlir::DialectRegistry &registry) {
   registry.insert<tcp::TcpDialect>();
   registry.insert<torch::Torch::TorchDialect>();
   mlir::func::registerInlinerExtension(registry);
+  mlir::tcp::registerTilingInterfaceExternalModels(registry);
 }
 
 void mlir::tcp::registerAllPasses() {
