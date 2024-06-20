@@ -23,6 +23,7 @@
 #include "mlir/Conversion/MathToLLVM/MathToLLVM.h"
 #include "mlir/Conversion/MathToLibm/MathToLibm.h"
 #include "mlir/Conversion/MemRefToLLVM/MemRefToLLVM.h"
+#include "mlir/Conversion/BufferizationToMemRef/BufferizationToMemRef.h"
 #include "mlir/Conversion/ReconcileUnrealizedCasts/ReconcileUnrealizedCasts.h"
 #include "mlir/Conversion/SCFToControlFlow/SCFToControlFlow.h"
 #include "mlir/Dialect/Arith/Transforms/Passes.h"
@@ -30,6 +31,7 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Func/Transforms/Passes.h"
 #include "mlir/Dialect/Linalg/Passes.h"
+#include "mlir/Dialect/Bufferization/Transforms/OneShotAnalysis.h"
 #include "mlir/Dialect/MemRef/Transforms/Passes.h"
 #include "mlir/Dialect/Tensor/Transforms/Passes.h"
 #include "mlir/Pass/PassManager.h"
@@ -72,16 +74,21 @@ static void createTcpToLlvmPipeline(OpPassManager &pm) {
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToArithPass());
 
   // Bufferize tensor -> memref.
-  pm.addNestedPass<func::FuncOp>(
-      bufferization::createEmptyTensorToAllocTensorPass());
-  pm.addNestedPass<func::FuncOp>(
-      bufferization::createBufferizationBufferizePass());
-  pm.addNestedPass<func::FuncOp>(createLinalgBufferizePass());
-  pm.addNestedPass<func::FuncOp>(tensor::createTensorBufferizePass());
-  pm.addPass(arith::createConstantBufferizePass());
-  pm.addPass(func::createFuncBufferizePass());
+  bufferization::OneShotBufferizationOptions bufferizationOptions;
+  bufferizationOptions.bufferizeFunctionBoundaries = true;
+  bufferizationOptions.setFunctionBoundaryTypeConversion(
+          bufferization::LayoutMapOption::IdentityLayoutMap);
+  pm.addNestedPass<func::FuncOp>(bufferization::createOneShotBufferizePass(bufferizationOptions));
   pm.addNestedPass<func::FuncOp>(
       bufferization::createFinalizingBufferizePass());
+  pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
+  pm.addNestedPass<func::FuncOp>(bufferization::createOwnershipBasedBufferDeallocationPass());
+  pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
+  pm.addNestedPass<func::FuncOp>(bufferization::createBufferDeallocationSimplificationPass());
+  pm.addNestedPass<func::FuncOp>(bufferization::createLowerDeallocationsPass());
+  pm.addPass(createCSEPass());
+  pm.addPass(createCanonicalizerPass());
+  pm.addPass(createBufferizationToMemRefPass());
 
   // Blanket-convert any remaining linalg ops to loops if any remain.
   pm.addNestedPass<func::FuncOp>(createConvertLinalgToLoopsPass());
