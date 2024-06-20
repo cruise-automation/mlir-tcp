@@ -34,8 +34,8 @@ func.func @torch.aten.slice.Tensor(%arg0: !torch.vtensor<[1,56,?,?],f32>) -> !to
 // CHECK-LABEL: @torch.aten.gather
 // CHECK-SAME:       %[[ARG0:.+]]: !torch.vtensor<[1,4,3],f32>,
 // CHECK-SAME:       %[[ARG1:.+]]: !torch.vtensor<[1,4,2],si64>) -> !torch.vtensor<[1,4,2],f32>
-// CHECK:          %[[V1:.+]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,4,3],f32> -> tensor<1x4x3xf32>
-// CHECK:          %[[V2:.+]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[1,4,2],si64> -> tensor<1x4x2xi64>
+// CHECK-DAG:      %[[V1:.+]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,4,3],f32> -> tensor<1x4x3xf32>
+// CHECK-DAG:      %[[V2:.+]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[1,4,2],si64> -> tensor<1x4x2xi64>
 // CHECK:          %[[GATHER:.+]] = tcp.gather %[[V1]], %[[V2]] {dim = 2 : index} :
 // CHECK-SAME:                          tensor<1x4x3xf32>, tensor<1x4x2xi64> -> tensor<1x4x2xf32>
 // CHECK:          %[[V3:.+]] = torch_c.from_builtin_tensor %[[GATHER]] : tensor<1x4x2xf32> -> !torch.vtensor<[1,4,2],f32>

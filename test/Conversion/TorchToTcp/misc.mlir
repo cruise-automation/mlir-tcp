@@ -40,7 +40,7 @@ func.func @torch.vtensor.literal() -> !torch.vtensor<[4],ui8> {
 // CHECK:         %[[T3:.*]] = arith.index_cast %[[T2]] : i64 to index
 // CHECK:         %[[T4:.*]] = torch_c.to_i64 %arg1
 // CHECK:         %[[T5:.*]] = arith.index_cast %[[T4]] : i64 to index
-// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] : tensor<f32> into tensor<1x1xf32>
+// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<f32> into tensor<1x1xf32>
 // CHECK:         %[[T7:.*]] = tcp.broadcast  %[[T6]], %[[T3]], %[[T5]] {axes = [0, 1]} : tensor<1x1xf32>, index, index -> tensor<?x?xf32>
 // CHECK:         %[[T8:.*]] = torch_c.from_builtin_tensor %[[T7]] : tensor<?x?xf32> -> !torch.vtensor<[?,?],f32>
 // CHECK:         return %[[T8]] : !torch.vtensor<[?,?],f32>
@@ -62,7 +62,7 @@ func.func @torch.aten.zeros_f32(%arg0: !torch.int, %arg1: !torch.int) -> !torch.
 // CHECK:         %[[T3:.*]] = arith.index_cast %[[T2]] : i64 to index
 // CHECK:         %[[T4:.*]] = torch_c.to_i64 %arg1
 // CHECK:         %[[T5:.*]] = arith.index_cast %[[T4]] : i64 to index
-// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] : tensor<i32> into tensor<1x1xi32>
+// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<i32> into tensor<1x1xi32>
 // CHECK:         %[[T7:.*]] = tcp.broadcast  %[[T6]], %[[T3]], %[[T5]] {axes = [0, 1]} : tensor<1x1xi32>, index, index -> tensor<?x?xi32>
 // CHECK:         %[[T8:.*]] = torch_c.from_builtin_tensor %[[T7]] : tensor<?x?xi32> -> !torch.vtensor<[?,?],si32>
 // CHECK:         return %[[T8]] : !torch.vtensor<[?,?],si32>
@@ -84,7 +84,7 @@ func.func @torch.aten.zeros_si32(%arg0: !torch.int, %arg1: !torch.int) -> !torch
 // CHECK:         %[[T3:.*]] = arith.index_cast %[[T2]] : i64 to index
 // CHECK:         %[[T4:.*]] = torch_c.to_i64 %arg1
 // CHECK:         %[[T5:.*]] = arith.index_cast %[[T4]] : i64 to index
-// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] : tensor<i8> into tensor<1x1xi8>
+// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<i8> into tensor<1x1xi8>
 // CHECK:         %[[T7:.*]] = tcp.broadcast  %[[T6]], %[[T3]], %[[T5]] {axes = [0, 1]} : tensor<1x1xi8>, index, index -> tensor<?x?xi8>
 // CHECK:         %[[T8:.*]] = torch_c.from_builtin_tensor %[[T7]] : tensor<?x?xi8> -> !torch.vtensor<[?,?],ui8>
 // CHECK:         return %[[T8]] : !torch.vtensor<[?,?],ui8>
@@ -106,7 +106,7 @@ func.func @torch.aten.zeros_ui8(%arg0: !torch.int, %arg1: !torch.int) -> !torch.
 // CHECK:         %[[T3:.*]] = arith.index_cast %[[T2]] : i64 to index
 // CHECK:         %[[T4:.*]] = torch_c.to_i64 %arg1
 // CHECK:         %[[T5:.*]] = arith.index_cast %[[T4]] : i64 to index
-// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] : tensor<f32> into tensor<1x1xf32>
+// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<f32> into tensor<1x1xf32>
 // CHECK:         %[[T7:.*]] = tcp.broadcast  %[[T6]], %[[T3]], %[[T5]] {axes = [0, 1]} : tensor<1x1xf32>, index, index -> tensor<?x?xf32>
 // CHECK:         %[[T8:.*]] = torch_c.from_builtin_tensor %[[T7]] : tensor<?x?xf32> -> !torch.vtensor<[?,?],f32>
 // CHECK:         return %[[T8]] : !torch.vtensor<[?,?],f32>
@@ -128,7 +128,7 @@ func.func @torch.aten.ones_f32(%arg0: !torch.int, %arg1: !torch.int) -> !torch.v
 // CHECK:         %[[T3:.*]] = arith.index_cast %[[T2]] : i64 to index
 // CHECK:         %[[T4:.*]] = torch_c.to_i64 %arg1
 // CHECK:         %[[T5:.*]] = arith.index_cast %[[T4]] : i64 to index
-// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] : tensor<i32> into tensor<1x1xi32>
+// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<i32> into tensor<1x1xi32>
 // CHECK:         %[[T7:.*]] = tcp.broadcast  %[[T6]], %[[T3]], %[[T5]] {axes = [0, 1]} : tensor<1x1xi32>, index, index -> tensor<?x?xi32>
 // CHECK:         %[[T8:.*]] = torch_c.from_builtin_tensor %[[T7]] : tensor<?x?xi32> -> !torch.vtensor<[?,?],si32>
 // CHECK:         return %[[T8]] : !torch.vtensor<[?,?],si32>
@@ -150,7 +150,7 @@ func.func @torch.aten.ones_si32(%arg0: !torch.int, %arg1: !torch.int) -> !torch.
 // CHECK:         %[[T3:.*]] = arith.index_cast %[[T2]] : i64 to index
 // CHECK:         %[[T4:.*]] = torch_c.to_i64 %arg1
 // CHECK:         %[[T5:.*]] = arith.index_cast %[[T4]] : i64 to index
-// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] : tensor<i8> into tensor<1x1xi8>
+// CHECK:         %[[T6:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<i8> into tensor<1x1xi8>
 // CHECK:         %[[T7:.*]] = tcp.broadcast  %[[T6]], %[[T3]], %[[T5]] {axes = [0, 1]} : tensor<1x1xi8>, index, index -> tensor<?x?xi8>
 // CHECK:         %[[T8:.*]] = torch_c.from_builtin_tensor %[[T7]] : tensor<?x?xi8> -> !torch.vtensor<[?,?],ui8>
 // CHECK:         return %[[T8]] : !torch.vtensor<[?,?],ui8>
@@ -169,7 +169,7 @@ func.func @torch.aten.ones_ui8(%arg0: !torch.int, %arg1: !torch.int) -> !torch.v
 // CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],f32> {
 // CHECK:        %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
 // CHECK:        %[[T1:.*]] = tcp.const {value = dense<0.000000e+00> : tensor<f32>} : tensor<f32>
-// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] : tensor<f32> into tensor<1x1xf32>
+// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<f32> into tensor<1x1xf32>
 // CHECK:        %[[C0:.*]] = arith.constant 0 : index
 // CHECK:        %[[DIM0:.*]] = tensor.dim %[[T0]], %[[C0]] : tensor<?x?xf32>
 // CHECK:        %[[C1:.*]] = arith.constant 1 : index
@@ -193,7 +193,7 @@ func.func @torch.aten.zeros_like_f32(%arg0: !torch.vtensor<[?,?],f32>) -> !torch
 // CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],si32> {
 // CHECK:        %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
 // CHECK:        %[[T1:.*]] = tcp.const {value = dense<0> : tensor<i32>} : tensor<i32>
-// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] : tensor<i32> into tensor<1x1xi32>
+// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<i32> into tensor<1x1xi32>
 // CHECK:        %[[C0:.*]] = arith.constant 0 : index
 // CHECK:        %[[DIM0:.*]] = tensor.dim %[[T0]], %[[C0]] : tensor<?x?xf32>
 // CHECK:        %[[C1:.*]] = arith.constant 1 : index
@@ -217,7 +217,7 @@ func.func @torch.aten.zeros_like_si32(%arg0: !torch.vtensor<[?,?],f32>) -> !torc
 // CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],ui8> {
 // CHECK:        %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
 // CHECK:        %[[T1:.*]] = tcp.const {value = dense<0> : tensor<i8>} : tensor<i8>
-// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] : tensor<i8> into tensor<1x1xi8>
+// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<i8> into tensor<1x1xi8>
 // CHECK:        %[[C0:.*]] = arith.constant 0 : index
 // CHECK:        %[[DIM0:.*]] = tensor.dim %[[T0]], %[[C0]] : tensor<?x?xf32>
 // CHECK:        %[[C1:.*]] = arith.constant 1 : index
@@ -241,7 +241,7 @@ func.func @torch.aten.zeros_like_ui8(%arg0: !torch.vtensor<[?,?],f32>) -> !torch
 // CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],f32> {
 // CHECK:        %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
 // CHECK:        %[[T1:.*]] = tcp.const {value = dense<1.000000e+00> : tensor<f32>} : tensor<f32>
-// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] : tensor<f32> into tensor<1x1xf32>
+// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<f32> into tensor<1x1xf32>
 // CHECK:        %[[C0:.*]] = arith.constant 0 : index
 // CHECK:        %[[DIM0:.*]] = tensor.dim %[[T0]], %[[C0]] : tensor<?x?xf32>
 // CHECK:        %[[C1:.*]] = arith.constant 1 : index
@@ -265,7 +265,7 @@ func.func @torch.aten.ones_like_f32(%arg0: !torch.vtensor<[?,?],f32>) -> !torch.
 // CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],si32> {
 // CHECK:        %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
 // CHECK:        %[[T1:.*]] = tcp.const {value = dense<1> : tensor<i32>} : tensor<i32>
-// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] : tensor<i32> into tensor<1x1xi32>
+// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<i32> into tensor<1x1xi32>
 // CHECK:        %[[C0:.*]] = arith.constant 0 : index
 // CHECK:        %[[DIM0:.*]] = tensor.dim %[[T0]], %[[C0]] : tensor<?x?xf32>
 // CHECK:        %[[C1:.*]] = arith.constant 1 : index
@@ -289,7 +289,7 @@ func.func @torch.aten.ones_like_si32(%arg0: !torch.vtensor<[?,?],f32>) -> !torch
 // CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[?,?],f32>) -> !torch.vtensor<[?,?],ui8> {
 // CHECK:        %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[?,?],f32> -> tensor<?x?xf32>
 // CHECK:        %[[T1:.*]] = tcp.const {value = dense<1> : tensor<i8>} : tensor<i8>
-// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] : tensor<i8> into tensor<1x1xi8>
+// CHECK:        %[[T2:.*]] = tensor.expand_shape %[[T1]] [] output_shape [1, 1] : tensor<i8> into tensor<1x1xi8>
 // CHECK:        %[[C0:.*]] = arith.constant 0 : index
 // CHECK:        %[[DIM0:.*]] = tensor.dim %[[T0]], %[[C0]] : tensor<?x?xf32>
 // CHECK:        %[[C1:.*]] = arith.constant 1 : index
@@ -346,8 +346,8 @@ func.func @torch.aten.expand(%arg0: !torch.vtensor<[1,2],f32>) -> !torch.vtensor
 
 // CHECK-LABEL:  @torch.aten.expand$rank_increase(
 // CHECK-SAME:   %[[ARG0:.*]]: !torch.vtensor<[1,2],f32>, %[[ARG1:.*]]: !torch.vtensor<[?,3,2],f32>) -> !torch.vtensor<[?,3,2],f32> {
-// CHECK:        %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[?,3,2],f32> -> tensor<?x3x2xf32>
-// CHECK:        %[[T1:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,2],f32> -> tensor<1x2xf32>
+// CHECK-DAG:    %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[?,3,2],f32> -> tensor<?x3x2xf32>
+// CHECK-DAG:    %[[T1:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,2],f32> -> tensor<1x2xf32>
 // CHECK:        %[[INT0:.*]] = torch.constant.int 0
 // CHECK:        %[[C0:.*]] = arith.constant 0 : index
 // CHECK:        %[[DIM:.*]] = tensor.dim %[[T0]], %[[C0]] : tensor<?x3x2xf32>
@@ -355,7 +355,7 @@ func.func @torch.aten.expand(%arg0: !torch.vtensor<[1,2],f32>) -> !torch.vtensor
 // CHECK:        %[[T3:.*]] = torch_c.from_i64 %[[T2]]
 // CHECK:        %[[INT3:.*]] = torch.constant.int 3
 // CHECK:        %[[INT2:.*]] = torch.constant.int 2
-// CHECK:        %[[EXPANDED:.*]] = tensor.expand_shape %[[T1]] {{\[}}[0, 1], [2]{{\]}} : tensor<1x2xf32> into tensor<1x1x2xf32>
+// CHECK:        %[[EXPANDED:.*]] = tensor.expand_shape %[[T1]] {{\[}}[0, 1], [2]{{\]}} output_shape [1, 1, 2] : tensor<1x2xf32> into tensor<1x1x2xf32>
 // CHECK:        %[[T5:.*]] = torch_c.to_i64 %[[T3]]
 // CHECK:        %[[T6:.*]] = arith.index_cast %[[T5]] : i64 to index
 // CHECK:        %[[T7:.*]] = torch_c.to_i64 %[[INT3]]
@@ -399,8 +399,8 @@ func.func @torch.aten.broadcast_to(%arg0: !torch.vtensor<[1,2,1,2],f32>) -> !tor
 
 // CHECK-LABEL:  @torch.aten.broadcast_to_dynamic_dim(
 // CHECK-SAME:   %[[ARG0:.*]]: !torch.vtensor<[1,2],f32>, %[[ARG1:.*]]: !torch.vtensor<[?],f32>) -> !torch.vtensor<[?,2],f32> {
-// CHECK:        %[[ARG1_T:.*]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[?],f32> -> tensor<?xf32>
-// CHECK:        %[[ARG0_T:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,2],f32> -> tensor<1x2xf32>
+// CHECK-DAG:    %[[ARG1_T:.*]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[?],f32> -> tensor<?xf32>
+// CHECK-DAG:    %[[ARG0_T:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,2],f32> -> tensor<1x2xf32>
 // CHECK:        %[[C0:.*]] = arith.constant 0 : index
 // CHECK:        %[[DIM:.*]] = tensor.dim %[[ARG1_T]], %[[C0]] : tensor<?xf32>
 // CHECK:        %[[DIM_CAST:.*]] = arith.index_cast %[[DIM]] : index to i64
