@@ -5,7 +5,7 @@
 // CHECK: %[[VAL_1:.*]] = tcp.const {value = dense<2.000000e+00> : tensor<f64>} : tensor<f64>
 // CHECK: %[[C5:.*]] = arith.constant 5 : index
 // CHECK: %[[VAL_2:.*]] = tcp.cast %[[VAL_1]] : tensor<f64> -> tensor<bf16>
-// CHECK: %[[VAL_3:.*]] = tensor.expand_shape %[[VAL_2]] [] : tensor<bf16> into tensor<1xbf16>
+// CHECK: %[[VAL_3:.*]] = tensor.expand_shape %[[VAL_2]] [] output_shape [1] : tensor<bf16> into tensor<1xbf16>
 // CHECK: %[[VAL_4:.*]] = tcp.broadcast %[[VAL_3]], %[[C5]] {axes = [0]} : tensor<1xbf16>, index -> tensor<5xbf16>
 // CHECK: %[[VAL_5:.*]] = tcp.mul %[[VAL_0]], %[[VAL_4]] : tensor<5xbf16>, tensor<5xbf16> -> tensor<5xbf16>
 // CHECK: return %[[VAL_5]] : tensor<5xbf16>
@@ -52,7 +52,7 @@ func.func @torch.aten.add.Tensor$mixed_type_int(%arg0: !torch.vtensor<[5],f32>, 
 // CHECK: %[[C64:.*]] = arith.constant 64 : index
 // CHECK: %[[VAL_2:.*]] = tcp.cast %[[VAL_1]] {in_int_signedness = #tcp<signedness Signed>, out_int_signedness = #tcp<signedness Signed>} : tensor<i64> -> tensor<i32>
 // CHECK: %[[VAL_3:.*]] = tcp.cast %[[VAL_0]] {in_int_signedness = #tcp<signedness Signed>, out_int_signedness = #tcp<signedness Signed>} : tensor<1x1x32x64xi16> -> tensor<1x1x32x64xi32>
-// CHECK: %[[VAL_4:.*]] = tensor.expand_shape %[[VAL_2]] [] : tensor<i32> into tensor<1x1x1x1xi32>                                                                                                             
+// CHECK: %[[VAL_4:.*]] = tensor.expand_shape %[[VAL_2]] [] output_shape [1, 1, 1, 1] : tensor<i32> into tensor<1x1x1x1xi32>
 // CHECK: %[[VAL_5:.*]] = tcp.broadcast %[[VAL_4]], %[[C32]], %[[C64]] {axes = [2, 3]} : tensor<1x1x1x1xi32>, index, index -> tensor<1x1x32x64xi32>                                                                    
 // CHECK: %[[VAL_6:.*]] = tcp.add %[[VAL_3]], %[[VAL_5]] : tensor<1x1x32x64xi32>, tensor<1x1x32x64xi32> -> tensor<1x1x32x64xi32>                                                                                              
 // CHECK: return %[[VAL_6]] : tensor<1x1x32x64xi32>    

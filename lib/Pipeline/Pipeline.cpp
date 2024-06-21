@@ -19,6 +19,7 @@
 
 #include "mlir/Conversion/AffineToStandard/AffineToStandard.h"
 #include "mlir/Conversion/ArithToLLVM/ArithToLLVM.h"
+#include "mlir/Conversion/BufferizationToMemRef/BufferizationToMemRef.h"
 #include "mlir/Conversion/FuncToLLVM/ConvertFuncToLLVMPass.h"
 #include "mlir/Conversion/MathToLLVM/MathToLLVM.h"
 #include "mlir/Conversion/MathToLibm/MathToLibm.h"
@@ -26,6 +27,7 @@
 #include "mlir/Conversion/ReconcileUnrealizedCasts/ReconcileUnrealizedCasts.h"
 #include "mlir/Conversion/SCFToControlFlow/SCFToControlFlow.h"
 #include "mlir/Dialect/Arith/Transforms/Passes.h"
+#include "mlir/Dialect/Bufferization/Transforms/OneShotAnalysis.h"
 #include "mlir/Dialect/Bufferization/Transforms/Passes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Func/Transforms/Passes.h"
@@ -71,17 +73,26 @@ static void createTcpToLlvmPipeline(OpPassManager &pm) {
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToTensorPass());
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToArithPass());
 
-  // Bufferize tensor -> memref.
-  pm.addNestedPass<func::FuncOp>(
-      bufferization::createEmptyTensorToAllocTensorPass());
-  pm.addNestedPass<func::FuncOp>(
-      bufferization::createBufferizationBufferizePass());
-  pm.addNestedPass<func::FuncOp>(createLinalgBufferizePass());
-  pm.addNestedPass<func::FuncOp>(tensor::createTensorBufferizePass());
-  pm.addPass(arith::createConstantBufferizePass());
-  pm.addPass(func::createFuncBufferizePass());
+  // One-shot bufferize tensor -> memref, from
+  // https://mlir.llvm.org/docs/Bufferization/.
+  bufferization::OneShotBufferizationOptions bufferizationOptions;
+  bufferizationOptions.bufferizeFunctionBoundaries = true;
+  bufferizationOptions.setFunctionBoundaryTypeConversion(
+      bufferization::LayoutMapOption::IdentityLayoutMap);
+  pm.addPass(bufferization::createOneShotBufferizePass(bufferizationOptions));
   pm.addNestedPass<func::FuncOp>(
       bufferization::createFinalizingBufferizePass());
+  // Buffer deallocation pipeline for automatically inserting
+  // buffer deallocation ops after one-shot bufferization.
+  // https://sourcegraph.com/github.com/llvm/llvm-project@09bc1e825068f314db71ee7eb32d9f93c5ac87a0/-/blob/mlir/lib/Dialect/Bufferization/Pipelines/BufferizationPipelines.cpp?L21
+  pm.addPass(createCanonicalizerPass());
+  pm.addPass(bufferization::createOwnershipBasedBufferDeallocationPass());
+  pm.addPass(createCanonicalizerPass());
+  pm.addPass(bufferization::createBufferDeallocationSimplificationPass());
+  pm.addPass(bufferization::createLowerDeallocationsPass());
+  pm.addPass(createCSEPass());
+  pm.addPass(createCanonicalizerPass());
+  pm.addPass(createBufferizationToMemRefPass());
 
   // Blanket-convert any remaining linalg ops to loops if any remain.
   pm.addNestedPass<func::FuncOp>(createConvertLinalgToLoopsPass());
