@@ -73,7 +73,8 @@ static void createTcpToLlvmPipeline(OpPassManager &pm) {
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToTensorPass());
   pm.addNestedPass<func::FuncOp>(tcp::createConvertTcpToArithPass());
 
-  // Bufferize tensor -> memref.
+  // One-shot bufferize tensor -> memref, from
+  // https://mlir.llvm.org/docs/Bufferization/.
   bufferization::OneShotBufferizationOptions bufferizationOptions;
   bufferizationOptions.bufferizeFunctionBoundaries = true;
   bufferizationOptions.setFunctionBoundaryTypeConversion(
@@ -81,6 +82,9 @@ static void createTcpToLlvmPipeline(OpPassManager &pm) {
   pm.addPass(bufferization::createOneShotBufferizePass(bufferizationOptions));
   pm.addNestedPass<func::FuncOp>(
       bufferization::createFinalizingBufferizePass());
+  // Buffer deallocation pipeline for automatically inserting
+  // buffer deallocation ops after one-shot bufferization.
+  // https://sourcegraph.com/github.com/llvm/llvm-project@09bc1e825068f314db71ee7eb32d9f93c5ac87a0/-/blob/mlir/lib/Dialect/Bufferization/Pipelines/BufferizationPipelines.cpp?L21
   pm.addPass(createCanonicalizerPass());
   pm.addPass(bufferization::createOwnershipBasedBufferDeallocationPass());
   pm.addPass(createCanonicalizerPass());
