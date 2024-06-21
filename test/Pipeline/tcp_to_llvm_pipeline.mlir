@@ -10,7 +10,6 @@
 // CHECK:         llvm.getelementptr
 // CHECK:         llvm.load
 // CHECK:         llvm.mul
-// CHECK:         llvm.mlir.zero
 // CHECK:         llvm.ptrtoint
 // CHECK:         llvm.add
 // CHECK:         llvm.call
