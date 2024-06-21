@@ -78,14 +78,14 @@ static void createTcpToLlvmPipeline(OpPassManager &pm) {
   bufferizationOptions.bufferizeFunctionBoundaries = true;
   bufferizationOptions.setFunctionBoundaryTypeConversion(
           bufferization::LayoutMapOption::IdentityLayoutMap);
-  pm.addNestedPass<func::FuncOp>(bufferization::createOneShotBufferizePass(bufferizationOptions));
+  pm.addPass(bufferization::createOneShotBufferizePass(bufferizationOptions));
   pm.addNestedPass<func::FuncOp>(
       bufferization::createFinalizingBufferizePass());
-  pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
-  pm.addNestedPass<func::FuncOp>(bufferization::createOwnershipBasedBufferDeallocationPass());
-  pm.addNestedPass<func::FuncOp>(createCanonicalizerPass());
-  pm.addNestedPass<func::FuncOp>(bufferization::createBufferDeallocationSimplificationPass());
-  pm.addNestedPass<func::FuncOp>(bufferization::createLowerDeallocationsPass());
+  pm.addPass(createCanonicalizerPass());
+  pm.addPass(bufferization::createOwnershipBasedBufferDeallocationPass());
+  pm.addPass(createCanonicalizerPass());
+  pm.addPass(bufferization::createBufferDeallocationSimplificationPass());
+  pm.addPass(bufferization::createLowerDeallocationsPass());
   pm.addPass(createCSEPass());
   pm.addPass(createCanonicalizerPass());
   pm.addPass(createBufferizationToMemRefPass());
