@@ -22,6 +22,7 @@ refresh_compile_commands(
         "//:TcpOpsIncGen",
         "//:TcpToArith",
         "//:TcpToLinalg",
+        "//:TcpToTensor",
         "//:TcpTypesIncGen",
         "//:TorchToTcp",
         "//:tcp-opt",
