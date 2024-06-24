@@ -51,3 +51,49 @@ func.func @test_multiple_fusions(%arg0 : tensor<?x?xf32>,
   %6 = tcp.sub %arg1, %5 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
   return %6 : tensor<?x?xf32>
 }
+
+// -----
+
+// Fusion with multiple uses where the def with multiple uses moves into an
+// already created group.
+
+// CHECK:   func.func @test_multi_use_fusion(%[[ARG0:.+]]: tensor<?x?xf32>, %[[ARG1:.+]]: tensor<?x?xf32>) -> tensor<?x?xf32> {
+// CHECK:     %[[V0:.+]] = tcp.group {
+// CHECK:       %[[V1:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V2:.+]] = tcp.add %[[V1]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V3:.+]] = tcp.sub %[[V2]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V4:.+]] = tcp.mul %[[V2]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V4]] : tensor<?x?xf32>
+// CHECK:     } : tensor<?x?xf32>
+// CHECK:     return %[[V0]] : tensor<?x?xf32>
+// CHECK:   }
+func.func @test_multi_use_fusion(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> tensor<?x?xf32> {
+  %0 = tcp.tanh %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  %1 = tcp.add %0, %arg1 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  %2 = tcp.sub %1, %arg1 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  %3 = tcp.mul %1, %2 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  return %3 : tensor<?x?xf32>
+}
+
+// -----
+
+// Fusion with multiple uses where the def and the multiple uses create a
+// new group. Here we test that the moves use the dominance correctly.
+
+// CHECK:   func.func @test_multi_use_fusion(%[[ARG0:.+]]: tensor<?x?xf32>, %[[ARG1:.+]]: tensor<?x?xf32>) -> (tensor<?x?xf32>, tensor<?x?xf32>) {
+// CHECK:     %[[V0:.+]]:2 = tcp.group {
+// CHECK:       %[[V1:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V2:.+]] = tcp.add %[[V1]], %[[V1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V3:.+]] = tcp.sub %[[V2]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V4:.+]] = tcp.mul %[[V2]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V3]], %[[V4]] : tensor<?x?xf32>, tensor<?x?xf32>
+// CHECK:     } : tensor<?x?xf32>, tensor<?x?xf32>
+// CHECK:     return %[[V0]]#0, %[[V0]]#1 : tensor<?x?xf32>, tensor<?x?xf32>
+// CHECK:   }
+func.func @test_multi_use_fusion(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> (tensor<?x?xf32>, tensor<?x?xf32>)  {
+  %0 = tcp.tanh %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  %1 = tcp.add %0, %0 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  %2 = tcp.sub %1, %arg1 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  %3 = tcp.mul %1, %2 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  "func.return" (%2, %3) : (tensor<?x?xf32>, tensor<?x?xf32>) -> ()
+}
