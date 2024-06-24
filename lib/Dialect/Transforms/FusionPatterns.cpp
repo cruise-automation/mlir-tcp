@@ -33,9 +33,8 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
   // if the def op has a func parent.
   //
   // TODO: Remove this restriction to allow fusing in nested regions.
-  if (!isa<func::FuncOp>(op->getParentOp())) {
+  if (!isa<func::FuncOp>(op->getParentOp()))
     return failure();
-  }
 
   if (op->use_empty())
     return failure();
@@ -48,17 +47,15 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
 
   for (auto &use : op->getUses()) {
     auto parentRegion = use.getOwner()->getParentRegion();
-    if (usesParentRegion && usesParentRegion != parentRegion) {
+    if (usesParentRegion && usesParentRegion != parentRegion)
       return failure();
-    }
     usesParentRegion = parentRegion;
 
-    if (!canFuse(op, use.getOwner())) {
+    if (!canFuse(op, use.getOwner()))
       return failure();
-    }
-    if (usesSet.insert(use.getOwner()).second) {
+
+    if (usesSet.insert(use.getOwner()).second)
       uses.push_back(use.getOwner());
-    }
   }
 
   // Sorting by dominance ensures that the first element of this vector is
@@ -68,8 +65,14 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
                           << " uses\n");
   DominanceInfo domInfo;
   llvm::stable_sort(uses, [&](Operation *a, Operation *b) {
-    return !domInfo.dominates(a, b);
+    return domInfo.dominates(a, b);
   });
+
+#ifndef NDEBUG
+  for (auto use : uses) {
+    LLVM_DEBUG(llvm::dbgs() << "Use: " << *use << "\n");
+  }
+#endif
 
   if (op->getParentRegion() == usesParentRegion) {
     LLVM_DEBUG(llvm::dbgs() << "Creating new group\n");
@@ -89,15 +92,7 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
     Block *groupBlock = new Block();
     groupOp.getBody().push_back(groupBlock);
 
-    size_t groupResultNum = 0;
-    for (auto use : uses) {
-      for (unsigned num = 0; num < use->getNumResults(); ++num) {
-        rewriter.replaceAllUsesWith(use->getResult(num),
-                                    groupOp->getResult(groupResultNum));
-        groupResultNum++;
-      }
-    }
-
+    // First move all uses into the group in the dominance order
     {
       OpBuilder::InsertionGuard guard(rewriter);
       rewriter.setInsertionPointToStart(groupBlock);
@@ -110,13 +105,31 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
       }
       op->moveBefore(*uses.begin());
     }
+
+    // We then replace all uses of the uses which lie outside the group
+    // with the group's results. We should not replace uses inside the
+    // group otherwise ops inside the group will end up depending on the
+    // group's results causing dominance issues.
+    size_t groupResultNum = 0;
+    for (auto use : uses) {
+      for (unsigned num = 0; num < use->getNumResults(); ++num) {
+        auto useIsOutsideGroup = [&](OpOperand &operand) {
+          return operand.getOwner()->getParentOp() != groupOp;
+        };
+        rewriter.replaceUsesWithIf(use->getResult(num),
+                                   groupOp->getResult(groupResultNum),
+                                   useIsOutsideGroup);
+        groupResultNum++;
+      }
+    }
+
   } else if (auto groupOp =
                  dyn_cast<tcp::GroupOp>(usesParentRegion->getParentOp())) {
     // Given that we iterate over the funcop in a bottom up manner, when moving
     // into an existing group, we would be guaranteed that this op does not use
     // any of the ops already in the group. So we can move it to the very
     // beginning of the group. This ensures that the order of operands is
-    // preserved when creating a gruop. Otherwise, if we start with
+    // preserved when creating a group. For example, if we start with
     // something like:
     //
     // %0 = op1(%in1)
