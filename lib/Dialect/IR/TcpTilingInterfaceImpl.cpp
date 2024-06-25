@@ -19,21 +19,44 @@ using namespace mlir::tcp;
 
 namespace {
 
+Value getOpFoldResultAsValue(OpFoldResult ofr, OpBuilder &b,
+                             mlir::Location loc) {
+  // Case 1: Check for Value.
+  if (auto val = llvm::dyn_cast_if_present<Value>(ofr)) {
+    return val;
+  }
+  // Case 2: Check for IntegerAttr.
+  Attribute attr = llvm::dyn_cast_if_present<Attribute>(ofr);
+  auto intAttr = dyn_cast_or_null<IntegerAttr>(attr);
+  assert(intAttr && "Expected to find an integer in OpFoldResult");
+  return b.create<arith::ConstantIndexOp>(loc,
+                                          intAttr.getValue().getSExtValue());
+}
+
+SmallVector<Value> getOpFoldResultsAsValues(ArrayRef<OpFoldResult> ofrs,
+                                            OpBuilder &b, mlir::Location loc) {
+  SmallVector<Value> vals = llvm::map_to_vector(ofrs, [&](OpFoldResult ofr) {
+    return getOpFoldResultAsValue(ofr, b, loc);
+  });
+  return vals;
+}
+
 struct SliceOpTiling
     : public TilingInterface::ExternalModel<SliceOpTiling, tcp::SliceOp> {
 
   SmallVector<utils::IteratorType> getLoopIteratorTypes(Operation *op) const {
-    // The iterator types describe the type of the loops in the
-    // loop-nest for the eventual tiled op. For the slice op, these are
-    // just parallel loops.
     auto sliceOp = cast<tcp::SliceOp>(op);
     return SmallVector(sliceOp.getType().getRank(),
                        utils::IteratorType::parallel);
   }
 
   SmallVector<Range> getIterationDomain(Operation *op, OpBuilder &b) const {
-    // The iteration domain describes the loop bounds for the tiled
-    // operation.
+    // The iteration domain describes the loop bounds for the tiled operation.
+    // For a slice op, we keep the loop bounds same as the output of the slice.
+    // We can compute the indices of the input tensor from the iteration indices
+    // of the output.
+    //
+    // So, the iteration domain is always [0, size, 1] for every dimension.
     auto sliceOp = cast<tcp::SliceOp>(op);
     OpFoldResult zero = b.getIndexAttr(0);
     OpFoldResult one = b.getIndexAttr(1);
@@ -56,8 +79,6 @@ struct SliceOpTiling
     //     and the result slice length
     // 2. `getResultTilePosition` returns the same offsets and sizes as
     //     the input offsets and slices.
-    // In other words, the body of the tiled implementation is
-    // computing the output at exactly offsets/sizes.
     return generateResultTileValue(op, b, 0, offsets, sizes);
   }
 
@@ -68,11 +89,6 @@ struct SliceOpTiling
 
     auto sliceOp = cast<tcp::SliceOp>(op);
     auto loc = op->getLoc();
-
-    // TODO: How to handle strides from the sliceOp?
-    // Do we need to error out when strides != 1?
-    auto oneAttr = b.getI64IntegerAttr(1);
-    SmallVector<OpFoldResult> strides(offsets.size(), oneAttr);
 
     auto fold = [&](OpFoldResult ofr) {
       return getValueOrCreateConstantIndexOp(b, loc, ofr);
@@ -89,21 +105,21 @@ struct SliceOpTiling
     SmallVector<OpFoldResult> newOffsets;
     for (auto [offset, start, stride] :
          llvm::zip(offsets, sliceStart, sliceStrides)) {
+      // Offset on the input of slice is computed by:
+      //   start + offset_on_output * stride
       newOffsets.push_back(add(start, mul(offset, stride)));
     }
 
     auto extractOp = b.create<tensor::ExtractSliceOp>(
-        loc, sliceOp.getIn(), newOffsets, sizes, strides);
+        loc, sliceOp.getIn(), newOffsets, sizes,
+        getAsOpFoldResult(sliceOp.getStrides()));
 
-    // This extra redundant `tensor.extract_slice` is needed because the tiling
-    // algorithms expect that `generateResultTileValue` will return an
-    // op whose operands operate on slices of the original
-    // inputs. Without this, we'd need to make a small modification to
-    // the core tile and fuse algorithm in MLIR.
-    SmallVector<OpFoldResult> zeroOffsets(offsets.size(),
-                                          b.getI64IntegerAttr(0));
-    auto returnSliceOp = b.create<tensor::ExtractSliceOp>(
-        loc, extractOp.getResult(), zeroOffsets, sizes, strides);
+    // Add a `tcp.slice` op on the tile.
+    auto zero = b.create<arith::ConstantIndexOp>(loc, 0);
+    SmallVector<Value> zeroOffsets(offsets.size(), zero.getResult());
+    auto returnSliceOp = b.create<tcp::SliceOp>(
+        loc, extractOp.getType(), extractOp.getResult(), zeroOffsets,
+        getOpFoldResultsAsValues(sizes, b, loc), sliceOp.getStrides());
 
     return TilingResult{{returnSliceOp},
                         SmallVector<Value>(returnSliceOp->getResults())};
