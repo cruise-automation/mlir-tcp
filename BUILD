@@ -26,6 +26,7 @@ td_library(
     ],
     includes = ["include"],
     deps = [
+        "@llvm-project//mlir:BuiltinDialectTdFiles",
         "@llvm-project//mlir:OpBaseTdFiles",
         "@llvm-project//mlir:SideEffectInterfacesTdFiles",
     ],
@@ -58,11 +59,17 @@ gentbl_cc_library(
             "include/mlir-tcp/Dialect/IR/TcpDialect.cpp.inc",
         ),
         (
-            ["-gen-attrdef-decls"],
+            [
+                "-gen-attrdef-decls",
+                "-attrdefs-dialect=tcp",
+            ],
             "include/mlir-tcp/Dialect/IR/TcpAttrs.h.inc",
         ),
         (
-            ["-gen-attrdef-defs"],
+            [
+                "-gen-attrdef-defs",
+                "-attrdefs-dialect=tcp",
+            ],
             "include/mlir-tcp/Dialect/IR/TcpAttrs.cpp.inc",
         ),
         (
