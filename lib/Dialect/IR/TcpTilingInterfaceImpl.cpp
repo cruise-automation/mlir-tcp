@@ -7,6 +7,7 @@
 #include "mlir/Dialect/Arith/Utils/Utils.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
+#include "mlir/Dialect/Utils/StaticValueUtils.h"
 #include "mlir/IR/DialectRegistry.h"
 #include "mlir/Interfaces/TilingInterface.h"
 
@@ -100,25 +101,41 @@ struct SliceOpTiling
       return b.createOrFold<arith::MulIOp>(loc, fold(val1), fold(val2));
     };
 
+    // Offset on the input of slice is computed by:
+    //     start + offset_on_output * stride
+    //
+    // Tile and fuse algorithm does not work with stride != 1.
+    // In order to get around this, we extract a contiguous chunk with
+    // `tensor.extract_slice` and use the following `tcp.slice` op to
+    // extract the strided parts. So, the size on the
+    // `tensor.extract_slice` will be
+    //     size * stride
     auto sliceStart = sliceOp.getStarts();
     auto sliceStrides = sliceOp.getStrides();
     SmallVector<OpFoldResult> newOffsets;
-    for (auto [offset, start, stride] :
-         llvm::zip(offsets, sliceStart, sliceStrides)) {
-      // Offset on the input of slice is computed by:
-      //   start + offset_on_output * stride
+    SmallVector<OpFoldResult> newSizes;
+    SmallVector<OpFoldResult> newStrides;
+    for (auto [offset, start, stride, size] :
+         llvm::zip(offsets, sliceStart, sliceStrides, sizes)) {
       newOffsets.push_back(add(start, mul(offset, stride)));
+      newSizes.push_back(mul(size, stride));
+      newStrides.push_back(b.createOrFold<arith::ConstantIndexOp>(loc, 1));
     }
 
     auto extractOp = b.create<tensor::ExtractSliceOp>(
-        loc, sliceOp.getIn(), newOffsets, sizes,
-        getAsOpFoldResult(sliceOp.getStrides()));
+        loc, sliceOp.getIn(), newOffsets, newSizes, newStrides);
 
     // Add a `tcp.slice` op on the tile.
     auto zero = b.create<arith::ConstantIndexOp>(loc, 0);
     SmallVector<Value> zeroOffsets(offsets.size(), zero.getResult());
+    auto sizeIntValues = getConstantIntValues(sizes);
+    assert(
+        sizeIntValues &&
+        "Expected integer values in sizes for tiling interface of tcp.slice");
+    auto sliceType =
+        cast<TensorType>(extractOp.getType()).clone(sizeIntValues.value());
     auto returnSliceOp = b.create<tcp::SliceOp>(
-        loc, extractOp.getType(), extractOp.getResult(), zeroOffsets,
+        loc, sliceType, extractOp.getResult(), zeroOffsets,
         getOpFoldResultsAsValues(sizes, b, loc), sliceOp.getStrides());
 
     return TilingResult{{returnSliceOp},
