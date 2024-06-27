@@ -113,12 +113,12 @@ cc_library(
     deps = [
         ":TcpOpsIncGen",
         ":TcpTypesIncGen",
+        "@llvm-project//mlir:AffineDialect",
         "@llvm-project//mlir:Dialect",
         "@llvm-project//mlir:DialectUtils",
-        "@llvm-project//mlir:AffineDialect",
         "@llvm-project//mlir:FuncDialect",
-        "@llvm-project//mlir:SCFDialect",
         "@llvm-project//mlir:QuantOps",
+        "@llvm-project//mlir:SCFDialect",
     ],
 )
 

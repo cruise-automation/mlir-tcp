@@ -1,3 +1,12 @@
+//===------------------------------------------------------------*- C++ -*-===//
+//
+// Licensed under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// Also available under a BSD-style license. See LICENSE.
+//
+//===----------------------------------------------------------------------===//
+
 #include "mlir-tcp/Dialect/IR/TcpTilingInterfaceImpl.h"
 
 #include "mlir-tcp/Dialect/IR/TcpDialect.h"
@@ -40,6 +49,18 @@ SmallVector<Value> getOpFoldResultsAsValues(ArrayRef<OpFoldResult> ofrs,
     return getOpFoldResultAsValue(ofr, b, loc);
   });
   return vals;
+}
+
+SmallVector<int64_t> getOpFoldResultsAsShape(ArrayRef<OpFoldResult> ofrs) {
+  SmallVector<int64_t> shape;
+  for (auto ofr : ofrs) {
+    auto cv = getConstantIntValue(ofr);
+    if (cv)
+      shape.push_back(cv.value());
+    else
+      shape.push_back(ShapedType::kDynamic);
+  }
+  return shape;
 }
 
 struct SliceOpTiling
@@ -128,12 +149,8 @@ struct SliceOpTiling
     // Add a `tcp.slice` op on the tile.
     auto zero = b.create<arith::ConstantIndexOp>(loc, 0);
     SmallVector<Value> zeroOffsets(offsets.size(), zero.getResult());
-    auto sizeIntValues = getConstantIntValues(sizes);
-    assert(
-        sizeIntValues &&
-        "Expected integer values in sizes for tiling interface of tcp.slice");
-    auto sliceType =
-        cast<TensorType>(extractOp.getType()).clone(sizeIntValues.value());
+    auto sliceType = cast<TensorType>(extractOp.getType())
+                         .clone(getOpFoldResultsAsShape(sizes));
     auto returnSliceOp = b.create<tcp::SliceOp>(
         loc, sliceType, extractOp.getResult(), zeroOffsets,
         getOpFoldResultsAsValues(sizes, b, loc), sliceOp.getStrides());
