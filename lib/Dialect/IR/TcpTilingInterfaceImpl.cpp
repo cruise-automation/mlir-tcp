@@ -29,28 +29,6 @@ using namespace mlir::tcp;
 
 namespace {
 
-Value getOpFoldResultAsValue(OpFoldResult ofr, OpBuilder &b,
-                             mlir::Location loc) {
-  // Case 1: Check for Value.
-  if (auto val = llvm::dyn_cast_if_present<Value>(ofr)) {
-    return val;
-  }
-  // Case 2: Check for IntegerAttr.
-  Attribute attr = llvm::dyn_cast_if_present<Attribute>(ofr);
-  auto intAttr = dyn_cast_or_null<IntegerAttr>(attr);
-  assert(intAttr && "Expected to find an integer in OpFoldResult");
-  return b.create<arith::ConstantIndexOp>(loc,
-                                          intAttr.getValue().getSExtValue());
-}
-
-SmallVector<Value> getOpFoldResultsAsValues(ArrayRef<OpFoldResult> ofrs,
-                                            OpBuilder &b, mlir::Location loc) {
-  SmallVector<Value> vals = llvm::map_to_vector(ofrs, [&](OpFoldResult ofr) {
-    return getOpFoldResultAsValue(ofr, b, loc);
-  });
-  return vals;
-}
-
 SmallVector<int64_t> getOpFoldResultsAsShape(ArrayRef<OpFoldResult> ofrs) {
   SmallVector<int64_t> shape;
   for (auto ofr : ofrs) {
@@ -131,6 +109,15 @@ struct SliceOpTiling
     // extract the strided parts. So, the size on the
     // `tensor.extract_slice` will be
     //     size * stride
+    //
+    // The size for the contiguous chunk could actually be reduced to
+    //     (size - 1) * stride + 1
+    // since we can avoid extracting the last `stride - 1` elements.
+    // But this introduces 2 additional operations, a sub and an add.
+    // It is not clear if the reduction in size will have any benefit
+    // especially with these 2 extra ops.
+    // TODO: Consider this change if there is any evidence it could improve
+    // performance.
     auto sliceStart = sliceOp.getStarts();
     auto sliceStrides = sliceOp.getStrides();
     SmallVector<OpFoldResult> newOffsets;
@@ -153,7 +140,7 @@ struct SliceOpTiling
                          .clone(getOpFoldResultsAsShape(sizes));
     auto returnSliceOp = b.create<tcp::SliceOp>(
         loc, sliceType, extractOp.getResult(), zeroOffsets,
-        getOpFoldResultsAsValues(sizes, b, loc), sliceOp.getStrides());
+        getValueOrCreateConstantIndexOp(b, loc, sizes), sliceOp.getStrides());
 
     return TilingResult{{returnSliceOp},
                         SmallVector<Value>(returnSliceOp->getResults())};
