@@ -102,19 +102,23 @@ cc_library(
     srcs = [
         "lib/Dialect/IR/TcpDialect.cpp",
         "lib/Dialect/IR/TcpOps.cpp",
+        "lib/Dialect/IR/TcpTilingInterfaceImpl.cpp",
     ],
     hdrs = [
         "include/mlir-tcp/Dialect/IR/TcpDialect.h",
         "include/mlir-tcp/Dialect/IR/TcpOps.h",
+        "include/mlir-tcp/Dialect/IR/TcpTilingInterfaceImpl.h",
     ],
     strip_include_prefix = "include",
     deps = [
         ":TcpOpsIncGen",
         ":TcpTypesIncGen",
+        "@llvm-project//mlir:AffineDialect",
         "@llvm-project//mlir:Dialect",
         "@llvm-project//mlir:DialectUtils",
         "@llvm-project//mlir:FuncDialect",
         "@llvm-project//mlir:QuantOps",
+        "@llvm-project//mlir:SCFDialect",
     ],
 )
 
