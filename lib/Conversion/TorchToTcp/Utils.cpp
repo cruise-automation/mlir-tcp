@@ -465,7 +465,7 @@ void TorchToTcpCustomOpConversionHelper::addIntAttr(std::string attrName,
 }
 
 void TorchToTcpCustomOpConversionHelper::addFloatAttr(std::string attrName,
-                                                    Value value) {
+                                                      Value value) {
   if (conversionResult.failed())
     return;
 
@@ -494,7 +494,8 @@ void TorchToTcpCustomOpConversionHelper::addListOfIntsAttr(std::string attrName,
       rewriter.getNamedAttr(attrName, rewriter.getIndexArrayAttr(constVal)));
 }
 
-void TorchToTcpCustomOpConversionHelper::addDenseIntArrayAttr(std::string attrName, ArrayRef<int64_t> values) {
+void TorchToTcpCustomOpConversionHelper::addDenseIntArrayAttr(
+    std::string attrName, ArrayRef<int64_t> values) {
   if (conversionResult.failed())
     return;
 
@@ -502,7 +503,8 @@ void TorchToTcpCustomOpConversionHelper::addDenseIntArrayAttr(std::string attrNa
       rewriter.getNamedAttr(attrName, rewriter.getDenseI64ArrayAttr(values)));
 }
 
-void TorchToTcpCustomOpConversionHelper::addDenseFloatArrayAttr(std::string attrName, ArrayRef<double> values) {
+void TorchToTcpCustomOpConversionHelper::addDenseFloatArrayAttr(
+    std::string attrName, ArrayRef<double> values) {
   if (conversionResult.failed())
     return;
 

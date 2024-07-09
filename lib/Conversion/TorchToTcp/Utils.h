@@ -148,7 +148,7 @@ public:
 
   // Add value as a named integer attribute
   void addIntAttr(std::string attrName, Value value);
-  
+
   // Add value as a named float attribute
   void addFloatAttr(std::string attrName, Value value);
 
