@@ -464,6 +464,21 @@ void TorchToTcpCustomOpConversionHelper::addIntAttr(std::string attrName,
       rewriter.getNamedAttr(attrName, rewriter.getI64IntegerAttr(constVal)));
 }
 
+void TorchToTcpCustomOpConversionHelper::addFloatAttr(std::string attrName,
+                                                    Value value) {
+  if (conversionResult.failed())
+    return;
+
+  double constVal;
+  if (!matchPattern(value, torch::Torch::m_TorchConstantFloat(&constVal))) {
+    conversionResult = rewriter.notifyMatchFailure(
+        op, std::string("non-const ") + attrName + " unsupported");
+    return;
+  }
+  attrs.push_back(
+      rewriter.getNamedAttr(attrName, rewriter.getF64FloatAttr(constVal)));
+}
+
 void TorchToTcpCustomOpConversionHelper::addListOfIntsAttr(std::string attrName,
                                                            Value value) {
   if (conversionResult.failed())
@@ -477,6 +492,22 @@ void TorchToTcpCustomOpConversionHelper::addListOfIntsAttr(std::string attrName,
   }
   attrs.push_back(
       rewriter.getNamedAttr(attrName, rewriter.getIndexArrayAttr(constVal)));
+}
+
+void TorchToTcpCustomOpConversionHelper::addDenseIntArrayAttr(std::string attrName, ArrayRef<int64_t> values) {
+  if (conversionResult.failed())
+    return;
+
+  attrs.push_back(
+      rewriter.getNamedAttr(attrName, rewriter.getDenseI64ArrayAttr(values)));
+}
+
+void TorchToTcpCustomOpConversionHelper::addDenseFloatArrayAttr(std::string attrName, ArrayRef<double> values) {
+  if (conversionResult.failed())
+    return;
+
+  attrs.push_back(
+      rewriter.getNamedAttr(attrName, rewriter.getDenseF64ArrayAttr(values)));
 }
 
 } // namespace mlir::torch_to_tcp

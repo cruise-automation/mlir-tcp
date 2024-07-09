@@ -134,3 +134,25 @@ func.func @torch.aten.regular_convolution_2d(%input: !torch.vtensor<[1,9,16,1600
   %output = torch.aten.convolution %input, %weights, %none, %int1x1, %int1x1, %int1x1, %false, %int0x0, %int1 : !torch.vtensor<[1,9,16,1600],f32>, !torch.vtensor<[32,9,3,3],f32>, !torch.none, !torch.list<int>, !torch.list<int>, !torch.list<int>, !torch.bool, !torch.list<int>, !torch.int -> !torch.vtensor<[1,32,16,1600],f32>
   return %output : !torch.vtensor<[1,32,16,1600],f32>
 }
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.fake_quantize_per_tensor_affine(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[1,64,32,32],f32>) -> !torch.vtensor<[1,64,32,32],f32>
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,64,32,32],f32> -> tensor<1x64x32x32xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.fake_quantize_per_tensor_affine") %[[T0]] {
+// CHECK-SAME:                          quant_max = 255 : i64,
+// CHECK-SAME:                          quant_min = 0 : i64,
+// CHECK-SAME:                          scale = 1.000000e-05 : f64,
+// CHECK-SAME:                          torch_operand_names = ["self"],
+// CHECK-SAME:                          zero_point = 0 : i64}
+// CHECK-SAME:      tensor<1x64x32x32xf32> -> tensor<1x64x32x32xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<1x64x32x32xf32> -> !torch.vtensor<[1,64,32,32],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[1,64,32,32],f32>
+func.func @torch.aten.fake_quantize_per_tensor_affine(%input: !torch.vtensor<[1,64,32,32],f32>) -> !torch.vtensor<[1,64,32,32],f32> {
+  %float1.000000e-05 = torch.constant.float 1.000000e-05
+  %int0 = torch.constant.int 0
+  %int255 = torch.constant.int 255
+  %output = torch.aten.fake_quantize_per_tensor_affine %input, %float1.000000e-05, %int0, %int0, %int255 : !torch.vtensor<[1,64,32,32],f32>, !torch.float, !torch.int, !torch.int, !torch.int -> !torch.vtensor<[1,64,32,32],f32>
+  return %output : !torch.vtensor<[1,64,32,32],f32>
+}
