@@ -163,7 +163,7 @@ public:
           op, "Scale operation is not ValueTensorLiteralOp");
     auto scaleElements =
         dyn_cast<DenseFPElementsAttr>(scaleTensor.getValueAttr());
-    // scale should be a size-1 tensor.
+    // scale should be a [1] tensor.
     if (!scaleElements || scaleElements.getNumElements() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     auto scale = (*scaleElements.begin()).convertToDouble();
@@ -186,7 +186,7 @@ public:
                 "operation");
       auto zeroPointElements =
           dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
-      // zero_point should be a size-1 tensor.
+      // zero_point should be a [1] tensor.
       if (!zeroPointElements || zeroPointElements.getNumElements() != 1)
         return rewriter.notifyMatchFailure(
             op, "Unsupported zero point type or size");
@@ -223,6 +223,7 @@ public:
           op, "Scale operation is not ValueTensorLiteralOp");
     auto scaleElements =
         dyn_cast<DenseFPElementsAttr>(scaleTensor.getValueAttr());
+    // scale should be a [C] tensor.
     if (!scaleElements || scaleElements.getType().getShape().size() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     SmallVector<double> scale;
@@ -247,6 +248,7 @@ public:
                 "operation");
       auto zeroPointElements =
           dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
+      // zero_point should be a [C] tensor.
       if (!zeroPointElements ||
           zeroPointElements.getType().getShape().size() != 1)
         return rewriter.notifyMatchFailure(
