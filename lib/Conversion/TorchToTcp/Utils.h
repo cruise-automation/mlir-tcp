@@ -149,8 +149,17 @@ public:
   // Add value as a named integer attribute
   void addIntAttr(std::string attrName, Value value);
 
+  // Add value as a named float attribute
+  void addFloatAttr(std::string attrName, Value value);
+
   // Add value as a named list of integers attribute
   void addListOfIntsAttr(std::string attrName, Value value);
+
+  // Add ArrayRef as a named list of integers attribute
+  void addDenseIntArrayAttr(std::string attrName, ArrayRef<int64_t> values);
+
+  // Add ArrayRef as a named list of floats attribute
+  void addDenseFloatArrayAttr(std::string attrName, ArrayRef<double> values);
 
   // Perform final conversion of the original op to a `tcp.custom_op`.
   LogicalResult replace();

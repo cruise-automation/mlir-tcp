@@ -134,3 +134,123 @@ func.func @torch.aten.regular_convolution_2d(%input: !torch.vtensor<[1,9,16,1600
   %output = torch.aten.convolution %input, %weights, %none, %int1x1, %int1x1, %int1x1, %false, %int0x0, %int1 : !torch.vtensor<[1,9,16,1600],f32>, !torch.vtensor<[32,9,3,3],f32>, !torch.none, !torch.list<int>, !torch.list<int>, !torch.list<int>, !torch.bool, !torch.list<int>, !torch.int -> !torch.vtensor<[1,32,16,1600],f32>
   return %output : !torch.vtensor<[1,32,16,1600],f32>
 }
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.fake_quantize_per_tensor_affine(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[1,64,32,32],f32>) -> !torch.vtensor<[1,64,32,32],f32>
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,64,32,32],f32> -> tensor<1x64x32x32xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.fake_quantize_per_tensor_affine") %[[T0]] {
+// CHECK-SAME:                          quant_max = 255 : i64,
+// CHECK-SAME:                          quant_min = 0 : i64,
+// CHECK-SAME:                          scale = 1.000000e-05 : f64,
+// CHECK-SAME:                          torch_operand_names = ["self"],
+// CHECK-SAME:                          zero_point = 0 : i64}
+// CHECK-SAME:      tensor<1x64x32x32xf32> -> tensor<1x64x32x32xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<1x64x32x32xf32> -> !torch.vtensor<[1,64,32,32],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[1,64,32,32],f32>
+func.func @torch.aten.fake_quantize_per_tensor_affine(%input: !torch.vtensor<[1,64,32,32],f32>) -> !torch.vtensor<[1,64,32,32],f32> {
+  %float1.000000e-05 = torch.constant.float 1.000000e-05
+  %int0 = torch.constant.int 0
+  %int255 = torch.constant.int 255
+  %output = torch.aten.fake_quantize_per_tensor_affine %input, %float1.000000e-05, %int0, %int0, %int255 : !torch.vtensor<[1,64,32,32],f32>, !torch.float, !torch.int, !torch.int, !torch.int -> !torch.vtensor<[1,64,32,32],f32>
+  return %output : !torch.vtensor<[1,64,32,32],f32>
+}
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.fake_quantize_per_tensor_affine.tensor_qparams(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[1,64,32,32],f32>) -> !torch.vtensor<[1,64,32,32],f32>
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,64,32,32],f32> -> tensor<1x64x32x32xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.fake_quantize_per_tensor_affine.tensor_qparams") %[[T0]], %{{.*}}, %{{.*}} {
+// CHECK-SAME:                          quant_max = 255 : i64,
+// CHECK-SAME:                          quant_min = 0 : i64,
+// CHECK-SAME:                          torch_operand_names = ["self", "scale", "zero_point"]} :
+// CHECK-SAME:      tensor<1x64x32x32xf32>, tensor<1xf32>, tensor<1xi32> -> tensor<1x64x32x32xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<1x64x32x32xf32> -> !torch.vtensor<[1,64,32,32],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[1,64,32,32],f32>
+func.func @torch.aten.fake_quantize_per_tensor_affine.tensor_qparams(%input: !torch.vtensor<[1,64,32,32],f32>) -> !torch.vtensor<[1,64,32,32],f32> {
+  %scale = torch.vtensor.literal(dense<0.0393700786> : tensor<1xf32>) : !torch.vtensor<[1],f32>
+  %zero_point = torch.vtensor.literal(dense<2> : tensor<1xsi32>) : !torch.vtensor<[1],si32>
+  %int0 = torch.constant.int 0
+  %int255 = torch.constant.int 255
+  %output = torch.aten.fake_quantize_per_tensor_affine.tensor_qparams %input, %scale, %zero_point, %int0, %int255 : !torch.vtensor<[1,64,32,32],f32>, !torch.vtensor<[1],f32>, !torch.vtensor<[1],si32>, !torch.int, !torch.int -> !torch.vtensor<[1,64,32,32],f32>
+  return %output : !torch.vtensor<[1,64,32,32],f32>
+}
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.fake_quantize_per_tensor_affine.tensor_qparams_zero(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[1,64,32,32],f32>) -> !torch.vtensor<[1,64,32,32],f32>
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,64,32,32],f32> -> tensor<1x64x32x32xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.fake_quantize_per_tensor_affine.tensor_qparams") %[[T0]], %{{.*}}, %{{.*}} {
+// CHECK-SAME:                          quant_max = 255 : i64,
+// CHECK-SAME:                          quant_min = 0 : i64,
+// CHECK-SAME:                          torch_operand_names = ["self", "scale", "zero_point"]} :
+// CHECK-SAME:      tensor<1x64x32x32xf32>, tensor<1xf32>, tensor<1xi32> -> tensor<1x64x32x32xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<1x64x32x32xf32> -> !torch.vtensor<[1,64,32,32],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[1,64,32,32],f32>
+func.func @torch.aten.fake_quantize_per_tensor_affine.tensor_qparams_zero(%input: !torch.vtensor<[1,64,32,32],f32>) -> !torch.vtensor<[1,64,32,32],f32> {
+  %scale = torch.vtensor.literal(dense<0.0393700786> : tensor<1xf32>) : !torch.vtensor<[1],f32>
+  %int1 = torch.constant.int 1
+  %int3 = torch.constant.int 3
+  %none = torch.constant.none
+  %5 = torch.prim.ListConstruct %int1 : (!torch.int) -> !torch.list<int>
+  %cuda3A0 = torch.constant.device "cuda:0"
+  %false = torch.constant.bool false
+  %zero_point = torch.aten.zeros %5, %int3, %none, %cuda3A0, %false : !torch.list<int>, !torch.int, !torch.none, !torch.Device, !torch.bool -> !torch.vtensor<[1],si32>
+  %int0 = torch.constant.int 0
+  %int255 = torch.constant.int 255
+  %output = torch.aten.fake_quantize_per_tensor_affine.tensor_qparams %input, %scale, %zero_point, %int0, %int255 : !torch.vtensor<[1,64,32,32],f32>, !torch.vtensor<[1],f32>, !torch.vtensor<[1],si32>, !torch.int, !torch.int -> !torch.vtensor<[1,64,32,32],f32>
+  return %output : !torch.vtensor<[1,64,32,32],f32>
+}
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.fake_quantize_per_channel_affine(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[1,3,32,32],f32>) -> !torch.vtensor<[1,3,32,32],f32>
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,3,32,32],f32> -> tensor<1x3x32x32xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.fake_quantize_per_channel_affine") %[[T0]], %{{.*}}, %{{.*}} {
+// CHECK-SAME:                          axis = 1 : i64,
+// CHECK-SAME:                          quant_max = 255 : i64,
+// CHECK-SAME:                          quant_min = 0 : i64,
+// CHECK-SAME:                          torch_operand_names = ["self", "scale", "zero_point"]} :
+// CHECK-SAME:      tensor<1x3x32x32xf32>, tensor<3xf32>, tensor<3xi32> -> tensor<1x3x32x32xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<1x3x32x32xf32> -> !torch.vtensor<[1,3,32,32],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[1,3,32,32],f32>
+func.func @torch.aten.fake_quantize_per_channel_affine(%input: !torch.vtensor<[1,3,32,32],f32>) -> !torch.vtensor<[1,3,32,32],f32> {
+  %scale = torch.vtensor.literal(dense<0.0393700786> : tensor<3xf32>) : !torch.vtensor<[3],f32>
+  %zero_point = torch.vtensor.literal(dense<2> : tensor<3xsi32>) : !torch.vtensor<[3],si32>
+  %int0 = torch.constant.int 0
+  %int1 = torch.constant.int 1
+  %int255 = torch.constant.int 255
+  %output = torch.aten.fake_quantize_per_channel_affine %input, %scale, %zero_point, %int1, %int0, %int255 : !torch.vtensor<[1,3,32,32],f32>, !torch.vtensor<[3],f32>, !torch.vtensor<[3],si32>, !torch.int, !torch.int, !torch.int -> !torch.vtensor<[1,3,32,32],f32>
+  return %output : !torch.vtensor<[1,3,32,32],f32>
+}
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.fake_quantize_per_channel_affine_zero_like(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[1,3,32,32],f32>) -> !torch.vtensor<[1,3,32,32],f32>
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,3,32,32],f32> -> tensor<1x3x32x32xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.fake_quantize_per_channel_affine") %[[T0]], %{{.*}}, %{{.*}} {
+// CHECK-SAME:                          axis = 1 : i64,
+// CHECK-SAME:                          quant_max = 255 : i64,
+// CHECK-SAME:                          quant_min = 0 : i64,
+// CHECK-SAME:                          torch_operand_names = ["self", "scale", "zero_point"]} :
+// CHECK-SAME:      tensor<1x3x32x32xf32>, tensor<3xf32>, tensor<3xi32> -> tensor<1x3x32x32xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<1x3x32x32xf32> -> !torch.vtensor<[1,3,32,32],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[1,3,32,32],f32>
+func.func @torch.aten.fake_quantize_per_channel_affine_zero_like(%input: !torch.vtensor<[1,3,32,32],f32>) -> !torch.vtensor<[1,3,32,32],f32> {
+  %scale = torch.vtensor.literal(dense<0.0393700786> : tensor<3xf32>) : !torch.vtensor<[3],f32>
+  %int0 = torch.constant.int 0
+  %int1 = torch.constant.int 1
+  %int255 = torch.constant.int 255
+  %int3 = torch.constant.int 3
+  %none = torch.constant.none
+  %cuda3A0 = torch.constant.device "cuda:0"
+  %false = torch.constant.bool false
+  %zero_point = torch.aten.zeros_like %scale, %int3, %none, %cuda3A0, %false, %none : !torch.vtensor<[3],f32>, !torch.int, !torch.none, !torch.Device, !torch.bool, !torch.none -> !torch.vtensor<[3],si32>
+  %output = torch.aten.fake_quantize_per_channel_affine %input, %scale, %zero_point, %int1, %int0, %int255 : !torch.vtensor<[1,3,32,32],f32>, !torch.vtensor<[3],f32>, !torch.vtensor<[3],si32>, !torch.int, !torch.int, !torch.int -> !torch.vtensor<[1,3,32,32],f32>
+  return %output : !torch.vtensor<[1,3,32,32],f32>
+}

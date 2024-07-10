@@ -117,6 +117,138 @@ public:
   }
 };
 
+class ConvertAtenFakeQuantizePerTensorAffineOp
+    : public OpConversionPattern<AtenFakeQuantizePerTensorAffineOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenFakeQuantizePerTensorAffineOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+    helper.addFloatAttr("scale", op.getScale());
+    helper.addIntAttr("zero_point", op.getZeroPoint());
+    helper.addIntAttr("quant_min", op.getQuantMin());
+    helper.addIntAttr("quant_max", op.getQuantMax());
+
+    return helper.replace();
+  }
+};
+
+class ConvertAtenFakeQuantizePerTensorAffineTensorQparamsOp
+    : public OpConversionPattern<
+          AtenFakeQuantizePerTensorAffineTensorQparamsOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenFakeQuantizePerTensorAffineTensorQparamsOp op,
+                  OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+    helper.addIntAttr("quant_min", op.getQuantMin());
+    helper.addIntAttr("quant_max", op.getQuantMax());
+
+    // scale
+    auto scaleOp = op.getScale().getDefiningOp();
+    if (!scaleOp)
+      return rewriter.notifyMatchFailure(op, "Missing scale operation");
+    auto scaleTensor = dyn_cast<torch::Torch::ValueTensorLiteralOp>(scaleOp);
+    if (!scaleTensor)
+      return rewriter.notifyMatchFailure(
+          op, "Scale operation is not ValueTensorLiteralOp");
+    auto scaleElements =
+        dyn_cast<DenseFPElementsAttr>(scaleTensor.getValueAttr());
+    // scale should be a [1] tensor.
+    if (!scaleElements || scaleElements.getNumElements() != 1)
+      return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
+    helper.addOperand("scale", adaptor.getScale());
+
+    // zero_point
+    auto zeroPointOp = op.getZeroPoint().getDefiningOp();
+    if (!zeroPointOp)
+      return rewriter.notifyMatchFailure(op, "Missing zero point operation");
+    if (auto zeroPointTensor =
+            dyn_cast<torch::Torch::ValueTensorLiteralOp>(zeroPointOp)) {
+      auto zeroPointElements =
+          dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
+      // zero_point should be a [1] tensor.
+      if (!zeroPointElements || zeroPointElements.getNumElements() != 1)
+        return rewriter.notifyMatchFailure(
+            op, "Unsupported zero point type or size");
+    } else if (!dyn_cast<torch::Torch::AtenZerosOp>(zeroPointOp) &&
+               !dyn_cast<torch::Torch::AtenZerosLikeOp>(zeroPointOp)) {
+      // zero like operations are converted through torch-to-tcp
+      return rewriter.notifyMatchFailure(
+          op, "Zero point operation is not ValueTensorLiteralOp or Zero "
+              "operation");
+    }
+    helper.addOperand("zero_point", adaptor.getZeroPoint());
+
+    return helper.replace();
+  }
+};
+
+class ConvertAtenFakeQuantizePerChannelAffineOp
+    : public OpConversionPattern<AtenFakeQuantizePerChannelAffineOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenFakeQuantizePerChannelAffineOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+    helper.addIntAttr("axis", op.getAxis());
+    helper.addIntAttr("quant_min", op.getQuantMin());
+    helper.addIntAttr("quant_max", op.getQuantMax());
+
+    // scale
+    auto scaleOp = op.getScale().getDefiningOp();
+    if (!scaleOp)
+      return rewriter.notifyMatchFailure(op, "Missing scale operation");
+    auto scaleTensor = dyn_cast<torch::Torch::ValueTensorLiteralOp>(scaleOp);
+    if (!scaleTensor)
+      return rewriter.notifyMatchFailure(
+          op, "Scale operation is not ValueTensorLiteralOp");
+    auto scaleElements =
+        dyn_cast<DenseFPElementsAttr>(scaleTensor.getValueAttr());
+    // scale should be a [C] tensor.
+    if (!scaleElements || scaleElements.getType().getShape().size() != 1)
+      return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
+    helper.addOperand("scale", adaptor.getScale());
+
+    // zero_point
+    auto zeroPointOp = op.getZeroPoint().getDefiningOp();
+    if (!zeroPointOp)
+      return rewriter.notifyMatchFailure(op, "Missing zero point operation");
+    if (auto zeroPointTensor =
+            dyn_cast<torch::Torch::ValueTensorLiteralOp>(zeroPointOp)) {
+      auto zeroPointElements =
+          dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
+      // zero_point should be a [C] tensor.
+      if (!zeroPointElements ||
+          zeroPointElements.getType().getShape().size() != 1)
+        return rewriter.notifyMatchFailure(
+            op, "Unsupported zero point type or size");
+    } else if (!dyn_cast<torch::Torch::AtenZerosOp>(zeroPointOp) &&
+               !dyn_cast<torch::Torch::AtenZerosLikeOp>(zeroPointOp)) {
+      // zero like operations are converted through torch-to-tcp
+      return rewriter.notifyMatchFailure(
+          op, "Zero point operation is not ValueTensorLiteralOp or Zero "
+              "operation");
+    }
+    helper.addOperand("zero_point", adaptor.getZeroPoint());
+
+    return helper.replace();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
@@ -129,6 +261,10 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenGatherOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenIndexTensorHackedTwinOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(Aten_IndexPutImplOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenFakeQuantizePerTensorAffineOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(
+      AtenFakeQuantizePerTensorAffineTensorQparamsOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenFakeQuantizePerChannelAffineOp);
 #undef INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN
 
   // Torch -> TOSA doesn't handle transposed convolutions; map them to
