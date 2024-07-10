@@ -166,33 +166,28 @@ public:
     // scale should be a [1] tensor.
     if (!scaleElements || scaleElements.getNumElements() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
-    auto scale = (*scaleElements.begin()).convertToDouble();
-    helper.addDenseFloatArrayAttr("scale", {scale});
+    helper.addOperand("scale", adaptor.getScale());
 
     // zero_point
     auto zeroPointOp = op.getZeroPoint().getDefiningOp();
-    int64_t zeroPoint;
     if (!zeroPointOp)
       return rewriter.notifyMatchFailure(op, "Missing zero point operation");
-    if (dyn_cast<torch::Torch::AtenZerosOp>(zeroPointOp) ||
-        dyn_cast<torch::Torch::AtenZerosLikeOp>(zeroPointOp)) {
-      zeroPoint = 0;
-    } else {
-      auto zeroPointTensor =
-          dyn_cast<torch::Torch::ValueTensorLiteralOp>(zeroPointOp);
-      if (!zeroPointTensor)
-        return rewriter.notifyMatchFailure(
-            op, "Zero point operation is not ValueTensorLiteralOp or Zero "
-                "operation");
+    if (auto zeroPointTensor =
+            dyn_cast<torch::Torch::ValueTensorLiteralOp>(zeroPointOp)) {
       auto zeroPointElements =
           dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
       // zero_point should be a [1] tensor.
       if (!zeroPointElements || zeroPointElements.getNumElements() != 1)
         return rewriter.notifyMatchFailure(
             op, "Unsupported zero point type or size");
-      zeroPoint = (*zeroPointElements.begin()).getSExtValue();
+    } else if (!dyn_cast<torch::Torch::AtenZerosOp>(zeroPointOp) &&
+               !dyn_cast<torch::Torch::AtenZerosLikeOp>(zeroPointOp)) {
+      // zero like operations are converted through torch-to-tcp
+      return rewriter.notifyMatchFailure(
+          op, "Zero point operation is not ValueTensorLiteralOp or Zero "
+              "operation");
     }
-    helper.addDenseIntArrayAttr("zero_point", {zeroPoint});
+    helper.addOperand("zero_point", adaptor.getZeroPoint());
 
     return helper.replace();
   }
@@ -226,26 +221,14 @@ public:
     // scale should be a [C] tensor.
     if (!scaleElements || scaleElements.getType().getShape().size() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
-    SmallVector<double> scale;
-    for (auto val : scaleElements.getValues<APFloat>())
-      scale.push_back(val.convertToDouble());
-    helper.addDenseFloatArrayAttr("scale", scale);
+    helper.addOperand("scale", adaptor.getScale());
 
     // zero_point
     auto zeroPointOp = op.getZeroPoint().getDefiningOp();
-    SmallVector<int64_t> zeroPoint;
     if (!zeroPointOp)
       return rewriter.notifyMatchFailure(op, "Missing zero point operation");
-    if (dyn_cast<torch::Torch::AtenZerosOp>(zeroPointOp) ||
-        dyn_cast<torch::Torch::AtenZerosLikeOp>(zeroPointOp)) {
-      zeroPoint.assign(scale.size(), 0);
-    } else {
-      auto zeroPointTensor =
-          dyn_cast<torch::Torch::ValueTensorLiteralOp>(zeroPointOp);
-      if (!zeroPointTensor)
-        return rewriter.notifyMatchFailure(
-            op, "Zero point operation is not ValueTensorLiteralOp or Zero "
-                "operation");
+    if (auto zeroPointTensor =
+            dyn_cast<torch::Torch::ValueTensorLiteralOp>(zeroPointOp)) {
       auto zeroPointElements =
           dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
       // zero_point should be a [C] tensor.
@@ -253,10 +236,14 @@ public:
           zeroPointElements.getType().getShape().size() != 1)
         return rewriter.notifyMatchFailure(
             op, "Unsupported zero point type or size");
-      for (auto val : zeroPointElements.getValues<APInt>())
-        zeroPoint.push_back(val.getSExtValue());
+    } else if (!dyn_cast<torch::Torch::AtenZerosOp>(zeroPointOp) &&
+               !dyn_cast<torch::Torch::AtenZerosLikeOp>(zeroPointOp)) {
+      // zero like operations are converted through torch-to-tcp
+      return rewriter.notifyMatchFailure(
+          op, "Zero point operation is not ValueTensorLiteralOp or Zero "
+              "operation");
     }
-    helper.addDenseIntArrayAttr("zero_point", zeroPoint);
+    helper.addOperand("zero_point", adaptor.getZeroPoint());
 
     return helper.replace();
   }
