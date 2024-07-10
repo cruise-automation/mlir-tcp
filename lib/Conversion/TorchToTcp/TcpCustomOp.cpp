@@ -190,8 +190,8 @@ public:
             op, "Unsupported zero point type or size");
       zeroPoint = (*zeroPointElements.begin()).getSExtValue();
     }
-
     helper.addDenseIntArrayAttr("zero_point", {zeroPoint});
+    
     return helper.replace();
   }
 };
@@ -252,8 +252,8 @@ public:
       for (auto val : zeroPointElements.getValues<APInt>())
         zeroPoint.push_back(val.getSExtValue());
     }
-
     helper.addDenseIntArrayAttr("zero_point", zeroPoint);
+    
     return helper.replace();
   }
 };
