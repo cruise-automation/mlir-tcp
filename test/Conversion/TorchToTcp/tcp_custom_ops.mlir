@@ -215,7 +215,7 @@ func.func @torch.aten.fake_quantize_per_tensor_affine.tensor_qparams_zero(%input
 // CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[1,3,32,32],f32>) -> !torch.vtensor<[1,3,32,32],f32>
 // CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,3,32,32],f32> -> tensor<1x3x32x32xf32>
 // CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.fake_quantize_per_channel_affine") %[[T0]] {
-// CHECK-SAME:                          axis = 0 : i64,
+// CHECK-SAME:                          axis = 1 : i64,
 // CHECK-SAME:                          quant_max = 255 : i64,
 // CHECK-SAME:                          quant_min = 0 : i64,
 // CHECK-SAME:                          scale = array<f64: 0.039370078593492508, 0.039370078593492508, 0.039370078593492508>,
@@ -240,7 +240,7 @@ func.func @torch.aten.fake_quantize_per_channel_affine(%input: !torch.vtensor<[1
 // CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[1,3,32,32],f32>) -> !torch.vtensor<[1,3,32,32],f32>
 // CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[1,3,32,32],f32> -> tensor<1x3x32x32xf32>
 // CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.fake_quantize_per_channel_affine") %[[T0]] {
-// CHECK-SAME:                          axis = 0 : i64,
+// CHECK-SAME:                          axis = 1 : i64,
 // CHECK-SAME:                          quant_max = 255 : i64,
 // CHECK-SAME:                          quant_min = 0 : i64,
 // CHECK-SAME:                          scale = array<f64: 0.039370078593492508, 0.039370078593492508, 0.039370078593492508>,

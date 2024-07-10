@@ -163,6 +163,7 @@ public:
           op, "Scale operation is not ValueTensorLiteralOp");
     auto scaleElements =
         dyn_cast<DenseFPElementsAttr>(scaleTensor.getValueAttr());
+    // scale should be a size-1 tensor.
     if (!scaleElements || scaleElements.getNumElements() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     auto scale = (*scaleElements.begin()).convertToDouble();
@@ -185,6 +186,7 @@ public:
                 "operation");
       auto zeroPointElements =
           dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
+      // zero_point should be a size-1 tensor.
       if (!zeroPointElements || zeroPointElements.getNumElements() != 1)
         return rewriter.notifyMatchFailure(
             op, "Unsupported zero point type or size");
@@ -207,7 +209,7 @@ public:
     torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
                                                             getTypeConverter()};
     helper.addOperand("self", adaptor.getSelf());
-    helper.addIntAttr("axis", op.getQuantMin());
+    helper.addIntAttr("axis", op.getAxis());
     helper.addIntAttr("quant_min", op.getQuantMin());
     helper.addIntAttr("quant_max", op.getQuantMax());
 
