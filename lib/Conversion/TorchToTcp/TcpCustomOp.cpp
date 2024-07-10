@@ -191,7 +191,7 @@ public:
       zeroPoint = (*zeroPointElements.begin()).getSExtValue();
     }
     helper.addDenseIntArrayAttr("zero_point", {zeroPoint});
-    
+
     return helper.replace();
   }
 };
@@ -253,7 +253,7 @@ public:
         zeroPoint.push_back(val.getSExtValue());
     }
     helper.addDenseIntArrayAttr("zero_point", zeroPoint);
-    
+
     return helper.replace();
   }
 };
