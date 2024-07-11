@@ -275,11 +275,51 @@ public:
   }
 };
 
+class ConvertSymbolicIntOp : public OpConversionPattern<Torch::SymbolicIntOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(Torch::SymbolicIntOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    RankedTensorType resultType =
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
+
+    rewriter.replaceOpWithNewOp<tcp::SymbolicIntOp>(
+        op, resultType, adaptor.getSymbolNameAttr(), adaptor.getMinValAttr(),
+        adaptor.getMaxValAttr());
+    return success();
+  }
+};
+
+class ConvertBindSymbolicShapeOp
+    : public OpConversionPattern<Torch::BindSymbolicShapeOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(Torch::BindSymbolicShapeOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+
+    rewriter.replaceOpWithNewOp<tcp::BindSymbolicShapeOp>(
+        op, adaptor.getOperand(), adaptor.getShapeSymbols(),
+        adaptor.getShapeExpressionsAttr());
+    return success();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateMiscPatternsAndLegality(
     TypeConverter &typeConverter, RewritePatternSet &patterns,
     ConversionTarget &target, const llvm::StringSet<> &convertTorchOpsSet) {
+
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertSymbolicIntOp,
+                                                   Torch::SymbolicIntOp>(
+      typeConverter, patterns, target, convertTorchOpsSet);
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertBindSymbolicShapeOp,
+                                                   Torch::BindSymbolicShapeOp>(
+      typeConverter, patterns, target, convertTorchOpsSet);
 
 #define INSERT_ATEN_MISC_OP_PATTERN(AtenOp)                                    \
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<Convert##AtenOp, AtenOp>(   \
