@@ -32,8 +32,6 @@ public:
 
   LogicalResult matchAndRewrite(tcp::BindSymbolicShapeOp op,
                                 PatternRewriter &rewriter) const override {
-    if (!op->getUsers().empty())
-      return failure();
     rewriter.eraseOp(op);
     return success();
   }

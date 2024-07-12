@@ -38,8 +38,8 @@ def DecomposeTensorOps : Pass<"decompose-tensor-ops", "func::FuncOp"> {
   let constructor = "mlir::tcp::createDecomposeTensorOpsPass()";
 }
 
-// \brief This pass removes any symbolic shape ops.
-// We discard any remaining bind shape ops during backend lowering.
+// \brief This pass removes any unused symbolic shape ops.
+// We discard remaining bind shape ops during backend lowering.
 def DropSymbolicShapeOps : Pass<"drop-symbolic-shape-ops", "func::FuncOp"> {
   let summary = "Removes all remaining symbolic shape ops.";
   let constructor = "mlir::tcp::createDropSymbolicShapeOpsPass()";
