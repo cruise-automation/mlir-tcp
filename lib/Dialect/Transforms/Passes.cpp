@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "mlir-tcp/Dialect/Transforms/Passes.h"
+#include "mlir-tcp/Dialect/Transforms/DropSymbolicShapeOpsPass.h"
 #include "mlir-tcp/Dialect/Transforms/FuseTcpOpsPass.h"
 #include "mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h"
 #include "mlir-tcp/Dialect/Transforms/TransformTensorOps.h"

@@ -11,6 +11,7 @@
 #define TCP_OPS
 
 include "mlir/IR/OpBase.td"
+include "mlir/IR/BuiltinAttributes.td"
 
 include "mlir-tcp/Dialect/IR/TcpBase.td"
 include "mlir-tcp/Dialect/IR/TcpEnums.td"
@@ -638,6 +639,71 @@ def Tcp_SliceOp : Tcp_Op<"slice", [Pure, AllElementTypesMatch<["in", "out"]>, Sa
   );
 
   let assemblyFormat = "$in `starts` `(` $starts `)` `sizes` `(` $sizes `)` `strides` `(` $strides `)` attr-dict `:` type($in) `->` type($out)";
+}
+
+//===----------------------------------------------------------------------===//
+// Symbolic shape modeling ops for TorchDynamo frontend.
+//===----------------------------------------------------------------------===//
+
+def Tcp_SymbolicIntOp : Tcp_Op<"symbolic_int", [Pure]> {
+
+  let summary = "Symbolic int representing a dynamic dimension";
+
+  let description = [{
+    The `tcp.symbolic_int` operation captures a dynamic dimension on the
+    global function arguments. It associates the shape symbols (i.e. "s0",
+    "s1") with the global SSA values (i.e. `%0`, `%1`) that is then
+    referenced to bind shapes on op results.
+
+    Additionally, the operation annotates `min_val` and `max_val` attributes
+    denoting the range constraints for the dynamic dimension. This may be
+    useful for modeling runtime shape guards, or compile-time optimizations
+    based on the shape bounds (min, opt, max) on results of ops / regions.
+
+    Example:
+    ```
+    %0 = tcp.symbolic_int "s0" {min_val = 5, max_val = 10} : i64
+    %1 = tcp.symbolic_int "s1" {min_val = 2, max_val = 20} : i64
+    ```
+  }];
+
+  let arguments = (ins
+    StrAttr:$symbol_name,
+    I64Attr:$min_val,
+    I64Attr:$max_val
+  );
+  let results = (outs
+    AnySignlessInteger:$result
+  );
+  let assemblyFormat = [{
+    $symbol_name ` ` `{` `min_val` `=` $min_val `,` `max_val` `=` $max_val `}` attr-dict `:` type($result)
+  }];
+}
+
+def Tcp_BindSymbolicShapeOp : Tcp_Op<"bind_symbolic_shape", []> {
+  let summary = "Binds shape expressions to tensors using an affine map indexed by shape symbols";
+  let description = [{
+    The `tcp.bind_symbolic_shape` operation binds shape expressions
+    useful to compute the dynamic dimensions of a tensor. It takes a
+    variadic of SSA symbols that map 1:1 to the local symbols declared
+    in the affine map. The affine map contains a list of affine shape
+    expressions for each dim where the terminals are from the declared
+    symbols.
+
+    Example:
+    ```
+    tcp.bind_symbolic_shape %arg0, [%0, %1], affine_map<()[s0, s1] -> (s0, s1, 3)> : tensor<?x?x3xf32>
+    tcp.bind_symbolic_shape %out0, [%0, %1, %2], affine_map<()[s0, s1, s2] -> (s0, s1 * 2 + s2, 3)> : tensor<?x?x3xf32>
+    ```
+  }];
+  let arguments = (ins
+    Tcp_Tensor:$operand,
+    Variadic<AnySignlessInteger>:$shape_symbols,
+    Builtin_AffineMapAttr:$shape_expressions
+  );
+  let results = (outs);
+  let hasCustomAssemblyFormat = 1;
+  let hasVerifier = 1;
 }
 
 #endif // TCP_OPS

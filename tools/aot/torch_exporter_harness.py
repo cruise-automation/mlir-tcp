@@ -47,6 +47,7 @@ def main():
             loader_result.model,
             *loader_result.inputs,  # unpack list of input tensors
             dynamic_shapes=loader_result.dynamic_shapes,
+            import_symbolic_shape_expressions=True,
             func_name=loader_result.func_name,
         )
 

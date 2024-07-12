@@ -14,6 +14,7 @@
 #include "mlir-tcp/Conversion/TcpToTensor/TcpToTensor.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcp.h"
 #include "mlir-tcp/Conversion/TorchToTcp/TorchToTcpCustomOp.h"
+#include "mlir-tcp/Dialect/Transforms/DropSymbolicShapeOpsPass.h"
 #include "mlir-tcp/Dialect/Transforms/TransformTensorOps.h"
 #include "mlir-tcp/Dialect/Transforms/VerifyTcpBackendContractPass.h"
 
@@ -65,6 +66,9 @@ static void createTorchBackendToTcpBackendPipeline(OpPassManager &pm) {
 }
 
 static void createTcpToLlvmPipeline(OpPassManager &pm) {
+  // Drop TCP symbolic shape ops for dynamic dims
+  pm.addNestedPass<func::FuncOp>(tcp::createDropSymbolicShapeOpsPass());
+
   // TCP transformations.
   pm.addNestedPass<func::FuncOp>(tcp::createDecomposeTensorOpsPass());
 

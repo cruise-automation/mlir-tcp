@@ -26,6 +26,7 @@ td_library(
     ],
     includes = ["include"],
     deps = [
+        "@llvm-project//mlir:BuiltinDialectTdFiles",
         "@llvm-project//mlir:OpBaseTdFiles",
         "@llvm-project//mlir:SideEffectInterfacesTdFiles",
     ],
@@ -58,11 +59,17 @@ gentbl_cc_library(
             "include/mlir-tcp/Dialect/IR/TcpDialect.cpp.inc",
         ),
         (
-            ["-gen-attrdef-decls"],
+            [
+                "-gen-attrdef-decls",
+                "-attrdefs-dialect=tcp",
+            ],
             "include/mlir-tcp/Dialect/IR/TcpAttrs.h.inc",
         ),
         (
-            ["-gen-attrdef-defs"],
+            [
+                "-gen-attrdef-defs",
+                "-attrdefs-dialect=tcp",
+            ],
             "include/mlir-tcp/Dialect/IR/TcpAttrs.cpp.inc",
         ),
         (
@@ -142,6 +149,7 @@ gentbl_cc_library(
 cc_library(
     name = "TcpDialectPasses",
     srcs = [
+        "lib/Dialect/Transforms/DropSymbolicShapeOpsPass.cpp",
         "lib/Dialect/Transforms/FuseTcpOpsPass.cpp",
         "lib/Dialect/Transforms/FusionPatterns.cpp",
         "lib/Dialect/Transforms/IsolateGroupOpsPass.cpp",
@@ -151,6 +159,7 @@ cc_library(
         "lib/Dialect/Transforms/VerifyTcpBackendContractPass.cpp",
     ],
     hdrs = [
+        "include/mlir-tcp/Dialect/Transforms/DropSymbolicShapeOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/FuseTcpOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/FusionPatterns.h",
         "include/mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h",
