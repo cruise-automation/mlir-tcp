@@ -149,6 +149,7 @@ gentbl_cc_library(
 cc_library(
     name = "TcpDialectPasses",
     srcs = [
+        "lib/Dialect/Transforms/DropSymbolicShapeOpsPass.cpp",
         "lib/Dialect/Transforms/FuseTcpOpsPass.cpp",
         "lib/Dialect/Transforms/FusionPatterns.cpp",
         "lib/Dialect/Transforms/IsolateGroupOpsPass.cpp",
@@ -158,6 +159,7 @@ cc_library(
         "lib/Dialect/Transforms/VerifyTcpBackendContractPass.cpp",
     ],
     hdrs = [
+        "include/mlir-tcp/Dialect/Transforms/DropSymbolicShapeOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/FuseTcpOpsPass.h",
         "include/mlir-tcp/Dialect/Transforms/FusionPatterns.h",
         "include/mlir-tcp/Dialect/Transforms/IsolateGroupOpsPass.h",
