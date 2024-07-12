@@ -282,8 +282,7 @@ public:
   LogicalResult
   matchAndRewrite(Torch::SymbolicIntOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    RankedTensorType resultType =
-        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
+    Type resultType = getTypeConverter()->convertType(op.getType());
 
     rewriter.replaceOpWithNewOp<tcp::SymbolicIntOp>(
         op, resultType, adaptor.getSymbolNameAttr(), adaptor.getMinValAttr(),
