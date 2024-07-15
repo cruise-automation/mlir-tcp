@@ -48,6 +48,11 @@ def main():
             *loader_result.inputs,  # unpack list of input tensors
             dynamic_shapes=loader_result.dynamic_shapes,
             import_symbolic_shape_expressions=True,
+            # This is the Torch dialect imported from Dynamo/FX export and run
+            # through `torchdynamo-export-to-torch-backend-pipeline` (which
+            # runs `ReduceOpVariantsPass` and `DecomposeComplexOpsPass`) to
+            # get it in a backend compliant form (aka torch backend contract).
+            output_type="torch",
             func_name=loader_result.func_name,
         )
 
