@@ -116,7 +116,7 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
       }
       op->moveBefore(*uses.begin());
       for (auto bindShapeOp : bindShapeUses) {
-        bindShapeOp->moveBefore(yieldOp);
+        bindShapeOp->moveAfter(op);
       }
     }
 
