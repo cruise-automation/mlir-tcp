@@ -132,3 +132,38 @@ func.func @test_fusion_with_symbolic_shape(%arg0 : tensor<?x?xf32>, %arg1 : tens
 
   return %2 : tensor<?x?xf32>
 }
+
+// -----
+
+// CHECK:   func.func @test_multi_use_fusion_with_sym_shapes(%[[ARG0:.+]]: tensor<?x?xf32>, %[[ARG1:.+]]: tensor<?x?xf32>) -> (tensor<?x?xf32>, tensor<?x?xf32>) {
+// CHECK:     %[[V0:.+]] = tcp.symbolic_int "s0" {min_val = 2, max_val = 9223372036854775806} : i64
+// CHECK:     %[[V1:.+]] = tcp.symbolic_int "s1" {min_val = 2, max_val = 9223372036854775806} : i64
+// CHECK:     tcp.bind_symbolic_shape %[[ARG0]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:     %[[V2:.+]]:2 = tcp.group {
+// CHECK:       %[[V3:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.bind_symbolic_shape %[[V3]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:       %[[V4:.+]] = tcp.add %[[V3]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.bind_symbolic_shape %[[V4]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:       %[[V5:.+]] = tcp.sub %[[V4]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V6:.+]] = tcp.mul %[[V4]], %[[V5]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V5]], %[[V6]] : tensor<?x?xf32>, tensor<?x?xf32>
+// CHECK:     } : tensor<?x?xf32>, tensor<?x?xf32>
+// CHECK:     tcp.bind_symbolic_shape %[[V2]]#0, [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:     tcp.bind_symbolic_shape %[[V2]]#1, [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:     return %[[V2]]#0, %[[V2]]#1 : tensor<?x?xf32>, tensor<?x?xf32>
+// CHECK:   }
+func.func @test_multi_use_fusion_with_sym_shapes(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> (tensor<?x?xf32>, tensor<?x?xf32>)  {
+  %s0 = tcp.symbolic_int "s0" {min_val = 2, max_val = 9223372036854775806} : i64
+  %s1 = tcp.symbolic_int "s1" {min_val = 2, max_val = 9223372036854775806} : i64
+  tcp.bind_symbolic_shape %arg0, [%s0, %s1], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+
+  %0 = tcp.tanh %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  tcp.bind_symbolic_shape %0, [%s0, %s1], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+  %1 = tcp.add %0, %0 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  tcp.bind_symbolic_shape %1, [%s0, %s1], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+  %2 = tcp.sub %1, %arg1 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  tcp.bind_symbolic_shape %2, [%s0, %s1], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+  %3 = tcp.mul %1, %2 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  tcp.bind_symbolic_shape %3, [%s0, %s1], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+  "func.return" (%2, %3) : (tensor<?x?xf32>, tensor<?x?xf32>) -> ()
+}
