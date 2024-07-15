@@ -65,7 +65,7 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
       uses.push_back(use.getOwner());
   }
 
-  // All its uses are tcp.bind_symbolic_shpae ops.
+  // All its uses are tcp.bind_symbolic_shape ops.
   if (uses.empty())
     return failure();
 
