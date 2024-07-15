@@ -44,8 +44,15 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
   Region *usesParentRegion = nullptr;
   SmallVector<Operation *> uses;
   llvm::DenseSet<Operation *> usesSet;
+  llvm::DenseSet<tcp::BindSymbolicShapeOp> bindShapeUses;
 
+  LLVM_DEBUG(llvm::dbgs() << "Processing op: " << *op << "\n");
   for (auto &use : op->getUses()) {
+    if (auto bindShapeOp = dyn_cast<tcp::BindSymbolicShapeOp>(use.getOwner())) {
+      bindShapeUses.insert(bindShapeOp);
+      continue;
+    }
+
     auto parentRegion = use.getOwner()->getParentRegion();
     if (usesParentRegion && usesParentRegion != parentRegion)
       return failure();
@@ -57,6 +64,10 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
     if (usesSet.insert(use.getOwner()).second)
       uses.push_back(use.getOwner());
   }
+
+  // All its uses are tcp.bind_symbolic_shape ops.
+  if (uses.empty())
+    return failure();
 
   // Sorting by dominance ensures that the first element of this vector is
   // the first use of the def. Used below when we want to move the op into
@@ -104,6 +115,9 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
         use->moveBefore(yieldOp);
       }
       op->moveBefore(*uses.begin());
+      for (auto bindShapeOp : bindShapeUses) {
+        bindShapeOp->moveAfter(op);
+      }
     }
 
     // We then replace all uses of the uses which lie outside the group
@@ -157,6 +171,9 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
     // reordered.
     auto &firstOp = *usesParentRegion->getOps().begin();
     op->moveBefore(&firstOp);
+    for (auto bindShapeOp : bindShapeUses) {
+      bindShapeOp->moveBefore(&firstOp);
+    }
   } else {
     op->emitError("Unhandled case during fusion");
     llvm_unreachable("Unhandled case during fusion");
