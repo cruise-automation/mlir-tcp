@@ -157,6 +157,7 @@ public:
     auto scaleTy = adaptor.getScale().getType().dyn_cast<RankedTensorType>();
     if (!scaleTy || scaleTy.getShape().size() != 1 ||
         scaleTy.getNumElements() != 1)
+      // scale should be a [1] tensor.
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     helper.addOperand("scale", adaptor.getScale());
 
@@ -165,6 +166,7 @@ public:
         adaptor.getZeroPoint().getType().dyn_cast<RankedTensorType>();
     if (!zeroPointTy || zeroPointTy.getShape().size() != 1 ||
         zeroPointTy.getNumElements() != scaleTy.getNumElements())
+      // zero_point should be a [1] tensor.
       return rewriter.notifyMatchFailure(op,
                                          "Unsupported zero point type or size");
     helper.addOperand("zero_point", adaptor.getZeroPoint());
@@ -191,6 +193,7 @@ public:
     // scale
     auto scaleTy = adaptor.getScale().getType().dyn_cast<RankedTensorType>();
     if (!scaleTy || scaleTy.getShape().size() != 1)
+      // scale should be a [C] tensor.
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     helper.addOperand("scale", adaptor.getScale());
 
@@ -199,6 +202,7 @@ public:
         adaptor.getZeroPoint().getType().dyn_cast<RankedTensorType>();
     if (!zeroPointTy || zeroPointTy.getShape().size() != 1 ||
         zeroPointTy.getNumElements() != scaleTy.getNumElements())
+      // zero_point should be a [C] tensor.
       return rewriter.notifyMatchFailure(op,
                                          "Unsupported zero point type or size");
     helper.addOperand("zero_point", adaptor.getZeroPoint());
