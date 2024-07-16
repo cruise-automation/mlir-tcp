@@ -154,39 +154,18 @@ public:
     helper.addIntAttr("quant_max", op.getQuantMax());
 
     // scale
-    auto scaleOp = op.getScale().getDefiningOp();
-    if (!scaleOp)
-      return rewriter.notifyMatchFailure(op, "Missing scale operation");
-    auto scaleTensor = dyn_cast<torch::Torch::ValueTensorLiteralOp>(scaleOp);
-    if (!scaleTensor)
-      return rewriter.notifyMatchFailure(
-          op, "Scale operation is not ValueTensorLiteralOp");
-    auto scaleElements =
-        dyn_cast<DenseFPElementsAttr>(scaleTensor.getValueAttr());
-    // scale should be a [1] tensor.
-    if (!scaleElements || scaleElements.getNumElements() != 1)
+    auto scaleTy = adaptor.getScale().dyn_cast<RankedTensorType>();
+    if (!scaleTy || scaleTy.getShape().size() != 1 ||
+        scaleTy.getNumElements() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     helper.addOperand("scale", adaptor.getScale());
 
     // zero_point
-    auto zeroPointOp = op.getZeroPoint().getDefiningOp();
-    if (!zeroPointOp)
-      return rewriter.notifyMatchFailure(op, "Missing zero point operation");
-    if (auto zeroPointTensor =
-            dyn_cast<torch::Torch::ValueTensorLiteralOp>(zeroPointOp)) {
-      auto zeroPointElements =
-          dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
-      // zero_point should be a [1] tensor.
-      if (!zeroPointElements || zeroPointElements.getNumElements() != 1)
-        return rewriter.notifyMatchFailure(
-            op, "Unsupported zero point type or size");
-    } else if (!dyn_cast<torch::Torch::AtenZerosOp>(zeroPointOp) &&
-               !dyn_cast<torch::Torch::AtenZerosLikeOp>(zeroPointOp)) {
-      // zero like operations are converted through torch-to-tcp
-      return rewriter.notifyMatchFailure(
-          op, "Zero point operation is not ValueTensorLiteralOp or Zero "
-              "operation");
-    }
+    auto zeroPointTy = adaptor.getZeroPoint().dyn_cast<RankedTensorType>();
+    if (!zeroPointTy || zeroPointTy.getShape().size() != 1 ||
+        zeroPointTy.getNumElements() != scaleTy.getNumElements())
+      return rewriter.notifyMatchFailure(op,
+                                         "Unsupported zero point type or size");
     helper.addOperand("zero_point", adaptor.getZeroPoint());
 
     return helper.replace();
@@ -209,40 +188,17 @@ public:
     helper.addIntAttr("quant_max", op.getQuantMax());
 
     // scale
-    auto scaleOp = op.getScale().getDefiningOp();
-    if (!scaleOp)
-      return rewriter.notifyMatchFailure(op, "Missing scale operation");
-    auto scaleTensor = dyn_cast<torch::Torch::ValueTensorLiteralOp>(scaleOp);
-    if (!scaleTensor)
-      return rewriter.notifyMatchFailure(
-          op, "Scale operation is not ValueTensorLiteralOp");
-    auto scaleElements =
-        dyn_cast<DenseFPElementsAttr>(scaleTensor.getValueAttr());
-    // scale should be a [C] tensor.
-    if (!scaleElements || scaleElements.getType().getShape().size() != 1)
+    auto scaleTy = adaptor.getScale().dyn_cast<RankedTensorType>();
+    if (!scaleTy || scaleTy.getShape().size() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     helper.addOperand("scale", adaptor.getScale());
 
     // zero_point
-    auto zeroPointOp = op.getZeroPoint().getDefiningOp();
-    if (!zeroPointOp)
-      return rewriter.notifyMatchFailure(op, "Missing zero point operation");
-    if (auto zeroPointTensor =
-            dyn_cast<torch::Torch::ValueTensorLiteralOp>(zeroPointOp)) {
-      auto zeroPointElements =
-          dyn_cast<DenseIntElementsAttr>(zeroPointTensor.getValueAttr());
-      // zero_point should be a [C] tensor.
-      if (!zeroPointElements ||
-          zeroPointElements.getType().getShape().size() != 1)
-        return rewriter.notifyMatchFailure(
-            op, "Unsupported zero point type or size");
-    } else if (!dyn_cast<torch::Torch::AtenZerosOp>(zeroPointOp) &&
-               !dyn_cast<torch::Torch::AtenZerosLikeOp>(zeroPointOp)) {
-      // zero like operations are converted through torch-to-tcp
-      return rewriter.notifyMatchFailure(
-          op, "Zero point operation is not ValueTensorLiteralOp or Zero "
-              "operation");
-    }
+    auto zeroPointTy = adaptor.getZeroPoint().dyn_cast<RankedTensorType>();
+    if (!zeroPointTy || zeroPointTy.getShape().size() != 1 ||
+        zeroPointTy.getNumElements() != scaleTy.getNumElements())
+      return rewriter.notifyMatchFailure(op,
+                                         "Unsupported zero point type or size");
     helper.addOperand("zero_point", adaptor.getZeroPoint());
 
     return helper.replace();
