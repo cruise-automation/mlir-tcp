@@ -154,14 +154,15 @@ public:
     helper.addIntAttr("quant_max", op.getQuantMax());
 
     // scale
-    auto scaleTy = adaptor.getScale().dyn_cast<RankedTensorType>();
+    auto scaleTy = adaptor.getScale().getType().dyn_cast<RankedTensorType>();
     if (!scaleTy || scaleTy.getShape().size() != 1 ||
         scaleTy.getNumElements() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     helper.addOperand("scale", adaptor.getScale());
 
     // zero_point
-    auto zeroPointTy = adaptor.getZeroPoint().dyn_cast<RankedTensorType>();
+    auto zeroPointTy =
+        adaptor.getZeroPoint().getType().dyn_cast<RankedTensorType>();
     if (!zeroPointTy || zeroPointTy.getShape().size() != 1 ||
         zeroPointTy.getNumElements() != scaleTy.getNumElements())
       return rewriter.notifyMatchFailure(op,
@@ -188,13 +189,14 @@ public:
     helper.addIntAttr("quant_max", op.getQuantMax());
 
     // scale
-    auto scaleTy = adaptor.getScale().dyn_cast<RankedTensorType>();
+    auto scaleTy = adaptor.getScale().getType().dyn_cast<RankedTensorType>();
     if (!scaleTy || scaleTy.getShape().size() != 1)
       return rewriter.notifyMatchFailure(op, "Unsupported scale type or size");
     helper.addOperand("scale", adaptor.getScale());
 
     // zero_point
-    auto zeroPointTy = adaptor.getZeroPoint().dyn_cast<RankedTensorType>();
+    auto zeroPointTy =
+        adaptor.getZeroPoint().getType().dyn_cast<RankedTensorType>();
     if (!zeroPointTy || zeroPointTy.getShape().size() != 1 ||
         zeroPointTy.getNumElements() != scaleTy.getNumElements())
       return rewriter.notifyMatchFailure(op,
