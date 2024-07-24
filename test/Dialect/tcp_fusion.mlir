@@ -54,18 +54,19 @@ func.func @test_multiple_fusions(%arg0 : tensor<?x?xf32>,
 
 // -----
 
-// Fusion with multiple uses where the def with multiple uses moves into an
-// already created group.
 
 // CHECK:   func.func @test_multi_use_fusion(%[[ARG0:.+]]: tensor<?x?xf32>, %[[ARG1:.+]]: tensor<?x?xf32>) -> tensor<?x?xf32> {
 // CHECK:     %[[V0:.+]] = tcp.group {
-// CHECK:       %[[V1:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V2:.+]] = tcp.add %[[V1]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V3:.+]] = tcp.sub %[[V2]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V4:.+]] = tcp.mul %[[V2]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       tcp.yield %[[V4]] : tensor<?x?xf32>
+// CHECK:       %[[V2:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V3:.+]] = tcp.add %[[V2]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V3]] : tensor<?x?xf32>
 // CHECK:     } : tensor<?x?xf32>
-// CHECK:     return %[[V0]] : tensor<?x?xf32>
+// CHECK:     %[[V1:.+]] = tcp.group {
+// CHECK:       %[[V2]] = tcp.sub %[[V0]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V3]] = tcp.mul %[[V0]], %[[V2]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V3]] : tensor<?x?xf32>
+// CHECK:     } : tensor<?x?xf32>
+// CHECK:     return %[[V1]] : tensor<?x?xf32>
 // CHECK:   }
 func.func @test_multi_use_fusion(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> tensor<?x?xf32> {
   %0 = tcp.tanh %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
@@ -77,18 +78,20 @@ func.func @test_multi_use_fusion(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32
 
 // -----
 
-// Fusion with multiple uses where the def and the multiple uses create a
-// new group. Here we test that the moves use the dominance correctly.
+// This and the previous test used to create a single fused group in
+// earlier versions of the fusion algorithm. However, that algorithm had a
+// bug causing us to revert to a simpler algo which does not create a
+// single group for this sequence.
 
 // CHECK:   func.func @test_multi_use_fusion(%[[ARG0:.+]]: tensor<?x?xf32>, %[[ARG1:.+]]: tensor<?x?xf32>) -> (tensor<?x?xf32>, tensor<?x?xf32>) {
-// CHECK:     %[[V0:.+]]:2 = tcp.group {
-// CHECK:       %[[V1:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V2:.+]] = tcp.add %[[V1]], %[[V1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V3:.+]] = tcp.sub %[[V2]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V4:.+]] = tcp.mul %[[V2]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       tcp.yield %[[V3]], %[[V4]] : tensor<?x?xf32>, tensor<?x?xf32>
-// CHECK:     } : tensor<?x?xf32>, tensor<?x?xf32>
-// CHECK:     return %[[V0]]#0, %[[V0]]#1 : tensor<?x?xf32>, tensor<?x?xf32>
+// CHECK:     %[[V0:.+]] = tcp.group {
+// CHECK:       %[[V3:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V4:.+]] = tcp.add %[[V3]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V4]] : tensor<?x?xf32>
+// CHECK:     } : tensor<?x?xf32>
+// CHECK:     %[[V1:.+]] = tcp.sub %[[V0]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     %[[V2:.+]] = tcp.mul %[[V0]], %[[V1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     return %[[V1]], %[[V2]] : tensor<?x?xf32>, tensor<?x?xf32>
 // CHECK:   }
 func.func @test_multi_use_fusion(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> (tensor<?x?xf32>, tensor<?x?xf32>)  {
   %0 = tcp.tanh %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
@@ -139,18 +142,18 @@ func.func @test_fusion_with_symbolic_shape(%arg0 : tensor<?x?xf32>, %arg1 : tens
 // CHECK:     %[[V0:.+]] = tcp.symbolic_int "s0" {min_val = 2, max_val = 9223372036854775806} : i64
 // CHECK:     %[[V1:.+]] = tcp.symbolic_int "s1" {min_val = 2, max_val = 9223372036854775806} : i64
 // CHECK:     tcp.bind_symbolic_shape %[[ARG0]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
-// CHECK:     %[[V2:.+]]:2 = tcp.group {
-// CHECK:       %[[V3:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       tcp.bind_symbolic_shape %[[V3]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
-// CHECK:       %[[V4:.+]] = tcp.add %[[V3]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       tcp.bind_symbolic_shape %[[V4]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
-// CHECK:       %[[V5:.+]] = tcp.sub %[[V4]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V6:.+]] = tcp.mul %[[V4]], %[[V5]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       tcp.yield %[[V5]], %[[V6]] : tensor<?x?xf32>, tensor<?x?xf32>
-// CHECK:     } : tensor<?x?xf32>, tensor<?x?xf32>
-// CHECK:     tcp.bind_symbolic_shape %[[V2]]#0, [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
-// CHECK:     tcp.bind_symbolic_shape %[[V2]]#1, [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
-// CHECK:     return %[[V2]]#0, %[[V2]]#1 : tensor<?x?xf32>, tensor<?x?xf32>
+// CHECK:     %[[V2:.+]] = tcp.group {
+// CHECK:       %[[V5:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.bind_symbolic_shape %[[V5]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:       %[[V6:.+]] = tcp.add %[[V5]], %[[V5]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V6]] : tensor<?x?xf32>
+// CHECK:     } : tensor<?x?xf32>
+// CHECK:     tcp.bind_symbolic_shape %[[V2]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:     %[[V3:.+]] = tcp.sub %[[V2]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     tcp.bind_symbolic_shape %[[V3]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:     %[[V4:.+]] = tcp.mul %[[V2]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     tcp.bind_symbolic_shape %[[V4]], [%[[V0]], %[[V1]]], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
+// CHECK:     return %[[V3]], %[[V4]] : tensor<?x?xf32>, tensor<?x?xf32>
 // CHECK:   }
 func.func @test_multi_use_fusion_with_sym_shapes(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> (tensor<?x?xf32>, tensor<?x?xf32>)  {
   %s0 = tcp.symbolic_int "s0" {min_val = 2, max_val = 9223372036854775806} : i64
@@ -166,4 +169,41 @@ func.func @test_multi_use_fusion_with_sym_shapes(%arg0 : tensor<?x?xf32>, %arg1 
   %3 = tcp.mul %1, %2 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
   tcp.bind_symbolic_shape %3, [%s0, %s1], affine_map<()[s0, s1] -> (s0, s1)> : tensor<?x?xf32>
   "func.return" (%2, %3) : (tensor<?x?xf32>, tensor<?x?xf32>) -> ()
+}
+
+
+// -----
+
+// This test shows why iterating over all the users of an op and then
+// fusing them together might lead to bugs. In this case, %0 is only used
+// by %2 and %5 and they are all element-wise ops. However, if we create a
+// tcp.group for them, there's no correct place to put the newly created
+// tcp.group without violating dominance for the other operands and uses of
+// %2 and %5.
+//
+// This change shows the need to start from a op and only look at its
+// operands to start a fusion operation.
+
+
+// CHECK:   func.func @buggy_tcp_fusion(%[[ARG0:.+]]: tensor<?x?xf32>, %[[ARG1:.+]]: tensor<?x?xf32>) -> tensor<?x?xf32> {
+// CHECK:     %[[V0:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     %[[V1:.+]] = tcp.custom_op("test.op") %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     %[[V2:.+]] = tcp.add %[[V0]], %[[V1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     %[[V3:.+]] = tcp.custom_op("test.op") %[[V2]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     %[[V4:.+]] = tcp.custom_op("test.op") %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     %[[V5:.+]] = tcp.mul %[[V0]], %[[V4]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     %[[V6:.+]] = tcp.custom_op("test.op") %[[V5]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:     return %[[V2]] : tensor<?x?xf32>
+// CHECK:   }
+func.func @buggy_tcp_fusion(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> (tensor<?x?xf32>)  {
+  %0 = tcp.tanh %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  
+  %1 = tcp.custom_op("test.op") %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  %2 = tcp.add %0, %1 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  %3 = tcp.custom_op("test.op") %2 : tensor<?x?xf32> -> tensor<?x?xf32>
+
+  %4 = tcp.custom_op("test.op") %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  %5 = tcp.mul %0, %4 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  %6 = tcp.custom_op("test.op") %5 : tensor<?x?xf32> -> tensor<?x?xf32>
+  return %2 : tensor<?x?xf32>
 }
