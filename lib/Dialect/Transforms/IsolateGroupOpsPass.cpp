@@ -31,7 +31,10 @@ namespace {
 
 class IsolateGroups : public OpRewritePattern<tcp::GroupOp> {
 public:
-  using OpRewritePattern::OpRewritePattern;
+  IsolateGroups(MLIRContext *ctx,
+                std::function<bool(Operation *)> shouldCopyConstPredicate)
+      : OpRewritePattern(ctx),
+        _shouldCopyConstPredicate(shouldCopyConstPredicate) {}
 
   LogicalResult matchAndRewrite(tcp::GroupOp groupOp,
                                 PatternRewriter &rewriter) const override {
@@ -46,7 +49,8 @@ public:
       for (auto operand : op.getOperands()) {
         if (defs.find(operand) == defs.end()) {
           if (operand.getDefiningOp() &&
-              operand.getDefiningOp()->hasTrait<OpTrait::ConstantLike>()) {
+              operand.getDefiningOp()->hasTrait<OpTrait::ConstantLike>() &&
+              _shouldCopyConstPredicate(operand.getDefiningOp())) {
             consts.insert(operand);
           } else if (!addedInputs.contains(operand)) {
             inputs.push_back(operand);
@@ -91,6 +95,8 @@ public:
     rewriter.eraseOp(groupOp);
     return success();
   }
+
+  std::function<bool(Operation *)> _shouldCopyConstPredicate;
 };
 
 class TcpIsolateGroupOpsPass
@@ -100,7 +106,8 @@ class TcpIsolateGroupOpsPass
     MLIRContext *context = op->getContext();
     RewritePatternSet patterns(context);
 
-    patterns.add<IsolateGroups>(context);
+    auto shouldCopyConstPredicate = [&](Operation *op) { return true; };
+    populateIsolateGroupPatterns(patterns, shouldCopyConstPredicate);
     if (failed(applyPatternsAndFoldGreedily(op, std::move(patterns))))
       return signalPassFailure();
   }
@@ -110,6 +117,13 @@ class TcpIsolateGroupOpsPass
 
 std::unique_ptr<OperationPass<ModuleOp>> createTcpIsolateGroupOpsPass() {
   return std::make_unique<TcpIsolateGroupOpsPass>();
+}
+
+void populateIsolateGroupPatterns(
+    RewritePatternSet &patterns,
+    std::function<bool(Operation *)> shouldCopyConstPredicate) {
+
+  patterns.add<IsolateGroups>(patterns.getContext(), shouldCopyConstPredicate);
 }
 
 } // namespace mlir::tcp
