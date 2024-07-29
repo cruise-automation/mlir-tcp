@@ -19,6 +19,7 @@ LogicalResult
 GenericBottomUpFuser::matchAndRewrite(Operation *op,
                                       PatternRewriter &rewriter) const {
   Operation *use = op;
+  bool opIsInsideGroup = op->getParentOfType<tcp::GroupOp>() != nullptr;
   bool isChanged = false;
   for (auto operand : op->getOperands()) {
     if (operand.getDefiningOp()) {
@@ -39,19 +40,37 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
         // We only support fusing def ops that have exactly one use, for
         // now. Special-case the uses of the def in
         // tcp.bind_symbolic_shape
-        bool cannotFuse = false;
         SmallVector<tcp::BindSymbolicShapeOp> bindSymbolicUsersOfDef;
+        SmallVector<Operation *> otherUses;
         for (auto otherUserOfDef : def->getUsers()) {
           if (auto bindSymbolicShapeOp =
                   dyn_cast<tcp::BindSymbolicShapeOp>(otherUserOfDef)) {
             bindSymbolicUsersOfDef.push_back(bindSymbolicShapeOp);
-          } else if (otherUserOfDef != use) {
-            cannotFuse = true;
-            break;
+          } else {
+            otherUses.push_back(otherUserOfDef);
           }
         }
 
-        if (cannotFuse)
+        bool canFuse = false;
+        if (otherUses.size() > 1) {
+          // If we have more than one use, either
+          // 1. All those uses are used by the current op
+          if (llvm::all_of(otherUses,
+                           [&](Operation *userOp) { return userOp == op; }))
+            canFuse = true;
+
+          // 2. All those uses are in the same group as the current op
+          if (opIsInsideGroup &&
+              llvm::all_of(otherUses, [&](Operation *userOp) {
+                return userOp->getParentRegion() == op->getParentRegion();
+              }))
+            canFuse = true;
+        } else if (otherUses.size() == 1) {
+          // If we have exactly one use, then we can fuse.
+          canFuse = true;
+        }
+
+        if (!canFuse)
           continue;
 
         // Fuse the def and use ops into a group.
@@ -84,6 +103,10 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
             def->moveBefore(use);
           }
         } else if (auto groupOp = dyn_cast<tcp::GroupOp>(use->getParentOp())) {
+          // We already know that all other uses are in the same group
+          // and because we are doing this bottom up, this is the "first"
+          // use of this op in this group. So its OK to move it to just
+          // before this use.
           def->moveBefore(use);
         } else {
           llvm_unreachable("Unhandled case during fusion");
