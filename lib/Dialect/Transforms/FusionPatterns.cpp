@@ -37,9 +37,6 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
           continue;
         }
 
-        // We only support fusing def ops that have exactly one use, for
-        // now. Special-case the uses of the def in
-        // tcp.bind_symbolic_shape
         SmallVector<tcp::BindSymbolicShapeOp> bindSymbolicUsersOfDef;
         SmallVector<Operation *> otherUses;
         for (auto otherUserOfDef : def->getUsers()) {
@@ -51,26 +48,37 @@ GenericBottomUpFuser::matchAndRewrite(Operation *op,
           }
         }
 
-        bool canFuse = false;
+        // Check that all the uses of this def are still valid after we
+        // move the def op. If there's a single use, its always safe to
+        // fuse with the def. For the case when we have more than 1 use,
+        // see below for when it is safe to fuse with the def.
+        bool areUsesValidForFusion = false;
         if (otherUses.size() > 1) {
           // If we have more than one use, either
           // 1. All those uses are used by the current op
           if (llvm::all_of(otherUses,
                            [&](Operation *userOp) { return userOp == op; }))
-            canFuse = true;
+            areUsesValidForFusion = true;
 
-          // 2. All those uses are in the same group as the current op
+          // 2. All those uses are in the same group as the current op.
+          // NOTE: We are checking here that the original op is already
+          // inside a group and that all the other uses of this def are in
+          // that group. That means that we can safely move this def to the
+          // beginning of the group.
+          //
+          // We cannot do this if the use is not inside a group because
+          // then we are creating a new group.
           if (opIsInsideGroup &&
               llvm::all_of(otherUses, [&](Operation *userOp) {
                 return userOp->getParentRegion() == op->getParentRegion();
               }))
-            canFuse = true;
+            areUsesValidForFusion = true;
         } else if (otherUses.size() == 1) {
           // If we have exactly one use, then we can fuse.
-          canFuse = true;
+          areUsesValidForFusion = true;
         }
 
-        if (!canFuse)
+        if (!areUsesValidForFusion)
           continue;
 
         // Fuse the def and use ops into a group.
