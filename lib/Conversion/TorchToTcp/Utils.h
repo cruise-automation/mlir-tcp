@@ -28,9 +28,14 @@ getTcpSignednessAttr(MLIRContext *context,
 Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
                                  Value input, int64_t rankIncrease);
 
+// Broadcasts the rank of the input tensor from 0D or 1D to ND. If the input
+// tensor is 1D, `axisInOutput` specifies the axis where the input axis should
+// end up in the output.
 Value broadcastRank0Dor1DToND(ConversionPatternRewriter &rewriter, Value input,
                               int64_t targetRank, int64_t axisInOutput);
 
+// Broadcasts the shape of the input tensor to match the shape of the target
+// tensor in all dims except the dims specified in `dimsToExclude`.
 Value broadcastShapeExceptDims(ConversionPatternRewriter &rewriter, Value input,
                                Value target,
                                llvm::SmallDenseSet<int64_t> dimsToExclude);

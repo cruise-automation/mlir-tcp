@@ -68,7 +68,6 @@ Value broadcastRank0Dor1DToND(ConversionPatternRewriter &rewriter, Value input,
   auto inputRank = inputType.getRank();
   assert(inputRank < 2 && "Only 0D and 1D tensors are supported!");
 
-  // First: Broadcast Rank
   // Case 1: 0D -> ND
   // [] -> [1, 1, 1, 1]
   // reassociation map = [[]]
@@ -194,27 +193,9 @@ Value broadcast0DOr1DToNDAndMatchShape(ConversionPatternRewriter &rewriter,
   // This utility only accepts 0D and 1D inputs
   assert(inputRank < 2 && "Only 0D and 1D tensors are supported!");
 
-  Value result = input;
-
   // First: Broadcast Rank
-  // Case 1: 0D -> ND
-  // [] -> [1, 1, 1, 1]
-  // reassociation map = [[]]
-  // Case 2: 1D -> ND
-  // [C] -> [1, C, 1, 1] if axisInOutput = 1
-  // reassociation map = [[0, 1, 2, 3]]
-  SmallVector<ReassociationExprs> reassociationMap(inputRank);
-  SmallVector<int64_t> resultShape(targetRank, 1);
-  if (inputRank == 1) {
-    for (int64_t axis = 0; axis < targetRank; ++axis)
-      reassociationMap[0].push_back(rewriter.getAffineDimExpr(axis));
-    resultShape[axisInOutput] = inputType.getShape()[0];
-  }
-  Type expandResultType =
-      targetType.cloneWith(ArrayRef(resultShape), resultType);
-  result = rewriter.create<tensor::ExpandShapeOp>(
-      result.getDefiningOp()->getLoc(), expandResultType, input,
-      reassociationMap);
+  Value result =
+      broadcastRank0Dor1DToND(rewriter, input, targetRank, axisInOutput);
 
   // Second: Broadcast Shape
   // Case 1: 0D -> ND
