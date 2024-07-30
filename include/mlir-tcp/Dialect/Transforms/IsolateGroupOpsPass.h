@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "mlir-tcp/Dialect/IR/TcpOps.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
 #include <memory>
@@ -26,6 +27,6 @@ createTcpIsolateGroupOpsPass();
 // as an argument to the isolated group.
 void populateIsolateGroupPatterns(
     RewritePatternSet &patterns,
-    std::function<bool(Operation *)> shouldCopyConstPredicate);
+    std::function<bool(GroupOp, Value)> shouldCopyConstPredicate);
 
 } // namespace mlir::tcp

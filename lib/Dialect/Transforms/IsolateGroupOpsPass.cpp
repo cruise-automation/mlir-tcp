@@ -29,14 +29,16 @@ namespace mlir::tcp {
 
 namespace {
 
-class IsolateGroups : public OpRewritePattern<tcp::GroupOp> {
+class IsolateGroups : public OpRewritePattern<GroupOp> {
 public:
-  IsolateGroups(MLIRContext *ctx,
-                std::function<bool(Operation *)> shouldCopyConstPredicate)
-      : OpRewritePattern(ctx),
-        _shouldCopyConstPredicate(shouldCopyConstPredicate) {}
+  using OpRewritePattern<GroupOp>::OpRewritePattern;
 
-  LogicalResult matchAndRewrite(tcp::GroupOp groupOp,
+  IsolateGroups(MLIRContext *context,
+                std::function<bool(tcp::GroupOp, Value)> shouldInlineConst)
+      : OpRewritePattern<GroupOp>(context),
+        shouldInlineConst_(shouldInlineConst) {}
+
+  LogicalResult matchAndRewrite(GroupOp groupOp,
                                 PatternRewriter &rewriter) const override {
     // Collect the values used in the given GroupOp. Those will be the inputs
     // to the IsolatedGroup op. The constants used in the GroupOp are collected
@@ -44,13 +46,17 @@ public:
     llvm::SmallVector<Value> inputs;
     llvm::SmallDenseSet<Value> addedInputs;
     llvm::SmallDenseSet<Value> consts;
-    llvm::SmallDenseSet<Value> defs;
-    for (auto &op : groupOp.getBody().front()) {
-      for (auto operand : op.getOperands()) {
-        if (defs.find(operand) == defs.end()) {
+
+    groupOp->walk([&](Operation *op) {
+      for (auto operand : op->getOperands()) {
+        auto operandDefiningOp = operand.getDefiningOp();
+        if (!operandDefiningOp) {
+          operandDefiningOp = operand.getParentBlock()->getParentOp();
+        }
+        if (!groupOp->isProperAncestor(operandDefiningOp)) {
           if (operand.getDefiningOp() &&
               operand.getDefiningOp()->hasTrait<OpTrait::ConstantLike>() &&
-              _shouldCopyConstPredicate(operand.getDefiningOp())) {
+              shouldInlineConst_(groupOp, operand)) {
             consts.insert(operand);
           } else if (!addedInputs.contains(operand)) {
             inputs.push_back(operand);
@@ -58,20 +64,20 @@ public:
           }
         }
       }
-      defs.insert(op.getResults().begin(), op.getResults().end());
-    }
+    });
 
-    auto isolatedGroupOp = rewriter.create<tcp::IsolatedGroupOp>(
+    auto isolatedGroupOp = rewriter.create<IsolatedGroupOp>(
         groupOp.getLoc(), groupOp.getResultTypes(), inputs);
     isolatedGroupOp->setAttrs(groupOp->getAttrs());
 
     isolatedGroupOp.getBody().takeBody(groupOp.getBody());
+
     auto &isolatedGroupBlock = isolatedGroupOp.getBody().front();
     {
       OpBuilder::InsertionGuard guard(rewriter);
       rewriter.setInsertionPointToStart(&isolatedGroupBlock);
       auto belongsToIsolatedGroup = [&](OpOperand &opOperand) {
-        return (opOperand.getOwner()->getParentOp() == isolatedGroupOp);
+        return (isolatedGroupOp->isProperAncestor(opOperand.getOwner()));
       };
 
       // Clone the constants at the start of the isolated group block.
@@ -96,7 +102,7 @@ public:
     return success();
   }
 
-  std::function<bool(Operation *)> _shouldCopyConstPredicate;
+  std::function<bool(tcp::GroupOp, Value)> shouldInlineConst_;
 };
 
 class TcpIsolateGroupOpsPass
@@ -106,7 +112,7 @@ class TcpIsolateGroupOpsPass
     MLIRContext *context = op->getContext();
     RewritePatternSet patterns(context);
 
-    auto shouldCopyConstPredicate = [&](Operation *op) { return true; };
+    auto shouldCopyConstPredicate = [&](tcp::GroupOp, Value) { return true; };
     populateIsolateGroupPatterns(patterns, shouldCopyConstPredicate);
     if (failed(applyPatternsAndFoldGreedily(op, std::move(patterns))))
       return signalPassFailure();
@@ -121,7 +127,7 @@ std::unique_ptr<OperationPass<ModuleOp>> createTcpIsolateGroupOpsPass() {
 
 void populateIsolateGroupPatterns(
     RewritePatternSet &patterns,
-    std::function<bool(Operation *)> shouldCopyConstPredicate) {
+    std::function<bool(tcp::GroupOp, Value)> shouldCopyConstPredicate) {
 
   patterns.add<IsolateGroups>(patterns.getContext(), shouldCopyConstPredicate);
 }
