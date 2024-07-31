@@ -57,16 +57,13 @@ func.func @test_multiple_fusions(%arg0 : tensor<?x?xf32>,
 
 // CHECK:   func.func @test_multi_use_fusion(%[[ARG0:.+]]: tensor<?x?xf32>, %[[ARG1:.+]]: tensor<?x?xf32>) -> tensor<?x?xf32> {
 // CHECK:     %[[V0:.+]] = tcp.group {
-// CHECK:       %[[V2:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V3:.+]] = tcp.add %[[V2]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       tcp.yield %[[V3]] : tensor<?x?xf32>
+// CHECK:       %[[V1:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V2:.+]] = tcp.add %[[V1]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V3:.+]] = tcp.sub %[[V2]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V4:.+]] = tcp.mul %[[V2]], %[[V3]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V4]] : tensor<?x?xf32>
 // CHECK:     } : tensor<?x?xf32>
-// CHECK:     %[[V1:.+]] = tcp.group {
-// CHECK:       %[[V2]] = tcp.sub %[[V0]], %[[ARG1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       %[[V3]] = tcp.mul %[[V0]], %[[V2]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
-// CHECK:       tcp.yield %[[V3]] : tensor<?x?xf32>
-// CHECK:     } : tensor<?x?xf32>
-// CHECK:     return %[[V1]] : tensor<?x?xf32>
+// CHECK:     return %[[V0]] : tensor<?x?xf32>
 // CHECK:   }
 func.func @test_multi_use_fusion(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> tensor<?x?xf32> {
   %0 = tcp.tanh %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
@@ -206,4 +203,23 @@ func.func @buggy_tcp_fusion(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) ->
   %5 = tcp.mul %0, %4 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
   %6 = tcp.custom_op("test.op") %5 : tensor<?x?xf32> -> tensor<?x?xf32>
   return %2 : tensor<?x?xf32>
+}
+
+// -----
+
+// Make sure that things do not break if a value is used twice by the same
+// op.
+
+// CHECK:   func.func @test_multi_use_fusion_same_op_uses(%[[ARG0:.+]]: tensor<?x?xf32>, %[[ARG1:.+]]: tensor<?x?xf32>) -> tensor<?x?xf32> {
+// CHECK:     %[[V0:.+]] = tcp.group {
+// CHECK:       %[[V1:.+]] = tcp.tanh %[[ARG0]] : tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       %[[V2:.+]] = tcp.mul %[[V1]], %[[V1]] : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+// CHECK:       tcp.yield %[[V2]] : tensor<?x?xf32>
+// CHECK:     } : tensor<?x?xf32>
+// CHECK:     return %[[V0]] : tensor<?x?xf32>
+// CHECK:   }
+func.func @test_multi_use_fusion_same_op_uses(%arg0 : tensor<?x?xf32>, %arg1 : tensor<?x?xf32>) -> tensor<?x?xf32> {
+  %0 = tcp.tanh %arg0 : tensor<?x?xf32> -> tensor<?x?xf32>
+  %3 = tcp.mul %0, %0 : tensor<?x?xf32>, tensor<?x?xf32> -> tensor<?x?xf32>
+  return %3 : tensor<?x?xf32>
 }
