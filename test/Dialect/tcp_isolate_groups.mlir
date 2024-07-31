@@ -175,3 +175,35 @@ func.func @forward(%arg0: tensor<?x4096xf32>, %arg1: tensor<?x4096xf32>, %arg2: 
   } : tensor<?x4096xf32>
   return %0 : tensor<?x4096xf32>
 }
+
+// -----
+
+// Ensure that we correctly drop `tcp.bind_symbolic_shape` ops within the
+// newly created tcp.isolated_group region.
+
+// CHECK:   func.func @test_symbolic_shape_ops(%[[ARG0:.+]]: tensor<?x3xf32>) -> tensor<?x3xf32> {
+// CHECK:     %[[V0:.+]] = tcp.symbolic_int "s0" {min_val = 2, max_val = 9223372036854775806} : i64
+// CHECK:     tcp.bind_symbolic_shape %[[ARG0]], [%[[V0]]], affine_map<()[s0] -> (s0, 3)> : tensor<?x3xf32>
+// CHECK:     %[[V1:.+]] = tcp.isolated_group %[[ARG0]] {
+// CHECK:     ^bb0(%[[ARG1:.+]]: tensor<?x3xf32>):
+// CHECK:       %[[V2:.+]] = tcp.add %[[ARG1]], %[[ARG1]] : tensor<?x3xf32>, tensor<?x3xf32> -> tensor<?x3xf32>
+// CHECK-NOT: tcp.bind_symbolic_shape
+// CHECK:       %[[V3:.+]] = tcp.mul %[[V2]], %[[V2]] : tensor<?x3xf32>, tensor<?x3xf32> -> tensor<?x3xf32>
+// CHECK:       tcp.yield %[[V3]] : tensor<?x3xf32>
+// CHECK:     } : tensor<?x3xf32> -> tensor<?x3xf32>
+// CHECK:     tcp.bind_symbolic_shape %[[V1]], [%[[V0]]], affine_map<()[s0] -> (s0, 3)> : tensor<?x3xf32>
+// CHECK:     return %[[V1]] : tensor<?x3xf32>
+// CHECK:   }
+func.func @test_symbolic_shape_ops(%arg0 : tensor<?x3xf32>) -> tensor<?x3xf32> {
+  %0 = tcp.symbolic_int "s0" {min_val = 2, max_val = 9223372036854775806} : i64
+  tcp.bind_symbolic_shape %arg0, [%0], affine_map<()[s0] -> (s0, 3)> : tensor<?x3xf32>
+  %10 = "tcp.group" () ({
+    ^bb0() :
+      %2 = tcp.add %arg0, %arg0 : tensor<?x3xf32>, tensor<?x3xf32> -> tensor<?x3xf32>
+      tcp.bind_symbolic_shape %2, [%0], affine_map<()[s0] -> (s0, 3)> : tensor<?x3xf32>
+      %3 = tcp.mul %2, %2 : tensor<?x3xf32>, tensor<?x3xf32> -> tensor<?x3xf32>
+      tcp.yield %3 : tensor<?x3xf32>
+  }) : () -> tensor<?x3xf32>
+  tcp.bind_symbolic_shape %10, [%0], affine_map<()[s0] -> (s0, 3)> : tensor<?x3xf32>
+  return %10 : tensor<?x3xf32>
+}

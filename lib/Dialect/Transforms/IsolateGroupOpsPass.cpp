@@ -105,6 +105,20 @@ public:
   std::function<bool(tcp::GroupOp, Value)> shouldInlineConst_;
 };
 
+class DropSymbolicShapesInsideGroups
+    : public OpRewritePattern<BindSymbolicShapeOp> {
+  using OpRewritePattern<BindSymbolicShapeOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(BindSymbolicShapeOp shapeOp,
+                                PatternRewriter &rewriter) const override {
+    if (isa<tcp::GroupOp>(shapeOp->getParentOp())) {
+      rewriter.eraseOp(shapeOp);
+      return success();
+    }
+    return failure();
+  }
+};
+
 class TcpIsolateGroupOpsPass
     : public TcpIsolateGroupOpsBase<TcpIsolateGroupOpsPass> {
   void runOnOperation() override {
@@ -130,6 +144,7 @@ void populateIsolateGroupPatterns(
     std::function<bool(tcp::GroupOp, Value)> shouldCopyConstPredicate) {
 
   patterns.add<IsolateGroups>(patterns.getContext(), shouldCopyConstPredicate);
+  patterns.add<DropSymbolicShapesInsideGroups>(patterns.getContext());
 }
 
 } // namespace mlir::tcp
