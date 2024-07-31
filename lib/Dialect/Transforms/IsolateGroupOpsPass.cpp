@@ -31,14 +31,12 @@ namespace {
 
 class IsolateGroups : public OpRewritePattern<GroupOp> {
 public:
-  using OpRewritePattern<GroupOp>::OpRewritePattern;
-
   IsolateGroups(MLIRContext *context,
                 std::function<bool(tcp::GroupOp, Value)> shouldInlineConst)
       : OpRewritePattern<GroupOp>(context),
         shouldInlineConst_(shouldInlineConst) {}
 
-  LogicalResult matchAndRewrite(GroupOp groupOp,
+  LogicalResult matchAndRewrite(tcp::GroupOp groupOp,
                                 PatternRewriter &rewriter) const override {
     // Collect the values used in the given GroupOp. Those will be the inputs
     // to the IsolatedGroup op. The constants used in the GroupOp are collected
@@ -49,10 +47,14 @@ public:
 
     groupOp->walk([&](Operation *op) {
       for (auto operand : op->getOperands()) {
+        // Find the operation defining this Value, or whose block argument
+        // this Value is.
         auto operandDefiningOp = operand.getDefiningOp();
         if (!operandDefiningOp) {
           operandDefiningOp = operand.getParentBlock()->getParentOp();
         }
+        // If that operation lives outside the group, we need to add it as
+        // an input to the newly created isolated group.
         if (!groupOp->isProperAncestor(operandDefiningOp)) {
           if (operand.getDefiningOp() &&
               operand.getDefiningOp()->hasTrait<OpTrait::ConstantLike>() &&
@@ -66,7 +68,7 @@ public:
       }
     });
 
-    auto isolatedGroupOp = rewriter.create<IsolatedGroupOp>(
+    auto isolatedGroupOp = rewriter.create<tcp::IsolatedGroupOp>(
         groupOp.getLoc(), groupOp.getResultTypes(), inputs);
     isolatedGroupOp->setAttrs(groupOp->getAttrs());
 
@@ -102,14 +104,15 @@ public:
     return success();
   }
 
+private:
   std::function<bool(tcp::GroupOp, Value)> shouldInlineConst_;
 };
 
 class DropSymbolicShapesInsideGroups
-    : public OpRewritePattern<BindSymbolicShapeOp> {
-  using OpRewritePattern<BindSymbolicShapeOp>::OpRewritePattern;
+    : public OpRewritePattern<tcp::BindSymbolicShapeOp> {
+  using OpRewritePattern<tcp::BindSymbolicShapeOp>::OpRewritePattern;
 
-  LogicalResult matchAndRewrite(BindSymbolicShapeOp shapeOp,
+  LogicalResult matchAndRewrite(tcp::BindSymbolicShapeOp shapeOp,
                                 PatternRewriter &rewriter) const override {
     if (isa<tcp::GroupOp>(shapeOp->getParentOp())) {
       rewriter.eraseOp(shapeOp);
