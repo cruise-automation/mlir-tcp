@@ -29,9 +29,12 @@ namespace mlir::tcp {
 
 namespace {
 
-class IsolateGroups : public OpRewritePattern<tcp::GroupOp> {
+class IsolateGroups : public OpRewritePattern<GroupOp> {
 public:
-  using OpRewritePattern::OpRewritePattern;
+  IsolateGroups(MLIRContext *context,
+                std::function<bool(tcp::GroupOp, Value)> shouldInlineConst)
+      : OpRewritePattern<GroupOp>(context),
+        shouldInlineConst_(shouldInlineConst) {}
 
   LogicalResult matchAndRewrite(tcp::GroupOp groupOp,
                                 PatternRewriter &rewriter) const override {
@@ -41,12 +44,21 @@ public:
     llvm::SmallVector<Value> inputs;
     llvm::SmallDenseSet<Value> addedInputs;
     llvm::SmallDenseSet<Value> consts;
-    llvm::SmallDenseSet<Value> defs;
-    for (auto &op : groupOp.getBody().front()) {
-      for (auto operand : op.getOperands()) {
-        if (defs.find(operand) == defs.end()) {
+
+    groupOp->walk([&](Operation *op) {
+      for (auto operand : op->getOperands()) {
+        // Find the operation defining this Value, or whose block argument
+        // this Value is.
+        auto operandDefiningOp = operand.getDefiningOp();
+        if (!operandDefiningOp) {
+          operandDefiningOp = operand.getParentBlock()->getParentOp();
+        }
+        // If that operation lives outside the group, we need to add it as
+        // an input to the newly created isolated group.
+        if (!groupOp->isProperAncestor(operandDefiningOp)) {
           if (operand.getDefiningOp() &&
-              operand.getDefiningOp()->hasTrait<OpTrait::ConstantLike>()) {
+              operand.getDefiningOp()->hasTrait<OpTrait::ConstantLike>() &&
+              shouldInlineConst_(groupOp, operand)) {
             consts.insert(operand);
           } else if (!addedInputs.contains(operand)) {
             inputs.push_back(operand);
@@ -54,20 +66,20 @@ public:
           }
         }
       }
-      defs.insert(op.getResults().begin(), op.getResults().end());
-    }
+    });
 
     auto isolatedGroupOp = rewriter.create<tcp::IsolatedGroupOp>(
         groupOp.getLoc(), groupOp.getResultTypes(), inputs);
     isolatedGroupOp->setAttrs(groupOp->getAttrs());
 
     isolatedGroupOp.getBody().takeBody(groupOp.getBody());
+
     auto &isolatedGroupBlock = isolatedGroupOp.getBody().front();
     {
       OpBuilder::InsertionGuard guard(rewriter);
       rewriter.setInsertionPointToStart(&isolatedGroupBlock);
       auto belongsToIsolatedGroup = [&](OpOperand &opOperand) {
-        return (opOperand.getOwner()->getParentOp() == isolatedGroupOp);
+        return (isolatedGroupOp->isProperAncestor(opOperand.getOwner()));
       };
 
       // Clone the constants at the start of the isolated group block.
@@ -91,6 +103,23 @@ public:
     rewriter.eraseOp(groupOp);
     return success();
   }
+
+private:
+  std::function<bool(tcp::GroupOp, Value)> shouldInlineConst_;
+};
+
+class DropSymbolicShapesInsideGroups
+    : public OpRewritePattern<tcp::BindSymbolicShapeOp> {
+  using OpRewritePattern<tcp::BindSymbolicShapeOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(tcp::BindSymbolicShapeOp shapeOp,
+                                PatternRewriter &rewriter) const override {
+    if (isa<tcp::GroupOp>(shapeOp->getParentOp())) {
+      rewriter.eraseOp(shapeOp);
+      return success();
+    }
+    return failure();
+  }
 };
 
 class TcpIsolateGroupOpsPass
@@ -100,7 +129,8 @@ class TcpIsolateGroupOpsPass
     MLIRContext *context = op->getContext();
     RewritePatternSet patterns(context);
 
-    patterns.add<IsolateGroups>(context);
+    auto shouldCopyConstPredicate = [&](tcp::GroupOp, Value) { return true; };
+    populateIsolateGroupPatterns(patterns, shouldCopyConstPredicate);
     if (failed(applyPatternsAndFoldGreedily(op, std::move(patterns))))
       return signalPassFailure();
   }
@@ -110,6 +140,14 @@ class TcpIsolateGroupOpsPass
 
 std::unique_ptr<OperationPass<ModuleOp>> createTcpIsolateGroupOpsPass() {
   return std::make_unique<TcpIsolateGroupOpsPass>();
+}
+
+void populateIsolateGroupPatterns(
+    RewritePatternSet &patterns,
+    std::function<bool(tcp::GroupOp, Value)> shouldCopyConstPredicate) {
+
+  patterns.add<IsolateGroups>(patterns.getContext(), shouldCopyConstPredicate);
+  patterns.add<DropSymbolicShapesInsideGroups>(patterns.getContext());
 }
 
 } // namespace mlir::tcp
