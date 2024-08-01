@@ -62,6 +62,64 @@ Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
       input.getDefiningOp()->getLoc(), resultType, input, reassociationMap);
 }
 
+Value broadcastRank0Dor1DToND(ConversionPatternRewriter &rewriter, Value input,
+                              int64_t targetRank, int64_t axisInOutput) {
+  RankedTensorType inputType = input.getType().cast<RankedTensorType>();
+  auto inputRank = inputType.getRank();
+  assert(inputRank < 2 && "Only 0D and 1D tensors are supported!");
+
+  // Case 1: 0D -> ND
+  // [] -> [1, 1, 1, 1]
+  // reassociation map = [[]]
+  // Case 2: 1D -> ND
+  // [C] -> [1, C, 1, 1] if axisInOutput = 1
+  // reassociation map = [[0, 1, 2, 3]]
+  SmallVector<ReassociationExprs> reassociationMap(inputRank);
+  SmallVector<int64_t> resultShape(targetRank, 1);
+  if (inputRank == 1) {
+    for (int64_t axis = 0; axis < targetRank; ++axis)
+      reassociationMap[0].push_back(rewriter.getAffineDimExpr(axis));
+    resultShape[axisInOutput] = inputType.getShape()[0];
+  }
+  Type expandResultType =
+      inputType.cloneWith(ArrayRef(resultShape), inputType.getElementType());
+  return rewriter.create<tensor::ExpandShapeOp>(input.getDefiningOp()->getLoc(),
+                                                expandResultType, input,
+                                                reassociationMap);
+}
+
+Value broadcastShapeExceptDims(ConversionPatternRewriter &rewriter, Value input,
+                               Value target,
+                               llvm::SmallDenseSet<int64_t> dimsToExclude) {
+  RankedTensorType inputType = input.getType().cast<RankedTensorType>();
+  auto inputShape = inputType.getShape();
+
+  RankedTensorType targetType = target.getType().cast<RankedTensorType>();
+  auto targetShape = targetType.getShape();
+
+  SmallVector<int64_t> axes;
+  SmallVector<Value> dimSizes;
+  SmallVector<int64_t> resultShape;
+  // Ensure that dimsToBroadcast is sorted.
+  for (int64_t axis = 0; axis < targetType.getRank(); ++axis) {
+    if (dimsToExclude.contains(axis)) {
+      resultShape.push_back(inputShape[axis]);
+    } else {
+      resultShape.push_back(targetShape[axis]);
+      axes.push_back(axis);
+      dimSizes.push_back(rewriter.createOrFold<tensor::DimOp>(
+          input.getDefiningOp()->getLoc(), target, axis));
+    }
+  }
+  auto axesAttr = rewriter.getI64ArrayAttr(axes);
+
+  Type broadcastResultType =
+      inputType.cloneWith(resultShape, inputType.getElementType());
+  return rewriter.create<tcp::BroadcastOp>(input.getDefiningOp()->getLoc(),
+                                           broadcastResultType, input, dimSizes,
+                                           axesAttr);
+}
+
 // The parameters input are expected to be of RankedTensorType.
 std::pair<Value, Value>
 broadcastToMatchShape(ConversionPatternRewriter &rewriter, Value lhs,
@@ -135,27 +193,9 @@ Value broadcast0DOr1DToNDAndMatchShape(ConversionPatternRewriter &rewriter,
   // This utility only accepts 0D and 1D inputs
   assert(inputRank < 2 && "Only 0D and 1D tensors are supported!");
 
-  Value result = input;
-
   // First: Broadcast Rank
-  // Case 1: 0D -> ND
-  // [] -> [1, 1, 1, 1]
-  // reassociation map = [[]]
-  // Case 2: 1D -> ND
-  // [C] -> [1, C, 1, 1] if axisInOutput = 1
-  // reassociation map = [[0, 1, 2, 3]]
-  SmallVector<ReassociationExprs> reassociationMap(inputRank);
-  SmallVector<int64_t> resultShape(targetRank, 1);
-  if (inputRank == 1) {
-    for (int64_t axis = 0; axis < targetRank; ++axis)
-      reassociationMap[0].push_back(rewriter.getAffineDimExpr(axis));
-    resultShape[axisInOutput] = inputType.getShape()[0];
-  }
-  Type expandResultType =
-      targetType.cloneWith(ArrayRef(resultShape), resultType);
-  result = rewriter.create<tensor::ExpandShapeOp>(
-      result.getDefiningOp()->getLoc(), expandResultType, input,
-      reassociationMap);
+  Value result =
+      broadcastRank0Dor1DToND(rewriter, input, targetRank, axisInOutput);
 
   // Second: Broadcast Shape
   // Case 1: 0D -> ND
