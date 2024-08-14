@@ -113,17 +113,16 @@ public:
               ? true
               : staticDimSize != inputShape[i - newLeadingDims];
 
+      bool inputDimBroadcastable = newInputShape[i] == 1;
       // Note: The order of checks in this boolean expression matters!
-      if (isNewDim || isDynamicDim ||
-          (!isDimSizePreserved && doesDimSizeChange)) {
-        // only broadcast if the input dim size is 1
-        if (newInputShape[i] == 1) {
-          axes.push_back(i);
-          newDimSize = rewriter.create<torch::TorchConversion::ToI64Op>(
-              op->getLoc(), newDimSize);
-          resultShape.push_back(rewriter.create<arith::IndexCastOp>(
-              op->getLoc(), rewriter.getIndexType(), newDimSize));
-        }
+      bool outputDimBroadcastable = isNewDim || isDynamicDim ||
+                                    (!isDimSizePreserved && doesDimSizeChange);
+      if (inputDimBroadcastable && outputDimBroadcastable) {
+        axes.push_back(i);
+        newDimSize = rewriter.create<torch::TorchConversion::ToI64Op>(
+            op->getLoc(), newDimSize);
+        resultShape.push_back(rewriter.create<arith::IndexCastOp>(
+            op->getLoc(), rewriter.getIndexType(), newDimSize));
       }
     }
 
