@@ -82,6 +82,8 @@ public:
 
     SmallVector<int64_t> axes;
     SmallVector<Value> resultShape;
+    ArrayRef<int64_t> newInputShape =
+        input.getType().dyn_cast<RankedTensorType>().getShape();
     for (int64_t i = 0; i < static_cast<int64_t>(newDimSizes.size()); ++i) {
       Value newDimSize = newDimSizes[i];
 
@@ -114,11 +116,14 @@ public:
       // Note: The order of checks in this boolean expression matters!
       if (isNewDim || isDynamicDim ||
           (!isDimSizePreserved && doesDimSizeChange)) {
-        axes.push_back(i);
-        newDimSize = rewriter.create<torch::TorchConversion::ToI64Op>(
-            op->getLoc(), newDimSize);
-        resultShape.push_back(rewriter.create<arith::IndexCastOp>(
-            op->getLoc(), rewriter.getIndexType(), newDimSize));
+        // only broadcast if the input dim size is 1
+        if (newInputShape[i] == 1) {
+          axes.push_back(i);
+          newDimSize = rewriter.create<torch::TorchConversion::ToI64Op>(
+              op->getLoc(), newDimSize);
+          resultShape.push_back(rewriter.create<arith::IndexCastOp>(
+              op->getLoc(), rewriter.getIndexType(), newDimSize));
+        }
       }
     }
 
