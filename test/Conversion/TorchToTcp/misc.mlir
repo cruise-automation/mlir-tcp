@@ -397,6 +397,27 @@ func.func @torch.aten.broadcast_to(%arg0: !torch.vtensor<[1,2,1,2],f32>) -> !tor
 
 // -----
 
+// CHECK-LABEL:  @torch.aten.broadcast_to_with_dynamic_dim_input(
+// CHECK-SAME:   %[[ARG:.*]]: !torch.vtensor<[?,2736,1],f32>) -> !torch.vtensor<[?,2736,16],f32> {
+// CHECK:        %[[TENSOR:.*]] = torch_c.to_builtin_tensor %[[ARG]] : !torch.vtensor<[?,2736,1],f32> -> tensor<?x2736x1xf32>
+// CHECK:        %[[CONSTANT:.*]] = torch.constant.int 16
+// CHECK:        %[[CAST0:.*]] = torch_c.to_i64 %[[CONSTANT]]
+// CHECK:        %[[BROADCAST_DIM:.*]] = arith.index_cast %[[CAST0]] : i64 to index
+// CHECK:        %[[AFTER_BROADCAST:.*]] = tcp.broadcast %[[TENSOR]], %[[BROADCAST_DIM]] {axes = [2]} : tensor<?x2736x1xf32>, index -> tensor<?x2736x16xf32>
+// CHECK:        %[[OUT:.*]] = torch_c.from_builtin_tensor %[[AFTER_BROADCAST]] : tensor<?x2736x16xf32> -> !torch.vtensor<[?,2736,16],f32>
+// CHECK:        return %[[OUT]] : !torch.vtensor<[?,2736,16],f32>
+func.func @torch.aten.broadcast_to_with_dynamic_dim_input(%arg0: !torch.vtensor<[?,2736,1],f32>) -> !torch.vtensor<[?,2736,16],f32> {
+  %int0 = torch.constant.int 0
+  %int2736 = torch.constant.int 2736
+  %int16 = torch.constant.int 16
+  %0 = torch.aten.size.int %arg0, %int0 : !torch.vtensor<[?,2736,1],f32>, !torch.int -> !torch.int
+  %1 = torch.prim.ListConstruct %0, %int2736, %int16 : (!torch.int, !torch.int, !torch.int) -> !torch.list<int>
+  %2 = torch.aten.broadcast_to %arg0, %1 : !torch.vtensor<[?,2736,1],f32>, !torch.list<int> -> !torch.vtensor<[?,2736,16],f32>
+  return %2 : !torch.vtensor<[?,2736,16],f32>
+}
+
+// -----
+
 // CHECK-LABEL:  @torch.aten.broadcast_to_dynamic_dim(
 // CHECK-SAME:   %[[ARG0:.*]]: !torch.vtensor<[1,2],f32>, %[[ARG1:.*]]: !torch.vtensor<[?],f32>) -> !torch.vtensor<[?,2],f32> {
 // CHECK-DAG:    %[[ARG1_T:.*]] = torch_c.to_builtin_tensor %[[ARG1]] : !torch.vtensor<[?],f32> -> tensor<?xf32>
