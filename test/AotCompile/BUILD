@@ -35,6 +35,7 @@ AOT_TEST_SUITE = [
     ("broadcast_unit_dim_to_static_with_rank_increase", False),
     ("broadcast_unit_dim_to_dynamic_with_rank_increase", False),
     ("gather_elements", False),
+    ("gather_slices", False),
 ]
 
 py_library(

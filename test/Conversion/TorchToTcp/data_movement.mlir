@@ -46,3 +46,21 @@ func.func @torch.aten.gather(%arg0: !torch.vtensor<[1,4,3],f32>, %arg1: !torch.v
   %0 = torch.aten.gather %arg0, %int-1, %arg1, %false : !torch.vtensor<[1,4,3],f32>, !torch.int, !torch.vtensor<[1,4,2],si64>, !torch.bool -> !torch.vtensor<[1,4,2],f32>
   return %0 : !torch.vtensor<[1,4,2],f32>
 }
+
+// -----
+
+// CHECK-LABEL: @torch.aten.index_select
+// CHECK-SAME:       %[[ARG0:.+]]: !torch.vtensor<[4,3],f32>,
+// CHECK-SAME:       %[[ARG1:.+]]: !torch.vtensor<[2],si64>) -> !torch.vtensor<[4,2],f32>
+// CHECK:          %[[EXPAND_SHAPE:.+]] = tensor.expand_shape
+// CHECK-SAME:                                        tensor<2xi64> into tensor<1x2xi64>
+// CHECK:          %[[BROADCAST:.+]] = tcp.broadcast %[[EXPAND_SHAPE]], %{{.*}} {axes = [0]} : tensor<1x2xi64>, index -> tensor<4x2xi64>
+// CHECK:          %[[GATHER:.+]] = tcp.gather %{{.*}}, %[[BROADCAST]] {dim = 1 : index} :
+// CHECK-SAME:                          tensor<4x3xf32>, tensor<4x2xi64> -> tensor<4x2xf32>
+// CHECK:          %[[V3:.+]] = torch_c.from_builtin_tensor %[[GATHER]] : tensor<4x2xf32> -> !torch.vtensor<[4,2],f32>
+// CHECK:          return %[[V3]] : !torch.vtensor<[4,2],f32>
+func.func @torch.aten.index_select(%arg0: !torch.vtensor<[4,3],f32>, %arg1: !torch.vtensor<[2],si64>) -> !torch.vtensor<[4,2],f32> {
+  %int-1 = torch.constant.int -1
+  %0 = torch.aten.index_select %arg0, %int-1, %arg1: !torch.vtensor<[4,3],f32>, !torch.int, !torch.vtensor<[2],si64> -> !torch.vtensor<[4,2],f32>
+  return %0 : !torch.vtensor<[4,2],f32>
+}

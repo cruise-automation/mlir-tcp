@@ -236,6 +236,48 @@ public:
   }
 };
 
+class ConvertAtenIndexSelectOp : public OpConversionPattern<AtenIndexSelectOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenIndexSelectOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto input = adaptor.getSelf();
+    auto inputType = cast<RankedTensorType>(input.getType());
+    auto inputRank = inputType.getRank();
+
+    auto indices = adaptor.getIndex();
+    auto indicesRank = cast<RankedTensorType>(indices.getType()).getRank();
+    // As per the semantics of `torch.index_select` op, the indices is
+    // always a 1-D tensor. We enforce that check here as some of the
+    // utilities used below work only for that case.
+    if (indicesRank != 1)
+      return rewriter.notifyMatchFailure(op, "indices need to be 1-D");
+
+    RankedTensorType resultType = cast<RankedTensorType>(
+        getTypeConverter()->convertType(op->getResult(0).getType()));
+
+    int64_t dim = 0;
+    if (!matchPattern(op.getDim(), m_TorchConstantInt(&dim)))
+      return rewriter.notifyMatchFailure(
+          op, "dim on torch.index_select must be an int constant");
+    dim = Torch::toPositiveDim(dim, inputRank);
+    if (!isValidDim(dim, inputRank))
+      return rewriter.notifyMatchFailure(
+          op, "dim on torch.index_select is statically invalid");
+
+    auto indicesRankBroadcasted = torch_to_tcp::broadcastRank0Dor1DToND(
+        rewriter, indices, inputRank, dim);
+    auto indicesBroadcasted = torch_to_tcp::broadcastShapeExceptDims(
+        rewriter, indicesRankBroadcasted, input,
+        llvm::SmallDenseSet<int64_t>{dim});
+    rewriter.replaceOpWithNewOp<tcp::GatherOp>(
+        op, resultType, input, indicesBroadcasted, rewriter.getIndexAttr(dim));
+    return success();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateDataMovementPatternsAndLegality(
@@ -248,5 +290,8 @@ void torch_to_tcp::populateDataMovementPatternsAndLegality(
       typeConverter, patterns, target, convertTorchOpsSet);
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenGatherOp,
                                                    AtenGatherOp>(
+      typeConverter, patterns, target, convertTorchOpsSet);
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenIndexSelectOp,
+                                                   AtenIndexSelectOp>(
       typeConverter, patterns, target, convertTorchOpsSet);
 }
