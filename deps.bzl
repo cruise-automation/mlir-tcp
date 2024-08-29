@@ -95,6 +95,14 @@ def third_party_deps():
     )
 
     http_archive(
+        name = "pybind11",
+        build_file = "@llvm-raw//utils/bazel/third_party_build:pybind.BUILD",
+        sha256 = "201966a61dc826f1b1879a24a3317a1ec9214a918c8eb035be2f30c3e9cfbdcb",
+        strip_prefix = "pybind11-2.10.3",
+        url = "https://github.com/pybind/pybind11/archive/v2.10.3.zip",
+    )
+
+    http_archive(
         name = "com_google_googletest",
         sha256 = "b976cf4fd57b318afdb1bdb27fc708904b3e4bed482859eb94ba2b4bdd077fe2",
         urls = ["https://github.com/google/googletest/archive/f8d7d77c06936315286eb55f8de22cd23c188571.zip"],
