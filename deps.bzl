@@ -22,8 +22,8 @@ def third_party_deps():
             path = local_llvm_repo_path(),
         )
     else:
-        LLVM_COMMIT = "d16b21b17d13ecd88a068bb803df43e53d3b04ba"
-        LLVM_SHA256 = "3c4ef24844c944cb0d888fe2344d4410f91f5b681e81b3f62ec1833e2bc595a4"
+        LLVM_COMMIT = "f9031f00f2c90bc0af274b45ec3e169b5250a688"
+        LLVM_SHA256 = "695896a5c3b4011043c27a43ac17079ee725e2d72e3b664868f09626a187daf3"
         http_archive(
             name = "llvm-raw",
             build_file_content = "# empty",
@@ -39,8 +39,8 @@ def third_party_deps():
             path = local_torch_mlir_repo_path(),
         )
     else:
-        TORCH_MLIR_COMMIT = "0b46d1110aa9710a4c2935723c47dfe3d5c21fd3"
-        TORCH_MLIR_SHA256 = "0e1cbea20c667abd73775f77b27747be842ff7fd7b4ac304a02d1d40df5761b7"
+        TORCH_MLIR_COMMIT = "98e08023bbf71e00ab81e980eac9f7c96f1f24b4"
+        TORCH_MLIR_SHA256 = "b3bac5863c73dc97bde06a032a928fe0fe586c44c8005bdbb3edd9def056ef0d"
         http_archive(
             name = "torch-mlir-raw",
             build_file_content = "# empty",
@@ -55,8 +55,8 @@ def third_party_deps():
             path = local_stablehlo_repo_path(),
         )
     else:
-        STABLEHLO_COMMIT = "d41390c3a731ba038e6363f75fcd135e6f727039"
-        STABLEHLO_SHA256 = "f278ef6aa908a9b8be482481dd408a7d6887a5117a4d425a0cb4a95a242585cc"
+        STABLEHLO_COMMIT = "c28d55e91b4a5daaff18a33ce7e9bbd0f171256a"
+        STABLEHLO_SHA256 = "b7c18132c092ec60604e8869685a745a2b31fc1edfc64caf5b19ddce0f1cee60"
         http_archive(
             name = "stablehlo",
             sha256 = STABLEHLO_SHA256,
