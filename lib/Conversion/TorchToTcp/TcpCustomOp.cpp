@@ -214,6 +214,26 @@ public:
   }
 };
 
+class ConvertAtenTopkOp : public OpConversionPattern<AtenTopkOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenTopkOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+
+    helper.addIntAttr("k", op.getK());
+    helper.addIntAttr("dim", op.getDim());
+    helper.addBoolAttr("largest", op.getLargest());
+    helper.addBoolAttr("sorted", op.getSorted());
+
+    return helper.replace();
+  }
+};
+
 class ConvertAtenSortOp : public OpConversionPattern<AtenSortOp> {
 public:
   using OpConversionPattern::OpConversionPattern;
@@ -284,6 +304,7 @@ public:
         getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
 
     SmallVector<int64_t> size;
+    // static shape will be handled through TOSA dialect
     if (matchPattern(op.getSize(), m_TorchListOfConstantInts(size)) &&
         srcType.hasStaticShape() && resultType.hasStaticShape())
       return rewriter.notifyMatchFailure(op, "only dynamic shape is supported");
@@ -298,8 +319,15 @@ public:
     int idx = 0;
     for (Value value : listConstruct.getElements()) {
       int64_t dimSize;
-      if (!matchPattern(value, m_TorchConstantInt(&dimSize))) {
+      if (matchPattern(value, m_TorchConstantInt(&dimSize))) {
+        size.push_back(dimSize);
+      } else {
         size.push_back(ShapedType::kDynamic);
+        // dynamic shape should follow pattern:
+        // %dim_32 = tensor.dim %arg1, %c0 : tensor<?x2736x16xf32>
+        // %1 = arith.index_cast %dim_32 : index to i64
+        // %2 = torch_c.from_i64 %1
+        // %3 = torch.prim.ListConstruct %2 ...
         if (!isa<TorchConversion::FromI64Op>(value.getDefiningOp()))
           return rewriter.notifyMatchFailure(
               op, "dynamic dim size should come from FromI64Op");
@@ -316,8 +344,7 @@ public:
         auto dimOp =
             dyn_cast<tensor::DimOp>(indexCastOp.getIn().getDefiningOp());
         helper.addOperand("idx_" + std::to_string(idx), dimOp);
-      } else
-        size.push_back(dimSize);
+      }
       idx++;
     }
     helper.addDenseIntArrayAttr("size", size);
@@ -342,6 +369,7 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(
       AtenFakeQuantizePerTensorAffineTensorQparamsOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenFakeQuantizePerChannelAffineOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenTopkOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenSortOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenCumsumOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenMinDimOp);

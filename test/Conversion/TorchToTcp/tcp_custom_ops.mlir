@@ -257,6 +257,23 @@ func.func @torch.aten.fake_quantize_per_channel_affine_zero_like(%input: !torch.
 
 // -----
 
+// CHECK-LABEL: func.func @torch.aten.topk(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,2304],f32>) -> !torch.vtensor<[?,80],f32> {
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,2304],f32> -> tensor<?x2304xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.topk") %[[T0]] {dim = -1 : i64, k = 80 : i64, largest = true, sorted = true, torch_operand_names = ["self"]} :
+// CHECK-SAME:      tensor<?x2304xf32> -> tensor<?x80xf32>, tensor<?x80xi64>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM:.*]] : tensor<?x80xf32> -> !torch.vtensor<[?,80],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[?,80],f32>
+func.func @torch.aten.topk(%input: !torch.vtensor<[?,2304],f32>) -> !torch.vtensor<[?,80],f32> {
+  %int-1 = torch.constant.int -1
+  %int80 = torch.constant.int 80
+  %true = torch.constant.bool true
+  %output0, %output1 = torch.aten.topk %input, %int80, %int-1, %true, %true : !torch.vtensor<[?,2304],f32>, !torch.int, !torch.int, !torch.bool, !torch.bool -> !torch.vtensor<[?,80],f32>, !torch.vtensor<[?,80],si64>
+  return %output0 : !torch.vtensor<[?,80],f32>
+}
+
+// -----
+
 // CHECK-LABEL: func.func @torch.aten.sort(
 // CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,2304],f32>) -> !torch.vtensor<[?,2304],f32> {
 // CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,2304],f32> -> tensor<?x2304xf32>
