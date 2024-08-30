@@ -14,9 +14,12 @@
 
 #include "PopulatePatterns.h"
 #include "Utils.h"
+#include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "torch-mlir/Conversion/Utils/Utils.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
+#include "torch-mlir/Dialect/TorchConversion/IR/TorchConversionOps.h"
 
 #include "llvm/ADT/StringSet.h"
 
@@ -211,6 +214,118 @@ public:
   }
 };
 
+class ConvertAtenSortOp : public OpConversionPattern<AtenSortOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenSortOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+
+    helper.addIntAttr("dim", op.getDim());
+    helper.addBoolAttr("descending", op.getDescending());
+
+    return helper.replace();
+  }
+};
+
+class ConvertAtenCumsumOp : public OpConversionPattern<AtenCumsumOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenCumsumOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+
+    helper.addIntAttr("dim", op.getDim());
+    if (!isa<Torch::ConstantNoneOp>(op.getDtype().getDefiningOp()))
+      return rewriter.notifyMatchFailure(op, "Unsupported dtype argument");
+
+    return helper.replace();
+  }
+};
+
+class ConvertAtenMinDimOp : public OpConversionPattern<AtenMinDimOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenMinDimOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+
+    helper.addIntAttr("dim", op.getDim());
+    helper.addBoolAttr("keepdim", op.getKeepdim());
+
+    return helper.replace();
+  }
+};
+
+class ConvertAtenViewOp : public OpConversionPattern<AtenViewOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenViewOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    Value self = adaptor.getSelf();
+    auto srcType = self.getType().cast<RankedTensorType>();
+    auto resultType =
+        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
+
+    SmallVector<int64_t> size;
+    if (matchPattern(op.getSize(), m_TorchListOfConstantInts(size)) &&
+        srcType.hasStaticShape() && resultType.hasStaticShape())
+      return rewriter.notifyMatchFailure(op, "only dynamic shape is supported");
+
+    helper.addOperand("self", self);
+    Operation *primListOp = op.getSize().getDefiningOp();
+    auto listConstruct = dyn_cast<Torch::PrimListConstructOp>(primListOp);
+    if (!listConstruct) {
+      return rewriter.notifyMatchFailure(
+          op, "Size must come from PrimListConstructOp");
+    }
+    int idx = 0;
+    for (Value value : listConstruct.getElements()) {
+      int64_t dimSize;
+      if (!matchPattern(value, m_TorchConstantInt(&dimSize))) {
+        size.push_back(ShapedType::kDynamic);
+        if (!isa<TorchConversion::FromI64Op>(value.getDefiningOp()))
+          return rewriter.notifyMatchFailure(
+              op, "dynamic dim size should come from FromI64Op");
+        auto conversionOp =
+            dyn_cast<TorchConversion::FromI64Op>(value.getDefiningOp());
+        if (!isa<arith::IndexCastOp>(conversionOp.getOperand().getDefiningOp()))
+          return rewriter.notifyMatchFailure(
+              op, "dynamic dim size should come from IndexCastOp");
+        auto indexCastOp = dyn_cast<arith::IndexCastOp>(
+            conversionOp.getOperand().getDefiningOp());
+        if (!isa<tensor::DimOp>(indexCastOp.getIn().getDefiningOp()))
+          return rewriter.notifyMatchFailure(
+              op, "dynamic dim size should come from DimOp");
+        auto dimOp =
+            dyn_cast<tensor::DimOp>(indexCastOp.getIn().getDefiningOp());
+        helper.addOperand("idx_" + std::to_string(idx), dimOp);
+      } else
+        size.push_back(dimSize);
+      idx++;
+    }
+    helper.addDenseIntArrayAttr("size", size);
+
+    return helper.replace();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
@@ -227,6 +342,11 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(
       AtenFakeQuantizePerTensorAffineTensorQparamsOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenFakeQuantizePerChannelAffineOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenSortOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenCumsumOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenMinDimOp);
+  // AtenViewOp can still live after torch-to-tcp conversion
+  patterns.add<ConvertAtenViewOp>(typeConverter, patterns.getContext());
 #undef INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN
 
   // Torch -> TOSA doesn't handle transposed convolutions; map them to

@@ -127,11 +127,15 @@ public:
       }
     }
 
+    // fold the broadcast if no axes are found
+    if (axes.size() == 0) {
+      rewriter.replaceOp(op, input);
+      return success();
+    }
     RankedTensorType resultType =
         OpConversionPattern<AtenOpT>::getTypeConverter()
             ->convertType(op->getResult(0).getType())
             .template cast<RankedTensorType>();
-
     auto axesAttr = rewriter.getI64ArrayAttr(axes);
     rewriter.replaceOpWithNewOp<tcp::BroadcastOp>(op, resultType, input,
                                                   resultShape, axesAttr);

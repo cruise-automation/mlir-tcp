@@ -254,3 +254,73 @@ func.func @torch.aten.fake_quantize_per_channel_affine_zero_like(%input: !torch.
   %output = torch.aten.fake_quantize_per_channel_affine %input, %scale, %zero_point, %int1, %int0, %int255 : !torch.vtensor<[1,3,32,32],f32>, !torch.vtensor<[3],f32>, !torch.vtensor<[3],si32>, !torch.int, !torch.int, !torch.int -> !torch.vtensor<[1,3,32,32],f32>
   return %output : !torch.vtensor<[1,3,32,32],f32>
 }
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.sort(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,2304],f32>) -> !torch.vtensor<[?,2304],f32> {
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,2304],f32> -> tensor<?x2304xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.sort") %[[T0]] {descending = true, dim = -1 : i64, torch_operand_names = ["self"]} :
+// CHECK-SAME:      tensor<?x2304xf32> -> tensor<?x2304xf32>, tensor<?x2304xi64>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM:.*]] : tensor<?x2304xf32> -> !torch.vtensor<[?,2304],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[?,2304],f32>
+func.func @torch.aten.sort(%input: !torch.vtensor<[?,2304],f32>) -> !torch.vtensor<[?,2304],f32> {
+  %int-1 = torch.constant.int -1
+  %true = torch.constant.bool true
+  %output0, %output1 = torch.aten.sort %input, %int-1, %true : !torch.vtensor<[?,2304],f32>, !torch.int, !torch.bool -> !torch.vtensor<[?,2304],f32>, !torch.vtensor<[?,2304],si64>
+  return %output0 : !torch.vtensor<[?,2304],f32>
+}
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.cumsum(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?],si32>) -> !torch.vtensor<[?],si64> {
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?],si32> -> tensor<?xi32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.cumsum") %[[T0]] {dim = 0 : i64, torch_operand_names = ["self"]} : tensor<?xi32> -> tensor<?xi64>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM]] : tensor<?xi64> -> !torch.vtensor<[?],si64>
+// CHECK:          return %[[RES]] : !torch.vtensor<[?],si64>
+func.func @torch.aten.cumsum(%input: !torch.vtensor<[?],si32>) -> !torch.vtensor<[?],si64> {
+  %int0 = torch.constant.int 0
+  %none = torch.constant.none
+  %1 = torch.aten.cumsum %input, %int0, %none : !torch.vtensor<[?],si32>, !torch.int, !torch.none -> !torch.vtensor<[?],si64>
+  return %1 : !torch.vtensor<[?],si64>
+}
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.min.dim(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,80],f32>) -> !torch.vtensor<[?],f32> {
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,80],f32> -> tensor<?x80xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.min.dim") %[[T0]] {dim = 1 : i64, keepdim = false, torch_operand_names = ["self"]} :
+// CHECK-SAME:      tensor<?x80xf32> -> tensor<?xf32>, tensor<?xi64>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM:.*]] : tensor<?xf32> -> !torch.vtensor<[?],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[?],f32>
+func.func @torch.aten.min.dim(%input: !torch.vtensor<[?,80],f32>) -> !torch.vtensor<[?],f32> {
+  %int1 = torch.constant.int 1
+  %false = torch.constant.bool false
+  %output0, %output1 = torch.aten.min.dim %input, %int1, %false : !torch.vtensor<[?,80],f32>, !torch.int, !torch.bool -> !torch.vtensor<[?],f32>, !torch.vtensor<[?],si64>
+  return %output0 : !torch.vtensor<[?],f32>
+}
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.view_dynamic_shape(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,384,16],f32>, %[[ARG1:.*]]: tensor<?x2736x16xf32>) -> !torch.vtensor<[?,24,16,16],f32> {
+// CHECK:          %[[C0:.*]] = arith.constant 0 : index
+// CHECK:          %[[T0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,384,16],f32> -> tensor<?x384x16xf32>
+// CHECK:          %[[DIM:.*]] = tensor.dim %[[ARG1]], %[[C0]] : tensor<?x2736x16xf32>
+// CHECK:          %[[CUSTOM:.*]] = tcp.custom_op("torch.aten.view") %[[T0]], %[[DIM]] {size = array<i64: -9223372036854775808, 24, 16, 16>, torch_operand_names = ["self", "idx_0"]} :
+// CHECK-SAME:      tensor<?x384x16xf32>, index -> tensor<?x24x16x16xf32>
+// CHECK:          %[[RES:.*]] = torch_c.from_builtin_tensor %[[CUSTOM:.*]] : tensor<?x24x16x16xf32> -> !torch.vtensor<[?,24,16,16],f32>
+// CHECK:          return %[[RES]] : !torch.vtensor<[?,24,16,16],f32>
+func.func @torch.aten.view_dynamic_shape(%arg0: !torch.vtensor<[?,384,16],f32>, %arg1: tensor<?x2736x16xf32>) -> !torch.vtensor<[?,24,16,16],f32> {
+  %c0 = arith.constant 0 : index
+  %int24 = torch.constant.int 24
+  %int16 = torch.constant.int 16
+  %dim_32 = tensor.dim %arg1, %c0 : tensor<?x2736x16xf32>
+  %1 = arith.index_cast %dim_32 : index to i64
+  %2 = torch_c.from_i64 %1
+  %3 = torch.prim.ListConstruct %2, %int24, %int16, %int16 : (!torch.int, !torch.int, !torch.int, !torch.int) -> !torch.list<int>
+  %4 = torch.aten.view %arg0, %3 : !torch.vtensor<[?,384,16],f32>, !torch.list<int> -> !torch.vtensor<[?,24,16,16],f32>
+  return %4 : !torch.vtensor<[?,24,16,16],f32>
+}

@@ -18,10 +18,12 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Dialect.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"
+#include "torch-mlir/Dialect/TorchConversion/IR/TorchConversionDialect.h"
 
 void mlir::tcp::registerAllDialects(mlir::DialectRegistry &registry) {
   registry.insert<tcp::TcpDialect>();
   registry.insert<torch::Torch::TorchDialect>();
+  registry.insert<torch::TorchConversion::TorchConversionDialect>();
   mlir::func::registerInlinerExtension(registry);
   mlir::tcp::registerTilingInterfaceExternalModels(registry);
 }
