@@ -272,7 +272,7 @@ def log1p_loader() -> TorchLoaderOutput:
             return torch.log1p(x)
 
     # Sample inputs
-    x = torch.randn(2, 3)
+    x = torch.tensor([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
 
     # Dynamic dim constraints
     batch = Dim("batch")
