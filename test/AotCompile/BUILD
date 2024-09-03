@@ -21,6 +21,7 @@ AOT_TEST_SUITE = [
     ("tanh", False),
     ("clamp", False),
     ("relu", False),
+    ("log1p", False),
     ("round_even", False),
     ("sqrt_float", False),
     ("sqrt_int", False),

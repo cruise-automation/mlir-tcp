@@ -263,6 +263,24 @@ def relu_loader() -> TorchLoaderOutput:
     return TorchLoaderOutput(model=Relu(), inputs=(x,), dynamic_shapes=dynamic_shapes)
 
 
+def log1p_loader() -> TorchLoaderOutput:
+    class Log1p(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return torch.log1p(x)
+
+    # Sample inputs
+    x = torch.tensor([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
+
+    # Dynamic dim constraints
+    batch = Dim("batch")
+    dynamic_shapes = {"x": {0: batch}}
+
+    return TorchLoaderOutput(model=Log1p(), inputs=(x,), dynamic_shapes=dynamic_shapes)
+
+
 def round_even_loader() -> TorchLoaderOutput:
     class RoundEven(torch.nn.Module):
         def __init__(self):

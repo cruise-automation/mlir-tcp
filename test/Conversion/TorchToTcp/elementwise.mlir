@@ -762,3 +762,22 @@ func.func @torch.aten.to.dtype(%arg0: !torch.vtensor<[?,?],i1>) -> !torch.vtenso
   %0 = torch.aten.to.dtype %arg0, %int11, %false, %false, %none : !torch.vtensor<[?,?],i1>, !torch.int, !torch.bool, !torch.bool, !torch.none -> !torch.vtensor<[?,?],ui8>
   return %0 : !torch.vtensor<[?,?],ui8>
 }
+
+// -----
+
+// CHECK-LABEL:  func.func @torch.aten.log1p(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.vtensor<[?,4,19,2],f32>) -> !torch.vtensor<[?,4,19,2],f32> {
+// CHECK-DAG:     %[[TO_BUILTIN0:.*]] = torch_c.to_builtin_tensor %[[ARG0]] : !torch.vtensor<[?,4,19,2],f32> -> tensor<?x4x19x2xf32>
+// CHECK:         %[[CONST:.*]] =  tcp.const {value = dense<1.000000e+00> : tensor<f32>} : tensor<f32>
+// CHECK:         %[[EXPAND_SHAPE:.*]] = tensor.expand_shape %[[CONST]] [] output_shape [1, 1, 1, 1] : tensor<f32> into tensor<1x1x1x1xf32>
+// CHECK:         %[[CONST0:.*]] = arith.constant 0 : index
+// CHECK:         %[[DIM0:.*]] = tensor.dim %[[TO_BUILTIN0]], %[[CONST0]] : tensor<?x4x19x2xf32>
+// CHECK:         %[[BROADCAST:.*]] = tcp.broadcast %[[EXPAND_SHAPE]], %[[DIM0]]
+// CHECK:         %[[ADD:.*]] = tcp.add %[[TO_BUILTIN0]], %[[BROADCAST]] : tensor<?x4x19x2xf32>, tensor<?x4x19x2xf32> -> tensor<?x4x19x2xf32>
+// CHECK:         %[[LOG:.*]] = tcp.log %[[ADD]] : tensor<?x4x19x2xf32> -> tensor<?x4x19x2xf32>
+// CHECK:         %[[FROM_BUILTIN:.*]] = torch_c.from_builtin_tensor %[[LOG]] : tensor<?x4x19x2xf32> -> !torch.vtensor<[?,4,19,2],f32>
+// CHECK:         return %[[FROM_BUILTIN]] : !torch.vtensor<[?,4,19,2],f32>
+func.func @torch.aten.log1p(%arg0: !torch.vtensor<[?,4,19,2],f32>) -> !torch.vtensor<[?,4,19,2],f32> {
+  %1 = torch.aten.log1p %arg0 : !torch.vtensor<[?,4,19,2],f32> -> !torch.vtensor<[?,4,19,2],f32>
+  return %1 : !torch.vtensor<[?,4,19,2],f32>
+}
