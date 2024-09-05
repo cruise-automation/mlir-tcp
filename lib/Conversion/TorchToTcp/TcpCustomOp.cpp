@@ -299,14 +299,11 @@ public:
     torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
                                                             getTypeConverter()};
     Value self = adaptor.getSelf();
-    auto srcType = self.getType().cast<RankedTensorType>();
-    auto resultType =
-        getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
-
     SmallVector<int64_t> size;
     // static size array will be handled through TOSA dialect
     if (matchPattern(op.getSize(), m_TorchListOfConstantInts(size)))
-      return rewriter.notifyMatchFailure(op, "only dynamic shape is supported");
+      return rewriter.notifyMatchFailure(op,
+                                         "only non-constant size is supported");
 
     helper.addOperand("self", self);
     Operation *primListOp = op.getSize().getDefiningOp();
