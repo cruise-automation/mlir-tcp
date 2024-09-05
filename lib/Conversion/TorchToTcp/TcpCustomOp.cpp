@@ -304,9 +304,8 @@ public:
         getTypeConverter()->convertType(op.getType()).cast<RankedTensorType>();
 
     SmallVector<int64_t> size;
-    // static shape will be handled through TOSA dialect
-    if (matchPattern(op.getSize(), m_TorchListOfConstantInts(size)) &&
-        srcType.hasStaticShape() && resultType.hasStaticShape())
+    // static size array will be handled through TOSA dialect
+    if (matchPattern(op.getSize(), m_TorchListOfConstantInts(size)))
       return rewriter.notifyMatchFailure(op, "only dynamic shape is supported");
 
     helper.addOperand("self", self);
