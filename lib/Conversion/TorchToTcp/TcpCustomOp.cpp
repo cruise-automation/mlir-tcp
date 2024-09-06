@@ -349,6 +349,28 @@ public:
   }
 };
 
+class ConvertAtenSliceScatterOp
+    : public OpConversionPattern<AtenSliceScatterOp> {
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenSliceScatterOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    // this should really have some tcp op to reduce to.  So going to CustomOp
+    // is more of a placeholder than a serious implementation
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    helper.addOperand("self", adaptor.getSelf());
+    helper.addOperand("src", adaptor.getSrc());
+    helper.addIntAttr("dim", op.getDim());
+    helper.addIntAttr("start", op.getStart());
+    helper.addIntAttr("end", op.getEnd());
+    helper.addIntAttr("step", op.getStep());
+
+    return helper.replace();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
@@ -369,6 +391,7 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenSortOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenCumsumOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenMinDimOp);
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenSliceScatterOp);
   // AtenViewOp can still live after torch-to-tcp conversion
   patterns.add<ConvertAtenViewOp>(typeConverter, patterns.getContext());
 #undef INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN
