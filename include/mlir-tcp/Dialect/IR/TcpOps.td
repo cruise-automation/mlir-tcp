@@ -160,6 +160,27 @@ def Tcp_DivFOp : Tcp_BinaryElementwiseOp<"divf", [SameOperandsAndResultElementTy
   let assemblyFormat = "$in1 `,` $in2 attr-dict `:` type($in1) `,` type($in2) `->` type($out)";
 }
 
+def Tcp_DivIOp : Tcp_BinaryElementwiseOp<"divi", [SameOperandsAndResultElementType]> {
+  let summary = "Computes elementwise integer division";
+
+  let description = [{
+    Computes the integer division of `in1` and `in2`.
+  }];
+
+  let arguments = (ins
+    Tcp_IntTensor:$in1,
+    Tcp_IntTensor:$in2,
+    Tcp_SignednessAttr:$signedness,
+    Tcp_RoundingModeAttr:$rounding_mode
+  );
+
+  let results = (outs
+    Tcp_IntTensor:$out
+  );
+
+  let assemblyFormat = "$in1 `,` $in2 attr-dict `:` type($in1) `,` type($in2) `->` type($out)";
+}
+
 def Tcp_ConstOp : Tcp_Op<"const", [ConstantLike, Pure]> {
   let summary = "Constant op";
 

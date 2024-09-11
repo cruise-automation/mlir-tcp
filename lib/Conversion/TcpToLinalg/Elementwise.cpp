@@ -190,9 +190,35 @@ createLinalgPayloadForElementwiseOp(Operation *op,
   if (isa<DivFOp>(op)) {
     if (elemType.isa<mlir::FloatType>())
       return {b.create<arith::DivFOp>(loc, payloadArgs[0], payloadArgs[1])};
-    else
+    else if (elemType.isa<mlir::IntegerType>()) {
+      return {b.create<arith::DivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
+    }
+  }
+
+  if (auto divOp = dyn_cast<DivIOp>(op)) {
+    if (!elemType.isa<mlir::IntegerType>())
       llvm_unreachable("unsupported element type in "
-                       "createLinalgPayloadForElementwiseOp for tcp.divf");
+                       "createLinalgPayloadForElementwiseOp for tcp.divi");
+    if (divOp.getSignedness() == Signedness::Unsigned) {
+      if (divOp.getRoundingMode() == RoundingMode::Trunc ||
+          divOp.getRoundingMode() == RoundingMode::Floor)
+        return {b.create<arith::DivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
+      else
+        return {
+            b.create<arith::CeilDivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
+    } else if (divOp.getSignedness() == Signedness::Signed) {
+      if (divOp.getRoundingMode() == RoundingMode::Trunc)
+        return {b.create<arith::DivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
+      else if (divOp.getRoundingMode() == RoundingMode::Ceil)
+        return {
+            b.create<arith::CeilDivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
+      else
+        return {
+            b.create<arith::FloorDivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
+    } else {
+      llvm_unreachable("unsupported signedness in "
+                       "createLinalgPayloadForElementwiseOp for tcp.divi");
+    }
   }
 
   if (isa<Atan2Op>(op)) {
