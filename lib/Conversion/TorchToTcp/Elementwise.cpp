@@ -348,10 +348,13 @@ public:
         return rewriter.notifyMatchFailure(
             op, "Signless division not supported in TCP");
 
-      rewriter.replaceOpWithNewOp<tcp::DivIOp>(
-          op, resultType, lhs, rhs,
-          torch_to_tcp::getTcpSignedness(outIntType.getSignedness()),
-          tcp::RoundingMode::Trunc);
+      if (outIntType.getSignedness() ==
+          mlir::IntegerType::SignednessSemantics::Unsigned)
+        rewriter.replaceOpWithNewOp<tcp::DivUIOp>(op, resultType, lhs, rhs,
+                                                  tcp::RoundingMode::Trunc);
+      else
+        rewriter.replaceOpWithNewOp<tcp::DivSIOp>(op, resultType, lhs, rhs,
+                                                  tcp::RoundingMode::Trunc);
     }
     return success();
   }

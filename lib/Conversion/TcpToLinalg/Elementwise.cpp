@@ -195,30 +195,24 @@ createLinalgPayloadForElementwiseOp(Operation *op,
     }
   }
 
-  if (auto divOp = dyn_cast<DivIOp>(op)) {
-    if (!elemType.isa<mlir::IntegerType>())
-      llvm_unreachable("unsupported element type in "
-                       "createLinalgPayloadForElementwiseOp for tcp.divi");
-    if (divOp.getSignedness() == Signedness::Unsigned) {
-      if (divOp.getRoundingMode() == RoundingMode::Trunc ||
-          divOp.getRoundingMode() == RoundingMode::Floor)
-        return {b.create<arith::DivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
-      else
-        return {
-            b.create<arith::CeilDivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
-    } else if (divOp.getSignedness() == Signedness::Signed) {
-      if (divOp.getRoundingMode() == RoundingMode::Trunc)
-        return {b.create<arith::DivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
-      else if (divOp.getRoundingMode() == RoundingMode::Ceil)
-        return {
-            b.create<arith::CeilDivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
-      else
-        return {
-            b.create<arith::FloorDivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
-    } else {
-      llvm_unreachable("unsupported signedness in "
-                       "createLinalgPayloadForElementwiseOp for tcp.divi");
-    }
+  if (auto divOp = dyn_cast<DivSIOp>(op)) {
+    if (divOp.getRoundingMode() == RoundingMode::Trunc)
+      return {b.create<arith::DivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
+    else if (divOp.getRoundingMode() == RoundingMode::Ceil)
+      return {
+          b.create<arith::CeilDivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
+    else
+      return {
+          b.create<arith::FloorDivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
+  }
+
+  if (auto divOp = dyn_cast<DivUIOp>(op)) {
+    if (divOp.getRoundingMode() == RoundingMode::Trunc ||
+        divOp.getRoundingMode() == RoundingMode::Floor)
+      return {b.create<arith::DivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
+    else
+      return {
+          b.create<arith::CeilDivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
   }
 
   if (isa<Atan2Op>(op)) {
@@ -356,7 +350,8 @@ void mlir::TcpToLinalg::populateElementwisePatternsAndLegality(
   INSERT_TCP_TO_LINALG_PATTERN(ClampOp);
   INSERT_TCP_TO_LINALG_PATTERN(MulOp);
   INSERT_TCP_TO_LINALG_PATTERN(DivFOp);
-  INSERT_TCP_TO_LINALG_PATTERN(DivIOp);
+  INSERT_TCP_TO_LINALG_PATTERN(DivSIOp);
+  INSERT_TCP_TO_LINALG_PATTERN(DivUIOp);
   INSERT_TCP_TO_LINALG_PATTERN(SubOp);
   INSERT_TCP_TO_LINALG_PATTERN(TanhOp);
   INSERT_TCP_TO_LINALG_PATTERN(SigmoidOp);
