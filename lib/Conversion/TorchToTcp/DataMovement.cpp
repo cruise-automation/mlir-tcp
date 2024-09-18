@@ -329,7 +329,7 @@ class ConvertAtenIndexTensorHackedTwin
           op.getLoc(), outType, self, idx, rewriter.getIndexAttr(i));
       self = gather.getResult();
     }
-    
+
     rewriter.replaceOp(op, self);
     return success();
   }
