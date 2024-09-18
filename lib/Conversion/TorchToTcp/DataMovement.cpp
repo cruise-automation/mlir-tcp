@@ -278,6 +278,63 @@ public:
   }
 };
 
+class ConvertAtenIndexTensorHackedTwin
+    : public OpConversionPattern<AtenIndexTensorHackedTwinOp> {
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenIndexTensorHackedTwinOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto self = adaptor.getSelf();
+    auto indicesList = op.getIndices();
+    SmallVector<Value> indices;
+    if (!getListConstructElements(indicesList, indices))
+      return op.emitError("Failed to match list of indices");
+    indices = getTypeConvertedValues(rewriter, op.getLoc(), getTypeConverter(),
+                                     indices);
+
+    // possible that this should ignore the first batch dim?
+    if (indices.size() != cast<RankedTensorType>(self.getType()).getRank())
+      return op.emitError(
+          "Expected the number of indicies to equal rank of self");
+
+    for (unsigned int i = 0; i < indices.size(); i++) {
+      auto idx = indices[i];
+      int numNonOneAxis = 0;
+      auto ttype = cast<RankedTensorType>(idx.getType());
+      for (int j = 0; j < ttype.getRank(); j++)
+        if (ttype.getShape()[j] != 1)
+          numNonOneAxis++;
+      if (numNonOneAxis > 1)
+        return op.emitError(
+            "Expected the input shape to have a single non-one axis");
+      // convert it to a 1-dim vector
+      if (ttype.getRank() != 1) {
+        ReassociationIndices reassocIndices;
+        for (int j = 0; j < ttype.getRank(); j++)
+          reassocIndices.push_back(j);
+        SmallVector<ReassociationIndices> ri = {reassocIndices};
+        auto reshape =
+            rewriter.create<tensor::CollapseShapeOp>(op.getLoc(), idx, ri);
+        idx = reshape.getResult();
+      }
+
+      SmallVector<int64_t> outShape(
+          cast<RankedTensorType>(self.getType()).getShape());
+      outShape[i] = ttype.getNumElements();
+      auto outType = RankedTensorType::get(
+          outShape, cast<RankedTensorType>(self.getType()).getElementType());
+
+      auto gather = rewriter.create<tcp::GatherOp>(
+          op.getLoc(), outType, self, idx, rewriter.getIndexAttr(i));
+      self = gather.getResult();
+    }
+    
+    rewriter.replaceOp(op, self);
+    return success();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateDataMovementPatternsAndLegality(
@@ -293,5 +350,8 @@ void torch_to_tcp::populateDataMovementPatternsAndLegality(
       typeConverter, patterns, target, convertTorchOpsSet);
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<ConvertAtenIndexSelectOp,
                                                    AtenIndexSelectOp>(
+      typeConverter, patterns, target, convertTorchOpsSet);
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<
+      ConvertAtenIndexTensorHackedTwin, AtenIndexTensorHackedTwinOp>(
       typeConverter, patterns, target, convertTorchOpsSet);
 }
