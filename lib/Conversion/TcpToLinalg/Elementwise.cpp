@@ -203,7 +203,7 @@ createLinalgPayloadForElementwiseOp(Operation *op,
       return {b.create<arith::DivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
     else if (divOp.getRoundingMode() == RoundingMode::Ceil)
       return {
-          b.create<arith::CeilDivUIOp>(loc, payloadArgs[0], payloadArgs[1])};
+          b.create<arith::CeilDivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
     else
       return {
           b.create<arith::FloorDivSIOp>(loc, payloadArgs[0], payloadArgs[1])};
