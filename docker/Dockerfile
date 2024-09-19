@@ -23,7 +23,8 @@ RUN apt-get update && \
     clang \
     clang-format \
     gdb \
-    black
+    black \
+    sudo
 
 # Install bazel
 ARG ARCH="x86_64"
@@ -42,7 +43,8 @@ WORKDIR /opt/src/mlir-tcp
 RUN groupadd -o -g ${GID} ${GROUP} && \
     useradd -u ${UID} -g ${GROUP} -ms /bin/bash ${USER} && \
     usermod -aG sudo ${USER} && \
-    chown -R ${USER}:${GROUP} /opt/src/mlir-tcp
+    chown -R ${USER}:${GROUP} /opt/src/mlir-tcp && \
+    echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # Switch to user
 USER ${USER}
