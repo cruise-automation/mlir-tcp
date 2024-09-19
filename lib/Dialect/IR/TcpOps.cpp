@@ -179,13 +179,15 @@ LogicalResult GatherOp::verify() {
       return emitOpError("tcp.gather requires that the input tensor and indices are the same rank");
 
     for(int i = 0; i < inputTensor.getRank(); i++) {
-      if(inputTensor.getShape()[i] != indicesTensor.getShape()[i]) {
-        if(!(inputTensor.getShape()[i] == ShapedType::kDynamic ||
-             indicesTensor.getShape()[i] == 1 ||
+      if(inputTensor.getShape()[i] != indicesTensor.getShape()[i] && !(
+        inputTensor.getShape()[i] == ShapedType::kDynamic ||
              i == gatherDim)) {
               return emitOpError("indices tensor does not match expected shape");
-             }
       }
+    }
+
+    if(getResult().getType().getShape() != indicesTensor.getShape()) {
+      return emitOpError("Expect the shape of the indicies to match the output shape");
     }
 
     return success();

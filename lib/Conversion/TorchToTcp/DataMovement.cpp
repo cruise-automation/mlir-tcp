@@ -285,23 +285,78 @@ class ConvertAtenIndexTensorHackedTwin
   LogicalResult
   matchAndRewrite(AtenIndexTensorHackedTwinOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
+    // ------- Matching the OP -------
     auto self = adaptor.getSelf();
+    auto selfType = cast<RankedTensorType>(self.getType());
     auto indicesList = op.getIndices();
     SmallVector<Value> indices;
     if (!getListConstructElements(indicesList, indices))
       return op.emitError("Failed to match list of indices");
+
+    for(unsigned int i = 0; i < indices.size(); i++) {
+      auto ttype = cast<RankedTensorType>(getTypeConverter()->convertType(indices[i].getType()));
+      if(ttype.getRank() != selfType.getRank() - i) {
+        // Can use tensor.gather instead for this.  But will require that there are some broadcasting to get the shapes to match
+        // what is expected
+        return failure("Failed to rewrite Tensor_hacked_twin.  Need the element gather for this");
+      }
+      for(int j = 1; j < ttype.getRank(); j++) {
+        if(ttype.getShape()[j] != 1)
+          return failure("Expected the axes >=1 to have size 1");
+      }
+    }
+
+    // ------ Rewriting the OP ---------
+
     indices = getTypeConvertedValues(rewriter, op.getLoc(), getTypeConverter(),
                                      indices);
 
-    // possible that this should ignore the first batch dim?
-    if (indices.size() != cast<RankedTensorType>(self.getType()).getRank())
-      return op.emitError(
-          "Expected the number of indicies to equal rank of self");
 
-    for (unsigned int i = 0; i < indices.size(); i++) {
+
+    for(unsigned int i = 0; i < indices.size(); i++) {
+      auto idx = indices[i];
+      auto ttype = cast<RankedTensorType>(idx.getType());
+      auto selfType = cast<RankedTensorType>(self.getType());
+      SmallVector<int64_t> outShape(selfType.getShape());
+      outShape[i] = ttype.getNumElements();
+      auto outType = RankedTensorType::get(
+          outShape, cast<RankedTensorType>(self.getType()).getElementType());
+      
+      auto expandedShape = torch_to_tcp::broadcastRankInLeadingDims(rewriter, idx, outShape.size() - ttype.getRank());
+      SmallVector<Value> broadcastValues;
+      SmallVector<int64_t> broadcastAxes;
+      
+
+      for(unsigned int j = 0; j < selfType.getRank(); j++) {
+        if(j != i) {
+          broadcastAxes.push_back(j);
+          broadcastValues.push_back(rewriter.create<tensor::DimOp>(op.getLoc(), self, j));
+        }
+      }
+
+      auto broadcastedShape = rewriter.create<tcp::BroadcastOp>(
+        op.getLoc(), 
+        RankedTensorType::get(outShape, ttype.getElementType()),
+        expandedShape,
+        broadcastValues,
+        rewriter.getI64ArrayAttr(broadcastAxes)
+        );
+
+        auto gather = rewriter.create<tcp::GatherOp>(
+          op.getLoc(), outType, self, broadcastedShape.getResult(), rewriter.getIndexAttr(i)
+        );
+        self = gather.getResult();
+    }
+
+    /*for (unsigned int i = 0; i < indices.size(); i++) {
       auto idx = indices[i];
       int numNonOneAxis = 0;
       auto ttype = cast<RankedTensorType>(idx.getType());
+      if(ttype.getRank() != indices.size() - i) {
+        // there is a version of this op, where everything comes in as a single dim and then is should instead select the different indicies from each?
+        // so the difference would be if it keeps the dim or shrinks it.  But not 100% clear on what the definition of the different semantics are
+        return op.emitError("unsure what to do");
+      }
       for (int j = 0; j < ttype.getRank(); j++)
         if (ttype.getShape()[j] != 1)
           numNonOneAxis++;
@@ -328,7 +383,9 @@ class ConvertAtenIndexTensorHackedTwin
       auto gather = rewriter.create<tcp::GatherOp>(
           op.getLoc(), outType, self, idx, rewriter.getIndexAttr(i));
       self = gather.getResult();
-    }
+    }*/
+
+    // assert(op.getType() == self.getType());
 
     rewriter.replaceOp(op, self);
     return success();
