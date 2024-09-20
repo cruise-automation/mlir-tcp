@@ -186,8 +186,9 @@ LogicalResult GatherOp::verify() {
                        "are the same rank");
 
   for (int i = 0; i < inputTensor.getRank(); i++) {
-    if (inputTensor.getShape()[i] != indicesTensor.getShape()[i] &&
+    if (inputTensor.getShape()[i] < indicesTensor.getShape()[i] &&
         !(inputTensor.getShape()[i] == ShapedType::kDynamic ||
+          indicesTensor.getShape()[i] == ShapedType::kDynamic ||
           i == gatherDim)) {
       return emitOpError("indices tensor does not match expected shape");
     }

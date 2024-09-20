@@ -30,6 +30,23 @@ using namespace mlir::torch::Torch;
 
 namespace {
 
+class ConvertAtenGatherOp : public OpConversionPattern<AtenGatherOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenGatherOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+
+    helper.addOperand("self", adaptor.getSelf());
+    helper.addOperand("index", adaptor.getIndex());
+    helper.addIntAttr("axis", op.getDim());
+
+    return helper.replace();
+  }
+};
 class ConvertAten_IndexPutImplOp
     : public OpConversionPattern<Aten_IndexPutImplOp> {
 public:
@@ -337,6 +354,7 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
 #define INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenOp)                           \
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<Convert##AtenOp, AtenOp>(   \
       typeConverter, patterns, target, convertTorchOpsSet)
+  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenGatherOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(Aten_IndexPutImplOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenFakeQuantizePerTensorAffineOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(
