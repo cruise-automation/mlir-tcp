@@ -163,13 +163,15 @@ public:
       rewriter.replaceOpWithNewOp<tcp::ConstOp>(op, resultType, denseIntAttr);
       return success();
     }
-    if (auto elements = dyn_cast<DenseResourceElementsAttr>(op.getValueAttr())) {
-      if(resultType.getElementType().isInteger() &&
-        resultType != adaptor.getValue().getType()) {
-      auto attr = DenseResourceElementsAttr::get(resultType, elements.getRawHandle());
-      rewriter.replaceOpWithNewOp<tcp::ConstOp>(op, resultType, attr);
-      return success();
-    }
+    if (auto elements =
+            dyn_cast<DenseResourceElementsAttr>(op.getValueAttr())) {
+      if (resultType.getElementType().isInteger() &&
+          resultType != adaptor.getValue().getType()) {
+        auto attr =
+            DenseResourceElementsAttr::get(resultType, elements.getRawHandle());
+        rewriter.replaceOpWithNewOp<tcp::ConstOp>(op, resultType, attr);
+        return success();
+      }
     }
 
     rewriter.replaceOpWithNewOp<tcp::ConstOp>(op, resultType,

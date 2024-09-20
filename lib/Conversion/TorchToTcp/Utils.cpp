@@ -41,7 +41,7 @@ getTcpSignednessAttr(MLIRContext *context,
 // The parameter input is expected to be of RankedTensorType.
 Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
                                  Value input, int64_t rankIncrease) {
-  if(rankIncrease == 0)
+  if (rankIncrease == 0)
     return input;
   RankedTensorType inputType = input.getType().cast<RankedTensorType>();
 
