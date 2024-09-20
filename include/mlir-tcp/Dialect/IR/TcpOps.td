@@ -178,6 +178,7 @@ def Tcp_ConstOp : Tcp_Op<"const", [ConstantLike, Pure]> {
   let assemblyFormat = "attr-dict `:` type($out)";
 
   let hasFolder = 1;
+  let hasVerifier = 1;
 }
 
 def Tcp_BroadcastOp : Tcp_Op<"broadcast", [

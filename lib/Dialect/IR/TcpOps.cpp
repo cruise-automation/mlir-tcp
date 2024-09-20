@@ -127,6 +127,12 @@ LogicalResult IsolatedGroupOp::verify() {
 
 OpFoldResult ConstOp::fold(FoldAdaptor) { return getValueAttr(); }
 
+LogicalResult ConstOp::verify() {
+  if(getValueAttr().getType() != getType()) 
+    return emitOpError("can not be used to cast types");
+  return success();
+}
+
 LogicalResult CastOp::verify() {
   auto inputType = getIn().getType().cast<RankedTensorType>();
   auto outputType = getOut().getType().cast<RankedTensorType>();

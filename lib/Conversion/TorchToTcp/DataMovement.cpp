@@ -311,8 +311,6 @@ class ConvertAtenIndexTensorHackedTwin
     indices = getTypeConvertedValues(rewriter, op.getLoc(), getTypeConverter(),
                                      indices);
 
-
-
     for(unsigned int i = 0; i < indices.size(); i++) {
       auto idx = indices[i];
       auto ttype = cast<RankedTensorType>(idx.getType());
@@ -323,10 +321,9 @@ class ConvertAtenIndexTensorHackedTwin
           outShape, cast<RankedTensorType>(self.getType()).getElementType());
       
       auto expandedShape = torch_to_tcp::broadcastRankInLeadingDims(rewriter, idx, outShape.size() - ttype.getRank());
+      
       SmallVector<Value> broadcastValues;
       SmallVector<int64_t> broadcastAxes;
-      
-
       for(unsigned int j = 0; j < selfType.getRank(); j++) {
         if(j != i) {
           broadcastAxes.push_back(j);
@@ -347,45 +344,6 @@ class ConvertAtenIndexTensorHackedTwin
         );
         self = gather.getResult();
     }
-
-    /*for (unsigned int i = 0; i < indices.size(); i++) {
-      auto idx = indices[i];
-      int numNonOneAxis = 0;
-      auto ttype = cast<RankedTensorType>(idx.getType());
-      if(ttype.getRank() != indices.size() - i) {
-        // there is a version of this op, where everything comes in as a single dim and then is should instead select the different indicies from each?
-        // so the difference would be if it keeps the dim or shrinks it.  But not 100% clear on what the definition of the different semantics are
-        return op.emitError("unsure what to do");
-      }
-      for (int j = 0; j < ttype.getRank(); j++)
-        if (ttype.getShape()[j] != 1)
-          numNonOneAxis++;
-      if (numNonOneAxis > 1)
-        return op.emitError(
-            "Expected the input shape to have a single non-one axis");
-      // convert it to a 1-dim vector
-      if (ttype.getRank() != 1) {
-        ReassociationIndices reassocIndices;
-        for (int j = 0; j < ttype.getRank(); j++)
-          reassocIndices.push_back(j);
-        SmallVector<ReassociationIndices> ri = {reassocIndices};
-        auto reshape =
-            rewriter.create<tensor::CollapseShapeOp>(op.getLoc(), idx, ri);
-        idx = reshape.getResult();
-      }
-
-      SmallVector<int64_t> outShape(
-          cast<RankedTensorType>(self.getType()).getShape());
-      outShape[i] = ttype.getNumElements();
-      auto outType = RankedTensorType::get(
-          outShape, cast<RankedTensorType>(self.getType()).getElementType());
-
-      auto gather = rewriter.create<tcp::GatherOp>(
-          op.getLoc(), outType, self, idx, rewriter.getIndexAttr(i));
-      self = gather.getResult();
-    }*/
-
-    // assert(op.getType() == self.getType());
 
     rewriter.replaceOp(op, self);
     return success();
