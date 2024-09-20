@@ -179,7 +179,7 @@ def aot_compile(
         name = "gen_" + name + "_host_asm",
         srcs = [_name + ".ll"],
         outs = [_name + ".S"],
-        cmd = "./$(location @llvm-project//llvm:llc) -O3 < $(SRCS)" +
+        cmd = "./$(location @llvm-project//llvm:llc) -O3 --relocation-model=pic < $(SRCS)" +
               " > $(OUTS)",
         tools = ["@llvm-project//llvm:llc"],
     )
