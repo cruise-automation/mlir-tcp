@@ -182,21 +182,31 @@ LogicalResult GatherOp::verify() {
   int64_t gatherDim = getDimAttr().getValue().getSExtValue();
 
   if (inputTensor.getRank() != indicesTensor.getRank())
-    return emitOpError("tcp.gather requires that the input tensor and indices "
-                       "are the same rank");
+    return emitOpError(
+        "requires that the input tensor and indices are the same rank");
 
   for (int i = 0; i < inputTensor.getRank(); i++) {
     if (inputTensor.getShape()[i] < indicesTensor.getShape()[i] &&
         !(inputTensor.getShape()[i] == ShapedType::kDynamic ||
           indicesTensor.getShape()[i] == ShapedType::kDynamic ||
           i == gatherDim)) {
-      return emitOpError("indices tensor does not match expected shape");
+      std::stringstream ss;
+      ss << "indicies index " << i
+         << " expected to be less than or equal to input "
+         << " (" << indicesTensor.getShape()[i]
+         << " <= " << inputTensor.getShape()[i] << ")";
+      return emitOpError(ss.str());
     }
   }
 
   if (getResult().getType().getShape() != indicesTensor.getShape()) {
     return emitOpError(
         "Expect the shape of the indicies to match the output shape");
+  }
+
+  if (getResult().getType().getElementType() != inputTensor.getElementType()) {
+    return emitOpError(
+        "Expect the element type of the return to match the input");
   }
 
   return success();
