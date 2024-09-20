@@ -23,6 +23,9 @@ mlir::tcp::SignednessAttr
 getTcpSignednessAttr(MLIRContext *context,
                      IntegerType::SignednessSemantics signednessInfo);
 
+mlir::tcp::Signedness
+getTcpSignedness(IntegerType::SignednessSemantics signednessInfo);
+
 // Helper function to expand the rank of the input tensor. Works by
 // adding 1-dim shape to the leading dims using `tensor::ExpandShapeOp`.
 Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,

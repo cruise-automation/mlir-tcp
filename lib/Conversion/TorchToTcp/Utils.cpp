@@ -38,6 +38,14 @@ getTcpSignednessAttr(MLIRContext *context,
   return SignednessAttr::get(context, Signedness::Unsigned);
 }
 
+Signedness getTcpSignedness(IntegerType::SignednessSemantics signednessInfo) {
+  if (signednessInfo == IntegerType::SignednessSemantics::Signless)
+    return Signedness::Signless;
+  if (signednessInfo == IntegerType::SignednessSemantics::Signed)
+    return Signedness::Signed;
+  return Signedness::Unsigned;
+}
+
 // The parameter input is expected to be of RankedTensorType.
 Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
                                  Value input, int64_t rankIncrease) {

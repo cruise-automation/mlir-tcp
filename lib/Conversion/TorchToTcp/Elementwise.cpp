@@ -290,7 +290,7 @@ public:
   matchAndRewrite(AtenOpT op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     Value lhs = adaptor.getSelf();
-    RankedTensorType lhsType = lhs.getType().dyn_cast<RankedTensorType>();
+    RankedTensorType lhsType = dyn_cast<RankedTensorType>(lhs.getType());
 
     Value rhs = adaptor.getOther();
 
@@ -303,13 +303,6 @@ public:
       return rewriter.notifyMatchFailure(
           op, "Only Ranked Tensor types are supported in TCP");
 
-    // TODO: Add integer conversions once `tcp.divsi` and `tcp.divui` are
-    // added
-    if (resultType.getElementType().isa<mlir::IntegerType>()) {
-      return rewriter.notifyMatchFailure(
-          op, "Only floating point division supported for now");
-    }
-
     auto inputAType = op.getSelf()
                           .getType()
                           .template dyn_cast<torch::Torch::ValueTensorType>()
@@ -318,17 +311,20 @@ public:
                           .template dyn_cast<torch::Torch::ValueTensorType>()
                           .getDtype();
 
+    Type inputBType = nullptr;
     if (isa<AtenDivScalarOp>(op)) {
+      inputBType = adaptor.getOther().getType();
+
       rhs = convertScalarOperandToTensor(rewriter, op, op.getOther(),
                                          adaptor.getOther(), outputType,
                                          resultType.getElementType());
       if (!rhs)
         return rewriter.notifyMatchFailure(op, "Unsupported rhs data type");
     } else {
-      auto inputBType = op.getOther()
-                            .getType()
-                            .template dyn_cast<torch::Torch::ValueTensorType>()
-                            .getDtype();
+      inputBType = op.getOther()
+                       .getType()
+                       .template dyn_cast<torch::Torch::ValueTensorType>()
+                       .getDtype();
       rhs = torch_to_tcp::castTensorToDtype(rewriter, inputBType, outputType,
                                             rhs, resultType.getElementType());
     }
@@ -337,7 +333,29 @@ public:
     std::tie(lhs, rhs) =
         torch_to_tcp::broadcastToMatchShape(rewriter, lhs, rhs);
 
-    rewriter.replaceOpWithNewOp<tcp::DivFOp>(op, resultType, lhs, rhs);
+    if (isa<mlir::FloatType>(outputType)) {
+      rewriter.replaceOpWithNewOp<tcp::DivFOp>(op, resultType, lhs, rhs);
+    } else {
+      auto in1IntType = cast<mlir::IntegerType>(inputAType);
+      auto in2IntType = cast<mlir::IntegerType>(inputBType);
+      auto outIntType = cast<mlir::IntegerType>(outputType);
+      if ((in1IntType.getSignedness() != in2IntType.getSignedness()) ||
+          (in1IntType.getSignedness() != outIntType.getSignedness()))
+        return rewriter.notifyMatchFailure(op,
+                                           "Mixed signedness not supported");
+      if (in1IntType.getSignedness() ==
+          mlir::IntegerType::SignednessSemantics::Signless)
+        return rewriter.notifyMatchFailure(
+            op, "Signless division not supported in TCP");
+
+      if (outIntType.getSignedness() ==
+          mlir::IntegerType::SignednessSemantics::Unsigned)
+        rewriter.replaceOpWithNewOp<tcp::DivUIOp>(op, resultType, lhs, rhs,
+                                                  tcp::RoundingMode::Trunc);
+      else
+        rewriter.replaceOpWithNewOp<tcp::DivSIOp>(op, resultType, lhs, rhs,
+                                                  tcp::RoundingMode::Trunc);
+    }
     return success();
   }
 };

@@ -108,8 +108,30 @@ func.func @torch.aten.div.Tensor$mixed_type_fp(%arg0: !torch.vtensor<[?, ?],f32>
 
 // -----
 
+// CHECK:   func.func @torch.aten.div.Tensor$mixed_type_int(%[[ARG0:.+]]: tensor<?x?xi16>, %[[ARG1:.+]]: tensor<?x?xi32>) -> tensor<?x?xi32> {
+// CHECK:     %[[V0:.+]] = tcp.cast %[[ARG0]] {in_int_signedness = #tcp<signedness Signed>, out_int_signedness = #tcp<signedness Signed>} : tensor<?x?xi16> -> tensor<?x?xi32>
+// CHECK:     %[[V1:.+]] = tcp.divsi %[[V0]], %[[ARG1]] {rounding_mode = #tcp<roundingMode Trunc>} : tensor<?x?xi32>, tensor<?x?xi32> -> tensor<?x?xi32>
+// CHECK:     return %[[V1]] : tensor<?x?xi32>
 func.func @torch.aten.div.Tensor$mixed_type_int(%arg0: !torch.vtensor<[?, ?],si16>, %arg1: !torch.vtensor<[?, ?],si32>) -> !torch.vtensor<[?, ?],si32> {
-  // expected-error @below {{failed to legalize operation 'torch.aten.div.Tensor' that was explicitly marked illegal}}
   %0 = torch.aten.div.Tensor %arg0, %arg1 : !torch.vtensor<[?, ?],si16>, !torch.vtensor<[?, ?],si32> -> !torch.vtensor<[?, ?],si32>
   return %0 : !torch.vtensor<[?, ?],si32>
+}
+
+// -----
+
+// CHECK:   func.func @torch.aten.div.Tensor$mixed_type_uint(%[[ARG0:.+]]: tensor<?x?xi16>, %[[ARG1:.+]]: tensor<?x?xi32>) -> tensor<?x?xi32> {
+// CHECK:     %[[V0:.+]] = tcp.cast %[[ARG0]] {in_int_signedness = #tcp<signedness Unsigned>, out_int_signedness = #tcp<signedness Unsigned>} : tensor<?x?xi16> -> tensor<?x?xi32>
+// CHECK:     %[[V1:.+]] = tcp.divui %[[V0]], %[[ARG1]] {rounding_mode = #tcp<roundingMode Trunc>} : tensor<?x?xi32>, tensor<?x?xi32> -> tensor<?x?xi32>
+// CHECK:     return %[[V1]] : tensor<?x?xi32>
+func.func @torch.aten.div.Tensor$mixed_type_uint(%arg0: !torch.vtensor<[?, ?],ui16>, %arg1: !torch.vtensor<[?, ?],ui32>) -> !torch.vtensor<[?, ?],ui32> {
+  %0 = torch.aten.div.Tensor %arg0, %arg1 : !torch.vtensor<[?, ?],ui16>, !torch.vtensor<[?, ?],ui32> -> !torch.vtensor<[?, ?],ui32>
+  return %0 : !torch.vtensor<[?, ?],ui32>
+}
+
+// -----
+
+func.func @torch.aten.div.Tensor$mixed_signed_int_div(%arg0: !torch.vtensor<[?, ?],si16>, %arg1: !torch.vtensor<[?, ?],ui32>) -> !torch.vtensor<[?, ?],ui32> {
+  // expected-error @below {{failed to legalize operation 'torch.aten.div.Tensor' that was explicitly marked illegal}}
+  %0 = torch.aten.div.Tensor %arg0, %arg1 : !torch.vtensor<[?, ?],si16>, !torch.vtensor<[?, ?],ui32> -> !torch.vtensor<[?, ?],ui32>
+  return %0 : !torch.vtensor<[?, ?],ui32>
 }
