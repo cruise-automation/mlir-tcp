@@ -146,24 +146,22 @@ def aot_compile(
 
         native.genrule(
             name = "gen_" + name + "_mlir_tcp",
-            srcs = [_name + "_torch.mlir"],
+            srcs = [_name + "_torch.mlir", "//:tcp-opt"],
             outs = [_name + "_tcp.mlir"],
             cmd = "./$(location //:tcp-opt)" +
-                  " -torch-backend-to-tcp-backend-pipeline $(SRCS)" +
+                  " -torch-backend-to-tcp-backend-pipeline $(location " + _name + "_torch.mlir)" +
                   " > $(OUTS)",
-            tools = ["//:tcp-opt"],
         )
 
     native.genrule(
         name = "gen_" + name + "_mlir_llvm",
         # When tcp_source is provided, prefer that as the start for aot_compile;
         # else continue using genrule generated *_tcp.mlir (torch_export workflow)
-        srcs = [tcp_source or (_name + "_tcp.mlir")],
+        srcs = [tcp_source or (_name + "_tcp.mlir"), "//:tcp-opt"],
         outs = [_name + "_llvm.mlir"],
         cmd = "./$(location //:tcp-opt)" +
-              " -tcp-to-llvm-pipeline $(SRCS)" +
+              " -tcp-to-llvm-pipeline $(location " + (tcp_source or (_name + "_tcp.mlir")) + ")" +
               " > $(OUTS)",
-        tools = ["//:tcp-opt"],
     )
 
     native.genrule(
@@ -181,7 +179,7 @@ def aot_compile(
         name = "gen_" + name + "_host_asm",
         srcs = [_name + ".ll"],
         outs = [_name + ".S"],
-        cmd = "./$(location @llvm-project//llvm:llc) -O3 < $(SRCS)" +
+        cmd = "./$(location @llvm-project//llvm:llc) -O3 --relocation-model=pic < $(SRCS)" +
               " > $(OUTS)",
         tools = ["@llvm-project//llvm:llc"],
     )

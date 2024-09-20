@@ -127,6 +127,12 @@ LogicalResult IsolatedGroupOp::verify() {
 
 OpFoldResult ConstOp::fold(FoldAdaptor) { return getValueAttr(); }
 
+LogicalResult ConstOp::verify() {
+  if (getValueAttr().getType() != getType())
+    return emitOpError("can not be used to cast types");
+  return success();
+}
+
 LogicalResult CastOp::verify() {
   auto inputType = getIn().getType().cast<RankedTensorType>();
   auto outputType = getOut().getType().cast<RankedTensorType>();
@@ -165,6 +171,42 @@ LogicalResult CastOp::verify() {
         getOutIntSignedness().value() != Signedness::Signless)
       return emitOpError("out_int_signedness attr must be set to "
                          "Signedness::Signless when output is i1");
+  }
+
+  return success();
+}
+
+LogicalResult GatherOp::verify() {
+  auto inputTensor = cast<RankedTensorType>(getInput().getType());
+  auto indicesTensor = cast<RankedTensorType>(getIndices().getType());
+  int64_t gatherDim = getDimAttr().getValue().getSExtValue();
+
+  if (inputTensor.getRank() != indicesTensor.getRank())
+    return emitOpError(
+        "requires that the input tensor and indices are the same rank");
+
+  for (int i = 0; i < inputTensor.getRank(); i++) {
+    if (inputTensor.getShape()[i] < indicesTensor.getShape()[i] &&
+        !(inputTensor.getShape()[i] == ShapedType::kDynamic ||
+          indicesTensor.getShape()[i] == ShapedType::kDynamic ||
+          i == gatherDim)) {
+      std::stringstream ss;
+      ss << "indicies index " << i
+         << " expected to be less than or equal to input "
+         << " (" << indicesTensor.getShape()[i]
+         << " <= " << inputTensor.getShape()[i] << ")";
+      return emitOpError(ss.str());
+    }
+  }
+
+  if (getResult().getType().getShape() != indicesTensor.getShape()) {
+    return emitOpError(
+        "Expect the shape of the indicies to match the output shape");
+  }
+
+  if (getResult().getType().getElementType() != inputTensor.getElementType()) {
+    return emitOpError(
+        "Expect the element type of the return to match the input");
   }
 
   return success();

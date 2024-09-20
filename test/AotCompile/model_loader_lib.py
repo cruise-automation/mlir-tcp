@@ -590,3 +590,19 @@ def gather_slices_loader() -> TorchLoaderOutput:
     return TorchLoaderOutput(
         model=GatherSlices(), inputs=(x, y), dynamic_shapes=dynamic_shapes
     )
+
+
+def index_hacked_twin_loader() -> TorchLoaderOutput:
+    class Model(torch.nn.Module):
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            # not using dynamic dim currently as the i1 tensor would ideally
+            # be generated conditioned on the shape
+            i1 = torch.tensor([[0], [1], [2], [3]])
+            return x[i1, [2, 5, 7]]
+
+    x = torch.rand(4, 10)
+
+    return TorchLoaderOutput(
+        model=Model(),
+        inputs=(x,),
+    )

@@ -29,6 +29,7 @@ using namespace mlir::torch;
 using namespace mlir::torch::Torch;
 
 namespace {
+
 class ConvertAtenGatherOp : public OpConversionPattern<AtenGatherOp> {
 public:
   using OpConversionPattern::OpConversionPattern;
@@ -46,33 +47,6 @@ public:
     return helper.replace();
   }
 };
-
-class ConvertAtenIndexTensorHackedTwinOp
-    : public OpConversionPattern<AtenIndexTensorHackedTwinOp> {
-public:
-  using OpConversionPattern::OpConversionPattern;
-
-  LogicalResult
-  matchAndRewrite(AtenIndexTensorHackedTwinOp op, OpAdaptor adaptor,
-                  ConversionPatternRewriter &rewriter) const override {
-
-    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
-                                                            getTypeConverter()};
-
-    Value input = adaptor.getSelf();
-    auto inputTensorType = input.getType().dyn_cast<RankedTensorType>();
-    // Check input is a tensor type.
-    if (!inputTensorType)
-      return rewriter.notifyMatchFailure(
-          op, "Only tensor types input are currently supported");
-
-    helper.addOperand("self", input);
-    helper.addAsMultipleTensorOperands("index_", op.getIndices());
-
-    return helper.replace();
-  }
-};
-
 class ConvertAten_IndexPutImplOp
     : public OpConversionPattern<Aten_IndexPutImplOp> {
 public:
@@ -381,7 +355,6 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<Convert##AtenOp, AtenOp>(   \
       typeConverter, patterns, target, convertTorchOpsSet)
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenGatherOp);
-  INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenIndexTensorHackedTwinOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(Aten_IndexPutImplOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenFakeQuantizePerTensorAffineOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(

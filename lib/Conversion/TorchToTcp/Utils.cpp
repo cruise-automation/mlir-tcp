@@ -49,6 +49,8 @@ Signedness getTcpSignedness(IntegerType::SignednessSemantics signednessInfo) {
 // The parameter input is expected to be of RankedTensorType.
 Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
                                  Value input, int64_t rankIncrease) {
+  if (rankIncrease == 0)
+    return input;
   RankedTensorType inputType = input.getType().cast<RankedTensorType>();
 
   SmallVector<ReassociationExprs> reassociationMap(inputType.getRank());

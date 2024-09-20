@@ -218,6 +218,7 @@ def Tcp_ConstOp : Tcp_Op<"const", [ConstantLike, Pure]> {
   let assemblyFormat = "attr-dict `:` type($out)";
 
   let hasFolder = 1;
+  let hasVerifier = 1;
 }
 
 def Tcp_BroadcastOp : Tcp_Op<"broadcast", [
@@ -657,6 +658,8 @@ def Tcp_GatherOp : Tcp_Op<"gather", [Pure, AllElementTypesMatch<["input", "out"]
   );
 
   let assemblyFormat = "$input `,` $indices attr-dict `:` type($input) `,` type($indices) `->` type($out)";
+
+  let hasVerifier = 1;
 }
 
 def Tcp_SliceOp : Tcp_Op<"slice", [Pure, AllElementTypesMatch<["in", "out"]>, SameVariadicOperandSize]> {
