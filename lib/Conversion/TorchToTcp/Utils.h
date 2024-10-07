@@ -167,6 +167,9 @@ public:
   // Add value as a named float attribute
   void addFloatAttr(std::string attrName, Value value);
 
+  // Try to convert a const value to a float attribute.
+  bool tryConvertConstToFloatAttr(std::string attrName, Value value);
+
   // Add value as a named list of integers attribute
   void addListOfIntsAttr(std::string attrName, Value value);
 

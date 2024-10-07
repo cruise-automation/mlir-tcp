@@ -529,6 +529,29 @@ void TorchToTcpCustomOpConversionHelper::addFloatAttr(std::string attrName,
       rewriter.getNamedAttr(attrName, rewriter.getF64FloatAttr(constVal)));
 }
 
+bool TorchToTcpCustomOpConversionHelper::tryConvertConstToFloatAttr(
+    std::string attrName, Value value) {
+  if (conversionResult.failed())
+    return false;
+
+  double constFPVal;
+  if (matchPattern(value, torch::Torch::m_TorchConstantFloat(&constFPVal))) {
+    attrs.push_back(
+        rewriter.getNamedAttr(attrName, rewriter.getF64FloatAttr(constFPVal)));
+    return true;
+  }
+
+  // convert constant int to fp if possible
+  int64_t constIntVal;
+  if (matchPattern(value, torch::Torch::m_TorchConstantInt(&constIntVal))) {
+    attrs.push_back(rewriter.getNamedAttr(
+        attrName, rewriter.getF64FloatAttr(static_cast<double>(constIntVal))));
+    return true;
+  }
+
+  return false;
+}
+
 void TorchToTcpCustomOpConversionHelper::addListOfIntsAttr(std::string attrName,
                                                            Value value) {
   if (conversionResult.failed())
