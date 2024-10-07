@@ -368,6 +368,7 @@ class ConvertAtenArangeStartStepOp
     torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
                                                             getTypeConverter()};
     bool allStatic = true;
+    // trt-mlir takes F64Attr, so we need to convert const int to fp attr
     if (!helper.tryConvertConstToFloatAttr("start", op.getStart())) {
       allStatic = false;
       helper.addOperand("start", adaptor.getStart());
