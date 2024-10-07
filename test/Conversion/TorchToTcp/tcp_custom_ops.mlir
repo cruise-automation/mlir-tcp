@@ -320,3 +320,22 @@ func.func @torch.aten.slice_scatter(%arg0: !torch.vtensor<[1,3],f32>, %arg1: !to
   %0 = torch.aten.slice_scatter %arg0, %arg1, %dim, %start, %end, %step : !torch.vtensor<[1,3],f32>, !torch.vtensor<[1,2],f32>, !torch.int, !torch.int, !torch.int, !torch.int -> !torch.vtensor<[1,3],f32>
   return %0 : !torch.vtensor<[1,3],f32>
 }
+
+// -----
+
+// CHECK-LABEL: func.func @torch.aten.arange.start_step(
+// CHECK-SAME:         %[[ARG0:.*]]: !torch.int) -> !torch.vtensor<[?],si32> {
+// CHECK: %[[IN:.*]] = torch_c.to_i64 %[[ARG0]]
+// CHECK: %[[OUT:.*]] = tcp.custom_op("torch.aten.arange.start_step") %[[IN]] {start = 0.000000e+00 : f64, step = 1.000000e+00 : f64, torch_operand_names = ["end"]} : i64 -> tensor<?xi32>
+// CHECK: %[[RET:.*]] = torch_c.from_builtin_tensor %[[OUT]] : tensor<?xi32> -> !torch.vtensor<[?],si32>
+// CHECK: return %[[RET]] : !torch.vtensor<[?],si32>
+func.func @torch.aten.arange.start_step(%arg0: !torch.int) -> !torch.vtensor<[?],si32> {
+  %false = torch.constant.bool false
+  %none = torch.constant.none
+  %cpu = torch.constant.device "cpu"
+  %int0 = torch.constant.int 0
+  %int1 = torch.constant.int 1
+  %int3 = torch.constant.int 3
+  %1 = torch.aten.arange.start_step %int0, %arg0, %int1, %int3, %none, %cpu, %false : !torch.int, !torch.int, !torch.int, !torch.int, !torch.none, !torch.Device, !torch.bool -> !torch.vtensor<[?],si32>
+  return %1 : !torch.vtensor<[?],si32>
+}

@@ -345,6 +345,51 @@ class ConvertAtenSliceScatterOp
   }
 };
 
+class ConvertAtenArangeStartStepOp
+    : public OpConversionPattern<AtenArangeStartStepOp> {
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(AtenArangeStartStepOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+
+    // At this point all tensors should have value semantics, and hence the
+    // `layout` check can be ignored.
+
+    // The pin_memory should be either `False` or `none`.
+    bool pinMemory;
+    if (!isa<Torch::NoneType>(op.getPinMemory().getType()) &&
+        (!matchPattern(op.getPinMemory(), m_TorchConstantBool(&pinMemory)) ||
+         pinMemory)) {
+      return rewriter.notifyMatchFailure(
+          op, "unimplemented: pin_memory must be either None or false");
+    }
+
+    torch_to_tcp::TorchToTcpCustomOpConversionHelper helper{op, rewriter,
+                                                            getTypeConverter()};
+    bool allStatic = true;
+    // trt-mlir takes F64Attr, so we need to convert const int to fp attr
+    if (!helper.tryConvertConstToFloatAttr("start", op.getStart())) {
+      allStatic = false;
+      helper.addOperand("start", adaptor.getStart());
+    }
+    if (!helper.tryConvertConstToFloatAttr("end", op.getEnd())) {
+      allStatic = false;
+      helper.addOperand("end", adaptor.getEnd());
+    }
+    if (!helper.tryConvertConstToFloatAttr("step", op.getStep())) {
+      allStatic = false;
+      helper.addOperand("step", adaptor.getStep());
+    }
+    // static start, end, and step case will be handled through TOSA dialect
+    if (allStatic)
+      return rewriter.notifyMatchFailure(op,
+                                         "only non-constant values supported");
+
+    return helper.replace();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
@@ -365,8 +410,10 @@ void torch_to_tcp::populateTcpCustomOpPatternsAndLegality(
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenCumsumOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenMinDimOp);
   INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN(AtenSliceScatterOp);
-  // AtenViewOp can still live after torch-to-tcp conversion
+  // Following ops can still live after torch-to-tcp conversion
   patterns.add<ConvertAtenViewOp>(typeConverter, patterns.getContext());
+  patterns.add<ConvertAtenArangeStartStepOp>(typeConverter,
+                                             patterns.getContext());
 #undef INSERT_ATEN_TO_TCP_CUSTOM_OP_PATTERN
 
   // Torch -> TOSA doesn't handle transposed convolutions; map them to
