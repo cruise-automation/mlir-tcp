@@ -65,15 +65,28 @@ func.func @torch.aten.index_select(%arg0: !torch.vtensor<[4,3],f32>, %arg1: !tor
   return %0 : !torch.vtensor<[4,2],f32>
 }
 
+
 // -----
 
-// CHECK-label: @torch.aten.index.tensor_hacked_twin
-// CHECK-DAG: %[[CAST0:.+]] = torch_c.to_builtin_tensor %arg0
-// CHECK-DAG: %[[GATHER0:.+]] = tcp.gather %[[CAST0]], %[[SELECT0:.+]] {dim = 0 : index} : tensor<1x20x30xf32>, tensor<1x20x30xi64> -> tensor<1x20x30xf32>
-// CHECK-DAG: %[[GATHER1:.+]] = tcp.gather %[[GATHER0]], %[[SELECT1:.+]] {dim = 1 : index} : tensor<1x20x30xf32>, tensor<1x5x30xi64> -> tensor<1x5x30xf32>
-// CHECK-DAG: %[[GATHER2:.+]] = tcp.gather %[[GATHER1]], %[[SELECT2:.+]] {dim = 2 : index} : tensor<1x5x30xf32>, tensor<1x5x20xi64> -> tensor<1x5x20xf32>
-// CHECK-DAG: %[[RET:.+]] = torch_c.from_builtin_tensor %[[GATHER2]]
-// CHECK: return %[[RET]]
+// CHECK-LABEL: @torch.aten.index.tensor_hacked_twin
+// CHECK: %[[A0:.+]] = torch_c.to_builtin_tensor %arg0 : !torch.vtensor<[1,20,30],f32> -> tensor<1x20x30xf32>
+// CHECK-DAG: %[[v5:.+]] = torch_c.to_builtin_tensor %[[arange:.+]] : !torch.vtensor<[1,1,1],si64> -> tensor<1x1x1xi64>
+// CHECK-DAG: %[[v6:.+]] = torch_c.to_builtin_tensor %arg1 : !torch.vtensor<[5,1],si64> -> tensor<5x1xi64>
+// CHECK-DAG: %[[v7:.+]] = torch_c.to_builtin_tensor %arg2 : !torch.vtensor<[20],si64> -> tensor<20xi64>
+// CHECK-DAG: %[[expanded:.+]] = tensor.expand_shape %[[v6]] {{\[\[}}0, 1], [2]] output_shape [1, 5, 1] : tensor<5x1xi64> into tensor<1x5x1xi64>
+// CHECK-DAG: %[[expanded_0:.+]] = tensor.expand_shape %[[v7]] {{\[\[}}0, 1, 2]] output_shape [1, 1, 20] : tensor<20xi64> into tensor<1x1x20xi64>
+// CHECK-DAG: %[[c5:.+]] = arith.constant 5 : index
+// CHECK-DAG: %[[c20:.+]] = arith.constant 20 : index
+// CHECK-DAG: %[[v8:.+]] = tcp.broadcast %[[v5]], %[[c5]], %[[c20]] {axes = [1, 2]} : tensor<1x1x1xi64>, index, index -> tensor<1x5x20xi64>
+// CHECK-DAG: %[[v9:.+]] = tcp.broadcast %[[expanded]], %[[c20]] {axes = [2]} : tensor<1x5x1xi64>, index -> tensor<1x5x20xi64>
+// CHECK-DAG: %[[v10:.+]] = tcp.broadcast %[[expanded_0]], %[[c5]] {axes = [1]} : tensor<1x1x20xi64>, index -> tensor<1x5x20xi64>
+// CHECK-DAG: %[[expanded_1:.+]] = tensor.expand_shape %[[v8]] {{\[\[}}0], [1], [2, 3]] output_shape [1, 5, 20, 1] : tensor<1x5x20xi64> into tensor<1x5x20x1xi64>
+// CHECK-DAG: %[[expanded_2:.+]] = tensor.expand_shape %[[v9]] {{\[\[}}0], [1], [2, 3]] output_shape [1, 5, 20, 1] : tensor<1x5x20xi64> into tensor<1x5x20x1xi64>
+// CHECK-DAG: %[[expanded_3:.+]] = tensor.expand_shape %[[v10]] {{\[\[}}0], [1], [2, 3]] output_shape [1, 5, 20, 1] : tensor<1x5x20xi64> into tensor<1x5x20x1xi64>
+// CHECK: %[[concat:.+]] = tensor.concat dim(3) %[[expanded_1]], %[[expanded_2]], %[[expanded_3]] : (tensor<1x5x20x1xi64>, tensor<1x5x20x1xi64>, tensor<1x5x20x1xi64>) -> tensor<1x5x20x3xi64>
+// CHECK: %[[gather:.+]] = tcp.gather_nd %[[A0]], %[[concat]] : tensor<1x20x30xf32>, tensor<1x5x20x3xi64> -> tensor<1x5x20xf32>
+// CHECK: %[[ret:.+]] = torch_c.from_builtin_tensor %11 : tensor<1x5x20xf32> -> !torch.vtensor<[1,5,20],f32>
+// CHECK: return %[[ret]]
 func.func @torch.aten.index.tensor_hacked_twin(%arg0: !torch.vtensor<[1,20,30],f32>, %select1: !torch.vtensor<[5,1],si64>, %select2: !torch.vtensor<[20],si64>) -> !torch.vtensor<[1,5,20],f32> {
   // there is a strange pattern that is being generated when selecting one axis.  It seems that it uses the Tensor_hacked_twin to select along all axis, but uses
   // arange to select all of the
