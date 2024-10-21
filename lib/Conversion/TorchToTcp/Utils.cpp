@@ -180,12 +180,12 @@ broadcastManyToMatchShape(ConversionPatternRewriter &rewriter, Location loc,
   }
 
   // figure out what the shape should be for each dim
-  struct ShapeInfo {
+  struct DimInfo {
     Value value;
     bool found = false;
-    int64_t static_value = 1;
+    int64_t staticValue = 1;
   };
-  SmallVector<ShapeInfo> shapes(maxRank);
+  SmallVector<DimInfo> resultShape(maxRank);
 
   for (auto v : ret) {
     auto t = cast<RankedTensorType>(v.getType());
@@ -194,29 +194,29 @@ broadcastManyToMatchShape(ConversionPatternRewriter &rewriter, Location loc,
       if (shape[i] != 1) {
         // meaning that this is not something that is already 1, and therefore
         // would get broadcast
-        if (shapes[i].found) {
+        if (resultShape[i].found) {
           // then there are multiple inputs which have non-1 values for this
           // axis we should check that the size is the same.  If there are
           // different shapes then this would result in an error when
           // broadcasting
           if (shape[i] != ShapedType::kDynamic &&
-              shapes[i].static_value != ShapedType::kDynamic &&
-              shapes[i].static_value != shape[i]) {
+              resultShape[i].staticValue != ShapedType::kDynamic &&
+              resultShape[i].staticValue != shape[i]) {
             // the broadcast failed as there are two different shapes for this
             llvm::errs()
                 << "failed with broadcasting, have two different shapes "
-                << shape[i] << " " << shapes[i].static_value << "\n";
+                << shape[i] << " " << resultShape[i].staticValue << "\n";
             return {};
           }
         } else {
-          shapes[i].found = true;
+          resultShape[i].found = true;
           if (shape[i] == ShapedType::kDynamic) {
-            shapes[i].value = rewriter.create<tensor::DimOp>(loc, v, i);
-            shapes[i].static_value = ShapedType::kDynamic;
+            resultShape[i].value = rewriter.create<tensor::DimOp>(loc, v, i);
+            resultShape[i].staticValue = ShapedType::kDynamic;
           } else {
-            shapes[i].value = rewriter.create<arith::ConstantOp>(
+            resultShape[i].value = rewriter.create<arith::ConstantOp>(
                 loc, rewriter.getIndexAttr(shape[i]));
-            shapes[i].static_value = shape[i];
+            resultShape[i].staticValue = shape[i];
           }
         }
       }
@@ -231,11 +231,11 @@ broadcastManyToMatchShape(ConversionPatternRewriter &rewriter, Location loc,
     SmallVector<Value> sizes;
     SmallVector<int64_t> staticShape;
     for (int64_t j = 0; j < maxRank; j++) {
-      if (t.getShape()[j] == 1 && shapes[j].found) {
+      if (t.getShape()[j] == 1 && resultShape[j].found) {
         axes.push_back(j);
-        sizes.push_back(shapes[j].value);
+        sizes.push_back(resultShape[j].value);
       }
-      staticShape.push_back(shapes[j].static_value);
+      staticShape.push_back(resultShape[j].staticValue);
     }
     if (!axes.empty()) {
       // there is something to broadcast here, so add the op

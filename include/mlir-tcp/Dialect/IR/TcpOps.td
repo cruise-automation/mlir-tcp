@@ -664,7 +664,7 @@ def Tcp_GatherOp : Tcp_Op<"gather", [Pure, AllElementTypesMatch<["input", "out"]
 
 def Tcp_GatherNDOp : Tcp_Op<"gather_nd", [Pure, AllElementTypesMatch<["input", "out"]>]> {
 
-  let summary = "Gather elements from input based on indices over numtiple dimentions";
+  let summary = "Gather elements from input based on indices over multiple dimentions";
 
   let description = [{
     Gathers elements from a given tensor based on indices that index along multiple dimensions.

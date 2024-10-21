@@ -91,6 +91,17 @@ public:
   }
 };
 
+/**
+ * tcp.gather_nd is lowered to linalg.generic, which allows us to define every
+ * element in the result tensor using a programmatic expression.  The last
+ * dimension of the indicies tensor is used to index into the input tensor.
+ *
+ * For example, we we have an indices tensor of shape 9x4x3x2 and an input
+ * tensor of shape 5x6x7x8, then the resulting tensor will be of shape
+ * 9x4x3x7x8.  Where the first three dimensions of the resulting tensor are used
+ * to index into the indicies tensor.  Then the last dimension of the index
+ * tensor (the 2 sized dimension) is used to index into the input tensor.
+ */
 class ConvertGatherNDOp : public OpConversionPattern<GatherNDOp> {
 public:
   using OpConversionPattern::OpConversionPattern;
@@ -105,12 +116,12 @@ public:
 
     auto inputTensor = adaptor.getInput();
     auto indicesTensor = adaptor.getIndices();
-    auto indiciesType = cast<RankedTensorType>(indicesTensor.getType());
+    auto indicesType = cast<RankedTensorType>(indicesTensor.getType());
     auto inputType = cast<RankedTensorType>(inputTensor.getType());
-    int numGatherAxes = indiciesType.getShape()[indiciesType.getRank() - 1];
+    int numGatherAxes = indicesType.getShape().back();
 
     SmallVector<Value> resultDimSizes;
-    for (int i = 0; i < indiciesType.getRank() - 1; i++) {
+    for (int i = 0; i < indicesType.getRank() - 1; i++) {
       resultDimSizes.push_back(
           rewriter.createOrFold<tensor::DimOp>(loc, indicesTensor, i));
     }
@@ -127,7 +138,7 @@ public:
 
     auto bodyBuilder = [&](OpBuilder &b, Location loc, ValueRange payloadArgs) {
       SmallVector<Value> valueIndices, gatherIndices;
-      for (int i = 0; i < indiciesType.getRank() - 1; i++) {
+      for (int i = 0; i < indicesType.getRank() - 1; i++) {
         auto idx = b.create<linalg::IndexOp>(loc, b.getIndexType(),
                                              b.getI64IntegerAttr(i));
         gatherIndices.push_back(idx);
@@ -136,14 +147,14 @@ public:
         SmallVector<Value> gi = gatherIndices;
         auto gidx = b.create<arith::ConstantOp>(loc, b.getIndexAttr(i));
         gi.push_back(gidx);
-        assert(gi.size() == indiciesType.getRank());
+        assert(gi.size() == indicesType.getRank());
         auto idxExtract = b.create<tensor::ExtractOp>(
-            loc, indiciesType.getElementType(), indicesTensor, gi);
+            loc, indicesType.getElementType(), indicesTensor, gi);
         auto idxCast =
             b.create<arith::IndexCastOp>(loc, b.getIndexType(), idxExtract);
         valueIndices.push_back(idxCast);
       }
-      for (int i = indiciesType.getRank() - 1; i < resultTensorType.getRank();
+      for (int i = indicesType.getRank() - 1; i < resultTensorType.getRank();
            i++) {
         auto idx = b.create<linalg::IndexOp>(loc, b.getIndexType(),
                                              b.getI64IntegerAttr(i));
