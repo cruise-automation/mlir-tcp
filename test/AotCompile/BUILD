@@ -38,6 +38,7 @@ AOT_TEST_SUITE = [
     ("gather_elements", False),
     ("gather_slices", False),
     ("index_hacked_twin", False),
+    ("slice_write_back", False),
 ]
 
 py_library(

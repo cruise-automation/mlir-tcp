@@ -351,6 +351,20 @@ class ConvertAtenIndexTensorHackedTwin
   }
 };
 
+class ConvertAtenIndexPutHackedTwin
+: public OpConversionPattern<AtenIndexPutHackedTwinOp> {
+  using OpConversionPattern::OpConversionPattern;
+
+
+   LogicalResult matchAndRewrite(AtenIndexPutHackedTwinOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+      assert(false);
+      return failure();
+    }
+
+};
+
+
 } // namespace
 
 void torch_to_tcp::populateDataMovementPatternsAndLegality(
@@ -370,4 +384,7 @@ void torch_to_tcp::populateDataMovementPatternsAndLegality(
   torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<
       ConvertAtenIndexTensorHackedTwin, AtenIndexTensorHackedTwinOp>(
       typeConverter, patterns, target, convertTorchOpsSet);
+  torch_to_tcp::addPatternIfOpInConvertTorchOpsSet<
+  ConvertAtenIndexPutHackedTwin, AtenIndexPutHackedTwinOp>(
+     typeConverter, patterns, target, convertTorchOpsSet);
 }
