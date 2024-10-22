@@ -91,6 +91,101 @@ public:
   }
 };
 
+/**
+ * tcp.gather_nd is lowered to linalg.generic, which allows us to define every
+ * element in the result tensor using a programmatic expression.  The last
+ * dimension of the indicies tensor is used to index into the input tensor.
+ *
+ * For example, we we have an indices tensor of shape 9x4x3x2 and an input
+ * tensor of shape 5x6x7x8, then the resulting tensor will be of shape
+ * 9x4x3x7x8.  Where the first three dimensions of the resulting tensor are used
+ * to index into the indicies tensor.  Then the last dimension of the index
+ * tensor (the 2 sized dimension) is used to index into the input tensor.
+ */
+class ConvertGatherNDOp : public OpConversionPattern<GatherNDOp> {
+public:
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(GatherNDOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    Location loc = op->getLoc();
+    auto resultTensorType = getTypeConverter()
+                                ->convertType(op.getOut().getType())
+                                .cast<RankedTensorType>();
+
+    auto inputTensor = adaptor.getInput();
+    auto indicesTensor = adaptor.getIndices();
+    auto indicesType = cast<RankedTensorType>(indicesTensor.getType());
+    auto inputType = cast<RankedTensorType>(inputTensor.getType());
+    int numGatherAxes = indicesType.getShape().back();
+
+    SmallVector<Value> resultDimSizes;
+    for (int i = 0; i < indicesType.getRank() - 1; i++) {
+      resultDimSizes.push_back(
+          rewriter.createOrFold<tensor::DimOp>(loc, indicesTensor, i));
+    }
+    for (int i = numGatherAxes; i < inputType.getRank(); i++) {
+      resultDimSizes.push_back(
+          rewriter.createOrFold<tensor::DimOp>(loc, inputTensor, i));
+    }
+
+    assert(resultDimSizes.size() == resultTensorType.getRank());
+
+    Value emptyTensor =
+        rewriter.create<tensor::EmptyOp>(loc, getAsOpFoldResult(resultDimSizes),
+                                         resultTensorType.getElementType());
+
+    auto bodyBuilder = [&](OpBuilder &b, Location loc, ValueRange payloadArgs) {
+      SmallVector<Value> valueIndices, gatherIndices;
+      for (int i = 0; i < indicesType.getRank() - 1; i++) {
+        auto idx = b.create<linalg::IndexOp>(loc, b.getIndexType(),
+                                             b.getI64IntegerAttr(i));
+        gatherIndices.push_back(idx);
+      }
+      for (int i = 0; i < numGatherAxes; i++) {
+        SmallVector<Value> gi = gatherIndices;
+        auto gidx = b.create<arith::ConstantOp>(loc, b.getIndexAttr(i));
+        gi.push_back(gidx);
+        assert(gi.size() == indicesType.getRank());
+        auto idxExtract = b.create<tensor::ExtractOp>(
+            loc, indicesType.getElementType(), indicesTensor, gi);
+        auto idxCast =
+            b.create<arith::IndexCastOp>(loc, b.getIndexType(), idxExtract);
+        valueIndices.push_back(idxCast);
+      }
+      for (int i = indicesType.getRank() - 1; i < resultTensorType.getRank();
+           i++) {
+        auto idx = b.create<linalg::IndexOp>(loc, b.getIndexType(),
+                                             b.getI64IntegerAttr(i));
+        valueIndices.push_back(idx);
+      }
+      assert(valueIndices.size() == inputType.getRank());
+      auto extract =
+          b.create<tensor::ExtractOp>(loc, resultTensorType.getElementType(),
+                                      inputTensor, valueIndices)
+              .getResult();
+
+      b.create<linalg::YieldOp>(loc, extract);
+    };
+
+    SmallVector<Value> empty;
+    SmallVector<AffineMap> indexingMaps;
+    indexingMaps.push_back(
+        rewriter.getMultiDimIdentityMap(resultTensorType.getRank()));
+    SmallVector<utils::IteratorType> iteratorTypes(
+        resultTensorType.getRank(), utils::IteratorType::parallel);
+
+    auto generic = rewriter.create<linalg::GenericOp>(
+        loc, resultTensorType, empty, emptyTensor, indexingMaps, iteratorTypes,
+        bodyBuilder);
+
+    rewriter.replaceOp(op, generic.getResult(0));
+
+    return success();
+  }
+};
+
 } // namespace
 
 void mlir::TcpToLinalg::populateDataMovementPatternsAndLegality(
@@ -100,4 +195,6 @@ void mlir::TcpToLinalg::populateDataMovementPatternsAndLegality(
 
   target.addIllegalOp<GatherOp>();
   patterns.add<ConvertGatherOp>(typeConverter, context);
+  target.addIllegalOp<GatherNDOp>();
+  patterns.add<ConvertGatherNDOp>(typeConverter, context);
 }

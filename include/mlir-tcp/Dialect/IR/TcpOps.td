@@ -662,6 +662,30 @@ def Tcp_GatherOp : Tcp_Op<"gather", [Pure, AllElementTypesMatch<["input", "out"]
   let hasVerifier = 1;
 }
 
+def Tcp_GatherNDOp : Tcp_Op<"gather_nd", [Pure, AllElementTypesMatch<["input", "out"]>]> {
+
+  let summary = "Gather elements from input based on indices over multiple dimentions";
+
+  let description = [{
+    Gathers elements from a given tensor based on indices that index along multiple dimensions.
+
+    More details regarding this op: docs/gather.md
+  }];
+
+  let arguments = (ins
+    Tcp_Tensor:$input,
+    Tcp_IntTensor:$indices
+  );
+
+  let results = (outs
+    Tcp_Tensor:$out
+  );
+
+  let assemblyFormat = "$input `,` $indices attr-dict `:` type($input) `,` type($indices) `->` type($out)";
+
+  let hasVerifier = 1;
+}
+
 def Tcp_SliceOp : Tcp_Op<"slice", [Pure, AllElementTypesMatch<["in", "out"]>, SameVariadicOperandSize]> {
 
   let summary = "Extracts a slice of the input tensor";
