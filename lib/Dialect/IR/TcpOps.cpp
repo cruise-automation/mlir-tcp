@@ -252,6 +252,13 @@ LogicalResult GatherNDOp::verify() {
   return success();
 }
 
+LogicalResult ScatterNDOp::verify() {
+
+  
+
+  return success();
+}
+
 //===----------------------------------------------------------------------===//
 // BindSymbolicShapeOp
 //===----------------------------------------------------------------------===//

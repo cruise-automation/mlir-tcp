@@ -346,8 +346,64 @@ class ConvertAtenIndexPutHackedTwin
 
    LogicalResult matchAndRewrite(AtenIndexPutHackedTwinOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-      assert(false);
-      return failure();
+  auto self = adaptor.getSelf();
+    auto indicesList = op.getIndices();
+    auto values = adaptor.getValues();
+    bool accumulate;
+    if(!matchPattern(op.getAccumulate(), torch::Torch::m_TorchConstantBool(&accumulate))) {
+      return rewriter.notifyMatchFailure(op, "accumulate should be a constant bool");
+    }
+    if(accumulate) {
+      // I suppose that this could do a gather and then an add followed by a scatter again?
+      // though if there are overlapping values that are getting scattered to at the same time,
+      // then that would require additional synchronization to make sure that values are not overwritten 
+      return rewriter.notifyMatchFailure(op, "accumulate=true is not supported");
+    }
+
+    SmallVector<Value> indices;
+    if (!getListConstructElements(indicesList, indices))
+      return op.emitError("Failed to match list of indices");
+
+    indices = getTypeConvertedValues(rewriter, op.getLoc(), getTypeConverter(),
+                                     indices);
+
+    if (auto indiciesBroadcasted = torch_to_tcp::broadcastManyToMatchShape(
+            rewriter, op.getLoc(), indices)) {
+      indices = indiciesBroadcasted.value();
+    } else {
+      return failure("failed to broadcast the shapes of the input indicies");
+    }
+
+    for (int i = 0; i < indices.size(); i++) {
+      indices[i] =
+          torch_to_tcp::broadcastRankInTrailingDims(rewriter, indices[i], 1);
+    }
+
+    auto indicesType = cast<RankedTensorType>(indices[0].getType());
+    int indicesRank = indicesType.getRank();
+    SmallVector<int64_t> outIndexShape;
+    outIndexShape.insert(outIndexShape.begin(), indicesType.getShape().begin(),
+                         indicesType.getShape().end());
+    outIndexShape.back() = indices.size();
+
+    auto outIndexType =
+        RankedTensorType::get(outIndexShape, indicesType.getElementType());
+    auto indexTensor =
+        rewriter
+            .create<tensor::ConcatOp>(
+                op.getLoc(), outIndexType,
+                rewriter.getI64IntegerAttr(indicesRank - 1), indices)
+            .getResult();
+
+    auto outType =
+        cast<RankedTensorType>(getTypeConverter()->convertType(op.getType()));
+
+    auto scatterOp = rewriter.create<tcp::ScatterNDOp>(op.getLoc(), outType, self,
+                                                     indexTensor, values);
+
+    rewriter.replaceOp(op, scatterOp);
+
+    return success();
     }
 
 };

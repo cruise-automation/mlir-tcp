@@ -686,6 +686,32 @@ def Tcp_GatherNDOp : Tcp_Op<"gather_nd", [Pure, AllElementTypesMatch<["input", "
   let hasVerifier = 1;
 }
 
+def Tcp_ScatterNDOp : Tcp_Op<"scatter_nd", [Pure,  AllElementTypesMatch<["input", "values", "out"]>]> {
+  
+let summary = "Scatter elements from values over the input based on indices over multiple dimensions";
+
+  let description = [{
+    Scatter elements from the values tensor over the input tensor according to the indcies tensor 
+    along multiple dimensions.
+  
+    ___TODO___add: More details regarding this op: docs/gather.md
+  }];
+
+  let arguments = (ins
+    Tcp_Tensor:$input,
+    Tcp_IntTensor:$indices,
+    Tcp_Tensor:$values
+  );
+  
+  let results = (outs
+    Tcp_Tensor:$out
+  );
+
+  let assemblyFormat = "$input `,` $indices `,` $values attr-dict `:` type($input) `,` type($indices) `,` type($values) `->` type($out)";
+
+  let hasVerifier = 1;
+}
+
 def Tcp_SliceOp : Tcp_Op<"slice", [Pure, AllElementTypesMatch<["in", "out"]>, SameVariadicOperandSize]> {
 
   let summary = "Extracts a slice of the input tensor";
