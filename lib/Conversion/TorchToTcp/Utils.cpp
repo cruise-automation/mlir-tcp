@@ -72,6 +72,32 @@ Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
       input.getDefiningOp()->getLoc(), resultType, input, reassociationMap);
 }
 
+// The parameter input is expected to be of RankedTensorType.
+Value broadcastRankInTrailingDims(ConversionPatternRewriter &rewriter,
+                                  Value input, int64_t rankIncrease) {
+  if (rankIncrease == 0)
+    return input;
+  RankedTensorType inputType = input.getType().cast<RankedTensorType>();
+
+  SmallVector<ReassociationExprs> reassociationMap(inputType.getRank());
+  if (inputType.getRank() > 0) {
+    for (int64_t inputAxis = 0; inputAxis < inputType.getRank(); inputAxis++)
+      reassociationMap[inputAxis].push_back(
+          rewriter.getAffineDimExpr(inputAxis));
+    for (int64_t axis = 0; axis < rankIncrease; axis++)
+      reassociationMap.back().push_back(
+          rewriter.getAffineDimExpr(axis + inputType.getRank()));
+  }
+
+  SmallVector<int64_t> resultShape(inputType.getShape());
+  resultShape.insert(resultShape.end(), rankIncrease, 1);
+  auto resultType =
+      inputType.cloneWith(ArrayRef(resultShape), inputType.getElementType());
+
+  return rewriter.create<tensor::ExpandShapeOp>(
+      input.getDefiningOp()->getLoc(), resultType, input, reassociationMap);
+}
+
 Value broadcastRank0Dor1DToND(ConversionPatternRewriter &rewriter, Value input,
                               int64_t targetRank, int64_t axisInOutput) {
   RankedTensorType inputType = input.getType().cast<RankedTensorType>();
@@ -128,6 +154,98 @@ Value broadcastShapeExceptDims(ConversionPatternRewriter &rewriter, Value input,
   return rewriter.create<tcp::BroadcastOp>(input.getDefiningOp()->getLoc(),
                                            broadcastResultType, input, dimSizes,
                                            axesAttr);
+}
+
+// the parameter values is expected to be an array of RankedTensorType tensors
+std::optional<SmallVector<Value>>
+broadcastManyToMatchShape(ConversionPatternRewriter &rewriter, Location loc,
+                          ValueRange values) {
+  if (values.size() <= 1) {
+    return values;
+  }
+  SmallVector<Value> ret;
+
+  int64_t maxRank = 0;
+  for (auto v : values) {
+    assert(isa<RankedTensorType>(v.getType()) && "assert 1");
+    auto t = cast<RankedTensorType>(v.getType());
+    if (t.getRank() > maxRank)
+      maxRank = t.getRank();
+  }
+
+  for (auto v : values) {
+    auto type = cast<RankedTensorType>(v.getType());
+    v = broadcastRankInLeadingDims(rewriter, v, maxRank - type.getRank());
+    ret.push_back(v);
+  }
+
+  // figure out what the shape should be for each dim
+  struct DimInfo {
+    Value value;
+    bool found = false;
+    int64_t staticValue = 1;
+  };
+  SmallVector<DimInfo> resultShape(maxRank);
+
+  for (auto v : ret) {
+    auto t = cast<RankedTensorType>(v.getType());
+    auto shape = t.getShape();
+    for (int64_t i = 0; i < maxRank; i++) {
+      if (shape[i] != 1) {
+        // meaning that this is not something that is already 1, and therefore
+        // would get broadcast
+        if (resultShape[i].found) {
+          // then there are multiple inputs which have non-1 values for this
+          // axis we should check that the size is the same.  If there are
+          // different shapes then this would result in an error when
+          // broadcasting
+          if (shape[i] != ShapedType::kDynamic &&
+              resultShape[i].staticValue != ShapedType::kDynamic &&
+              resultShape[i].staticValue != shape[i]) {
+            // the broadcast failed as there are two different shapes for this
+            llvm::errs()
+                << "failed with broadcasting, have two different shapes "
+                << shape[i] << " " << resultShape[i].staticValue << "\n";
+            return {};
+          }
+        } else {
+          resultShape[i].found = true;
+          if (shape[i] == ShapedType::kDynamic) {
+            resultShape[i].value = rewriter.create<tensor::DimOp>(loc, v, i);
+            resultShape[i].staticValue = ShapedType::kDynamic;
+          } else {
+            resultShape[i].value = rewriter.create<arith::ConstantOp>(
+                loc, rewriter.getIndexAttr(shape[i]));
+            resultShape[i].staticValue = shape[i];
+          }
+        }
+      }
+    }
+  }
+
+  // do the broadcasts into the shapes
+  for (int64_t i = 0; i < ret.size(); i++) {
+    auto v = ret[i];
+    auto t = cast<RankedTensorType>(v.getType());
+    SmallVector<int64_t> axes;
+    SmallVector<Value> sizes;
+    SmallVector<int64_t> staticShape;
+    for (int64_t j = 0; j < maxRank; j++) {
+      if (t.getShape()[j] == 1 && resultShape[j].found) {
+        axes.push_back(j);
+        sizes.push_back(resultShape[j].value);
+      }
+      staticShape.push_back(resultShape[j].staticValue);
+    }
+    if (!axes.empty()) {
+      // there is something to broadcast here, so add the op
+      Type resultType = t.cloneWith(staticShape, t.getElementType());
+      ret[i] = rewriter.create<tcp::BroadcastOp>(
+          loc, resultType, ret[i], sizes, rewriter.getI64ArrayAttr(axes));
+    }
+  }
+
+  return ret;
 }
 
 // The parameters input are expected to be of RankedTensorType.

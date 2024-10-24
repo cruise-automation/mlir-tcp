@@ -31,6 +31,11 @@ getTcpSignedness(IntegerType::SignednessSemantics signednessInfo);
 Value broadcastRankInLeadingDims(ConversionPatternRewriter &rewriter,
                                  Value input, int64_t rankIncrease);
 
+// Helper function to expand the rank of the input tensor. Works by
+// adding 1-dim shape to the trailing dims using `tensor::ExpandShapeOp`.
+Value broadcastRankInTrailingDims(ConversionPatternRewriter &rewriter,
+                                  Value input, int64_t rankIncrease);
+
 // Broadcasts the rank of the input tensor from 0D or 1D to ND. If the input
 // tensor is 1D, `axisInOutput` specifies the axis where the input axis should
 // end up in the output.
@@ -48,6 +53,12 @@ Value broadcastShapeExceptDims(ConversionPatternRewriter &rewriter, Value input,
 std::pair<Value, Value>
 broadcastToMatchShape(ConversionPatternRewriter &rewriter, Value lhs,
                       Value rhs);
+
+// Helper function that broadcasts two or more tensors used for indexing to be
+// the same shape If a tensor is 1-dim, then it will be used on its index
+std::optional<SmallVector<Value>>
+broadcastManyToMatchShape(ConversionPatternRewriter &rewriter, Location loc,
+                          ValueRange values);
 
 // Helper function to broadcast a 0D or 1D input tensor to match rank and shape
 // of target. For the 1D case, this projects the input vector to the

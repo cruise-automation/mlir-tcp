@@ -662,6 +662,83 @@ def Tcp_GatherOp : Tcp_Op<"gather", [Pure, AllElementTypesMatch<["input", "out"]
   let hasVerifier = 1;
 }
 
+def Tcp_GatherNDOp : Tcp_Op<"gather_nd", [Pure, AllElementTypesMatch<["input", "out"]>]> {
+
+  let summary = "Gather elements from input based on indices over multiple dimentions";
+
+  let description = [{
+    Gathers elements from a given tensor based on indices that index along multiple dimensions.
+
+    More details regarding this op: docs/gather.md
+  }];
+
+  let arguments = (ins
+    Tcp_Tensor:$input,
+    Tcp_IntTensor:$indices
+  );
+
+  let results = (outs
+    Tcp_Tensor:$out
+  );
+
+  let assemblyFormat = "$input `,` $indices attr-dict `:` type($input) `,` type($indices) `->` type($out)";
+
+  let hasVerifier = 1;
+}
+
+def Tcp_ScatterOp : Tcp_Op<"scatter", [Pure,  AllElementTypesMatch<["input", "values", "out"]>]> {
+
+ let summary = "Scatter elements from values into input based on indices";
+
+  let description = [{
+    Scatter elements from values into the input tensortensor based on indices that index along a given dim.
+
+    The indexing of scatter is similar to gather, which is documented in docs/gather.md
+  }];
+
+  let arguments = (ins
+    Tcp_Tensor:$input,
+    Tcp_IntTensor:$indices,
+    Tcp_Tensor:$values,
+    IndexAttr:$dim
+  );
+
+  let results = (outs
+    Tcp_Tensor:$out
+  );
+
+  let assemblyFormat = "$input `,` $indices `,` $values `,` attr-dict `:` type($input) `,` type($indices) `,` type($values) `->` type($out)";
+
+  let hasVerifier = 1;
+
+}
+
+def Tcp_ScatterNDOp : Tcp_Op<"scatter_nd", [Pure,  AllElementTypesMatch<["input", "values", "out"]>]> {
+  
+let summary = "Scatter elements from values over the input based on indices over multiple dimensions";
+
+  let description = [{
+    Scatter elements from the values tensor over the input tensor according to the indcies tensor 
+    along multiple dimensions.
+  
+    Note: the shape of the indicies is similar to that of gather documented in docs/gather.md
+  }];
+
+  let arguments = (ins
+    Tcp_Tensor:$input,
+    Tcp_IntTensor:$indices,
+    Tcp_Tensor:$values
+  );
+  
+  let results = (outs
+    Tcp_Tensor:$out
+  );
+
+  let assemblyFormat = "$input `,` $indices `,` $values attr-dict `:` type($input) `,` type($indices) `,` type($values) `->` type($out)";
+
+  let hasVerifier = 1;
+}
+
 def Tcp_SliceOp : Tcp_Op<"slice", [Pure, AllElementTypesMatch<["in", "out"]>, SameVariadicOperandSize]> {
 
   let summary = "Extracts a slice of the input tensor";

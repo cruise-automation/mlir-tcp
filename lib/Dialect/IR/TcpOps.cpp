@@ -212,6 +212,95 @@ LogicalResult GatherOp::verify() {
   return success();
 }
 
+LogicalResult GatherNDOp::verify() {
+  auto inputTensor = cast<RankedTensorType>(getInput().getType());
+  auto indicesTensor = cast<RankedTensorType>(getIndices().getType());
+
+  if (indicesTensor.getRank() < 1)
+    return emitError("indicies tensor should have a rank of at least one");
+  if (indicesTensor.getShape()[indicesTensor.getRank() - 1] ==
+      ShapedType::kDynamic)
+    return emitError(
+        "Last dimension of the indicies tensor can not be dynamic");
+  if (indicesTensor.getShape()[indicesTensor.getRank() - 1] >
+      inputTensor.getRank())
+    return emitError("The last dimension of the indicies tensor should be used "
+                     "to index into the input tensor.  Its shape is too large");
+
+  SmallVector<int64_t> outputShape;
+  for (int i = 0; i < indicesTensor.getRank() - 1; i++)
+    outputShape.push_back(indicesTensor.getShape()[i]);
+  for (int i = indicesTensor.getShape()[indicesTensor.getRank() - 1];
+       i < inputTensor.getRank(); i++)
+    outputShape.push_back(inputTensor.getShape()[i]);
+
+  auto outputType =
+      RankedTensorType::get(outputShape, inputTensor.getElementType());
+
+  if (outputType != getResult().getType()) {
+    std::string ss =
+        "Output shape of tcp.gather_nd does not match what is expected ";
+    llvm::raw_string_ostream rs(ss);
+    outputType.print(rs);
+    rs.flush();
+    ss += " != ";
+    getResult().getType().print(rs);
+    rs.flush();
+    return emitError(ss);
+  }
+
+  return success();
+}
+
+LogicalResult ScatterOp::verify() {
+  auto inputTensor = cast<RankedTensorType>(getInput().getType());
+  auto indicesTensor = cast<RankedTensorType>(getIndices().getType());
+  auto valuesTensor = cast<RankedTensorType>(getValues().getType());
+
+  if (inputTensor.getRank() != indicesTensor.getRank())
+    return emitOpError(
+        "requires that the input tensor and indices are the same rank");
+
+  if(inputTensor != getType())
+    return emitOpError("input should match the output type");
+
+  if(valuesTensor.getElementType() != inputTensor.getElementType())
+    return emitOpError("values tensor should have same element type as input tensor");
+
+  // TODO: more should go here
+  
+  return success();
+}
+
+
+LogicalResult ScatterNDOp::verify() {
+  auto inputTensor = cast<RankedTensorType>(getInput().getType());
+  auto indicesTensor = cast<RankedTensorType>(getIndices().getType());
+  auto valuesTensor = cast<RankedTensorType>(getValues().getType());
+
+  if (indicesTensor.getRank() < 1)
+    return emitError("indicies tensor should have a rank of at least one");
+  if (indicesTensor.getShape().back() == ShapedType::kDynamic)
+    return emitError(
+        "Last dimension of the indicies tensor can not be dynamic");
+  if (indicesTensor.getShape().back() > inputTensor.getRank())
+    return emitError("The last dimension of the indicies tensor should be used "
+                     "to index into the input tensor.  Its shape is too large");
+
+  SmallVector<int64_t> valuesShape{indicesTensor.getShape()};
+  valuesShape.pop_back();
+  if(valuesShape != valuesTensor.getShape())
+    return emitError("The indicies tensor and the value tensor should have the same shape for the first n-1 dimensions");
+
+  if(valuesTensor.getElementType() != inputTensor.getElementType())
+    return emitError("The values tensor and input tensor should have the same element type");
+
+  if(inputTensor != getType())
+    return emitError("The output type should match the input tensor type");
+
+  return success();
+}
+
 //===----------------------------------------------------------------------===//
 // BindSymbolicShapeOp
 //===----------------------------------------------------------------------===//

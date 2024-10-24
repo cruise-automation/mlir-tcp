@@ -606,3 +606,21 @@ def index_hacked_twin_loader() -> TorchLoaderOutput:
         model=Model(),
         inputs=(x,),
     )
+
+def slice_write_back_loader() -> TorchLoaderOutput:
+    class Model(torch.nn.Module):
+        def forward(self, x: torch.Tensor, y: torch.Tensor, i1: torch.Tensor, i2: torch.Tensor, i3: torch.Tensor) -> torch.Tensor:
+            x[i1, i2, i3] = y
+            return x
+
+    model = Model()
+    x = torch.rand(10,10,10)
+    y = torch.rand(7)
+    i1 = torch.arange(7)
+    i2 = torch.arange(7) + 1
+    i3 = torch.tensor([0])
+
+    return TorchLoaderOutput(
+        model=model,
+        inputs=(x, y, i1, i2, i3),
+    )
