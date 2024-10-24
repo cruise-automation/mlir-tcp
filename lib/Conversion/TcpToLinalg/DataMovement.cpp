@@ -186,6 +186,7 @@ public:
   }
 };
 
+
 class ConvertScatterNDOp : public OpConversionPattern<ScatterNDOp> {
 public:
   using OpConversionPattern::OpConversionPattern;
@@ -193,13 +194,21 @@ public:
     LogicalResult
   matchAndRewrite(ScatterNDOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
+    Location loc = op.getLoc();
 
+
+
+
+    // auto generic = rewriter.create<linalg::GenericOp>(
+    //   loc, op.getType(), 
+    // );
   
                     assert(false);
     return failure();
   }
 
 };
+
 
 } // namespace
 
@@ -212,6 +221,6 @@ void mlir::TcpToLinalg::populateDataMovementPatternsAndLegality(
   patterns.add<ConvertGatherOp>(typeConverter, context);
   target.addIllegalOp<GatherNDOp>();
   patterns.add<ConvertGatherNDOp>(typeConverter, context);
-  target.addIllegalOp<ScatterNDOp>();
-  patterns.add<ConvertScatterNDOp>(typeConverter, context);
+  // target.addIllegalOp<ScatterNDOp>();
+  // patterns.add<ConvertScatterNDOp>(typeConverter, context);
 }
