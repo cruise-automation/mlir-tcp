@@ -48,7 +48,9 @@ public:
 };
 
 /**
- * TODO: the tensor.scatter is still not lowering to anything after this....
+ * This lowers tcp.scatter_nd to tensor.scatter.
+ * However, tensor.scatter currently does not have anything that it can lower to, so it
+ * then fails to generate code
  */
 class ConvertScatterNDOp : public OpConversionPattern<ScatterNDOp> {
 public:
