@@ -307,8 +307,14 @@ class ConvertAtenIndexTensorHackedTwin
     }
 
     for (int i = 0; i < indices.size(); i++) {
-      indices[i] =
+      auto v =
           torch_to_tcp::broadcastRankInTrailingDims(rewriter, indices[i], 1);
+      indices[i] = rewriter.createOrFold<tcp::CastOp>(
+          op.getLoc(),
+          RankedTensorType::get(cast<RankedTensorType>(v.getType()).getShape(),
+                                rewriter.getI64Type()),
+          v, SignednessAttr::get(op->getContext(), Signedness::Signed),
+          SignednessAttr::get(op->getContext(), Signedness::Signless));
     }
 
     auto indicesType = cast<RankedTensorType>(indices[0].getType());
