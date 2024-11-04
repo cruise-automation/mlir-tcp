@@ -280,7 +280,7 @@ public:
 
 /**
  * The index.Tensor_hacked_twin takes a list of tensors which have to be
- * broadcast together to be the same shape, and then those are feed into a
+ * broadcast together to be the same shape, and then those are fed into a
  * gather which will select the different axes
  */
 class ConvertAtenIndexTensorHackedTwin

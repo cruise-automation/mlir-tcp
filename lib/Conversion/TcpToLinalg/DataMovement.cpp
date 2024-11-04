@@ -96,7 +96,7 @@ public:
  * element in the result tensor using a programmatic expression.  The last
  * dimension of the indicies tensor is used to index into the input tensor.
  *
- * For example, we we have an indices tensor of shape 9x4x3x2 and an input
+ * For example, we have an indices tensor of shape 9x4x3x2 and an input
  * tensor of shape 5x6x7x8, then the resulting tensor will be of shape
  * 9x4x3x7x8.  Where the first three dimensions of the resulting tensor are used
  * to index into the indicies tensor.  Then the last dimension of the index
