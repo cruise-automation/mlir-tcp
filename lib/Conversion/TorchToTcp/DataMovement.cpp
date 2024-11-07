@@ -278,6 +278,11 @@ public:
   }
 };
 
+/**
+ * The index.Tensor_hacked_twin takes a list of tensors which have to be
+ * broadcast together to be the same shape, and then those are fed into a
+ * gather which will select the different axes
+ */
 class ConvertAtenIndexTensorHackedTwin
     : public OpConversionPattern<AtenIndexTensorHackedTwinOp> {
   using OpConversionPattern::OpConversionPattern;
@@ -285,68 +290,61 @@ class ConvertAtenIndexTensorHackedTwin
   LogicalResult
   matchAndRewrite(AtenIndexTensorHackedTwinOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    // ------- Matching the OP -------
     auto self = adaptor.getSelf();
-    auto selfType = cast<RankedTensorType>(self.getType());
     auto indicesList = op.getIndices();
     SmallVector<Value> indices;
     if (!getListConstructElements(indicesList, indices))
       return op.emitError("Failed to match list of indices");
 
-    for (unsigned int i = 0; i < indices.size(); i++) {
-      auto ttype = cast<RankedTensorType>(
-          getTypeConverter()->convertType(indices[i].getType()));
-      if (ttype.getRank() != selfType.getRank() - i) {
-        // Can use tensor.gather instead for this.  But will require that there
-        // are some broadcasting to get the shapes to match what is expected
-        return failure("Failed to rewrite Tensor_hacked_twin.  Need the "
-                       "element gather for this");
-      }
-      for (int j = 1; j < ttype.getRank(); j++) {
-        if (ttype.getShape()[j] != 1)
-          return failure("Expected the axes >=1 to have size 1");
-      }
-    }
-
-    // ------ Rewriting the OP ---------
-
     indices = getTypeConvertedValues(rewriter, op.getLoc(), getTypeConverter(),
                                      indices);
 
-    for (unsigned int i = 0; i < indices.size(); i++) {
-      auto idx = indices[i];
-      auto ttype = cast<RankedTensorType>(idx.getType());
-      auto selfType = cast<RankedTensorType>(self.getType());
-      SmallVector<int64_t> outShape(selfType.getShape());
-      outShape[i] = ttype.getNumElements();
-      auto outType = RankedTensorType::get(
-          outShape, cast<RankedTensorType>(self.getType()).getElementType());
-
-      auto expandedShape = torch_to_tcp::broadcastRankInLeadingDims(
-          rewriter, idx, outShape.size() - ttype.getRank());
-
-      SmallVector<Value> broadcastValues;
-      SmallVector<int64_t> broadcastAxes;
-      for (unsigned int j = 0; j < selfType.getRank(); j++) {
-        if (j != i) {
-          broadcastAxes.push_back(j);
-          broadcastValues.push_back(
-              rewriter.create<tensor::DimOp>(op.getLoc(), self, j));
-        }
-      }
-
-      auto broadcastedShape = rewriter.create<tcp::BroadcastOp>(
-          op.getLoc(), RankedTensorType::get(outShape, ttype.getElementType()),
-          expandedShape, broadcastValues,
-          rewriter.getI64ArrayAttr(broadcastAxes));
-
-      auto gather = rewriter.create<tcp::GatherOp>(op.getLoc(), outType, self,
-                                                   broadcastedShape.getResult(),
-                                                   rewriter.getIndexAttr(i));
-      self = gather.getResult();
+    if (auto indiciesBroadcasted = torch_to_tcp::broadcastManyToMatchShape(
+            rewriter, op.getLoc(), indices)) {
+      indices = indiciesBroadcasted.value();
+    } else {
+      return failure("failed to broadcast the shapes of the input indicies");
     }
 
-    rewriter.replaceOp(op, self);
+    for (int i = 0; i < indices.size(); i++) {
+      Value v =
+          torch_to_tcp::broadcastRankInTrailingDims(rewriter, indices[i], 1);
+      if (!cast<RankedTensorType>(v.getType()).getElementType().isInteger(64)) {
+        v = rewriter.createOrFold<tcp::CastOp>(
+            op.getLoc(),
+            RankedTensorType::get(
+                cast<RankedTensorType>(v.getType()).getShape(),
+                rewriter.getI64Type()),
+            v, SignednessAttr::get(op->getContext(), Signedness::Signed),
+            SignednessAttr::get(op->getContext(), Signedness::Signless));
+      }
+      indices[i] = v;
+    }
+
+    auto indicesType = cast<RankedTensorType>(indices[0].getType());
+    int indicesRank = indicesType.getRank();
+    SmallVector<int64_t> outIndexShape;
+    outIndexShape.insert(outIndexShape.begin(), indicesType.getShape().begin(),
+                         indicesType.getShape().end());
+    outIndexShape.back() = indices.size();
+
+    auto outIndexType =
+        RankedTensorType::get(outIndexShape, indicesType.getElementType());
+    auto indexTensor =
+        rewriter
+            .create<tensor::ConcatOp>(
+                op.getLoc(), outIndexType,
+                rewriter.getI64IntegerAttr(indicesRank - 1), indices)
+            .getResult();
+
+    auto outType =
+        cast<RankedTensorType>(getTypeConverter()->convertType(op.getType()));
+
+    auto gatherOp = rewriter.create<tcp::GatherNDOp>(op.getLoc(), outType, self,
+                                                     indexTensor);
+
+    rewriter.replaceOp(op, gatherOp);
+
     return success();
   }
 };
