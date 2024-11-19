@@ -22,8 +22,8 @@ def third_party_deps():
             path = local_llvm_repo_path(),
         )
     else:
-        LLVM_COMMIT = "f9031f00f2c90bc0af274b45ec3e169b5250a688"
-        LLVM_SHA256 = "695896a5c3b4011043c27a43ac17079ee725e2d72e3b664868f09626a187daf3"
+        LLVM_COMMIT = "c49770c60f26e449379447109f7d915bd8de0384"
+        LLVM_SHA256 = "d4de275d04babe573d8634b9b19c8397de370c6544c01afae121f19413bbfba2"
         http_archive(
             name = "llvm-raw",
             build_file_content = "# empty",
