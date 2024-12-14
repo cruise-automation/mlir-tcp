@@ -143,7 +143,8 @@ struct SliceOpTiling
         getValueOrCreateConstantIndexOp(b, loc, sizes), sliceOp.getStrides());
 
     return TilingResult{{returnSliceOp},
-                        SmallVector<Value>(returnSliceOp->getResults())};
+                        SmallVector<Value>(returnSliceOp->getResults()),
+                        {extractOp}};
   }
 
   LogicalResult
