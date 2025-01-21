@@ -22,8 +22,8 @@ def third_party_deps():
             path = local_llvm_repo_path(),
         )
     else:
-        LLVM_COMMIT = "6c64c8a6f3f77c30745c751d4163ff6bf2fc323b"
-        LLVM_SHA256 = "a27f8452e8a4267acb7bf59ea4dae012cec22e37624a67206b927985554e3640"
+        LLVM_COMMIT = "813f7c3820d00349fe23bfc6ba26159764541540"
+        LLVM_SHA256 = "a04830a729c030002ce2f1b83e5f894a645fc48830005d40d029aae9acd24340"
         http_archive(
             name = "llvm-raw",
             build_file_content = "# empty",
@@ -39,8 +39,8 @@ def third_party_deps():
             path = local_torch_mlir_repo_path(),
         )
     else:
-        TORCH_MLIR_COMMIT = "30c519369ed7eabad0282d0f874500a9b41fcbbd"
-        TORCH_MLIR_SHA256 = "9598ab5bb4a75cd63a078fccb19b380f753906153a92ff7ee5dca3eba93deba5"
+        TORCH_MLIR_COMMIT = "2fb7d6e4dcd06eadb759f2a2e769e53718d0a2f1"
+        TORCH_MLIR_SHA256 = "111dc77c81706e93728235ffba467277178f10356817e09dc5bd5ab08934323c"
         http_archive(
             name = "torch-mlir-raw",
             build_file_content = "# empty",
