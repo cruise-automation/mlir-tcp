@@ -55,9 +55,9 @@ jobs:
                    mlir-tcp:ci \
                    find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
         if [ -n "$(git status --porcelain)" ]; then
-          var = $(git status --porcelain)
+          var=$(git status --porcelain)
           echo "testing: $var"
-          var2 = $(clang-format --version)
+          var2=$(clang-format --version)
           echo "testing: $var2"
           echo "Please run 'find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i' and commit changes."
           exit 1
