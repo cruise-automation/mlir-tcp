@@ -82,15 +82,15 @@ CreateMemRefFromNpyArray(cnpy::NpyArray &arr) {
 // passed by the callsite where the macro is instantiated.
 
 struct OutputMemRefDescriptor {
-  // ##OUTPUT_MEMREF_VARIABLE_DECLARATIONS##//
-  //  StridedMemRefType<float, 2> Output0;
+  //##OUTPUT_MEMREF_VARIABLE_DECLARATIONS##//
+  // StridedMemRefType<float, 2> Output0;
 };
 
 extern "C" OutputMemRefDescriptor func_main(
-    // ##INPUT_MEMREF_ABI_DECLARATIONS##//
-    //  DECL_RANK_2_MEMREF_ABI(float),
-    //  DECL_RANK_2_MEMREF_ABI(float),
-    //  DECL_RANK_2_MEMREF_ABI(float)
+    //##INPUT_MEMREF_ABI_DECLARATIONS##//
+    // DECL_RANK_2_MEMREF_ABI(float),
+    // DECL_RANK_2_MEMREF_ABI(float),
+    // DECL_RANK_2_MEMREF_ABI(float)
 );
 
 TEST(AotCompiled, ExecuteTest) {
@@ -100,35 +100,35 @@ TEST(AotCompiled, ExecuteTest) {
       // "test/AotCompile/_internal_add_mul_single_output_reference_tensors.npz"
   );
 
-  // ##READ_REFERENCE_TENSORS_INTO_NPY_ARRAY##//
-  //  cnpy::NpyArray refInput0 = reference_tensors["Input0"];
-  //  cnpy::NpyArray refInput1 = reference_tensors["Input1"];
-  //  cnpy::NpyArray refInput2 = reference_tensors["Input2"];
-  //  cnpy::NpyArray refOutput0 = reference_tensors["Output0"];
+  //##READ_REFERENCE_TENSORS_INTO_NPY_ARRAY##//
+  // cnpy::NpyArray refInput0 = reference_tensors["Input0"];
+  // cnpy::NpyArray refInput1 = reference_tensors["Input1"];
+  // cnpy::NpyArray refInput2 = reference_tensors["Input2"];
+  // cnpy::NpyArray refOutput0 = reference_tensors["Output0"];
 
-  // ##CREATE_MEMREF_FROM_NPY_ARRAY##//
-  //  StridedMemRefType<float, 2> Input0 =
-  //      CreateMemRefFromNpyArray<float, 2>(refInput0);
-  //  StridedMemRefType<float, 2> Input1 =
-  //      CreateMemRefFromNpyArray<float, 2>(refInput1);
-  //  StridedMemRefType<float, 2> Input2 =
-  //      CreateMemRefFromNpyArray<float, 2>(refInput2);
+  //##CREATE_MEMREF_FROM_NPY_ARRAY##//
+  // StridedMemRefType<float, 2> Input0 =
+  //     CreateMemRefFromNpyArray<float, 2>(refInput0);
+  // StridedMemRefType<float, 2> Input1 =
+  //     CreateMemRefFromNpyArray<float, 2>(refInput1);
+  // StridedMemRefType<float, 2> Input2 =
+  //     CreateMemRefFromNpyArray<float, 2>(refInput2);
 
   OutputMemRefDescriptor Result = func_main(
-      // ##PASS_INPUT_MEMREF_ARGUMENTS##//
-      //  PASS_RANK_2_MEMREF(Input0),
-      //  PASS_RANK_2_MEMREF(Input1),
-      //  PASS_RANK_2_MEMREF(Input2)
+      //##PASS_INPUT_MEMREF_ARGUMENTS##//
+      // PASS_RANK_2_MEMREF(Input0),
+      // PASS_RANK_2_MEMREF(Input1),
+      // PASS_RANK_2_MEMREF(Input2)
   );
 
-  // ##ASSERT_RESULT_SHAPE_MATCHES_REFERENCE##//
-  //  ASSERT_EQ(Result.Output0.sizes[0], refOutput0.shape[0]);
-  //  ASSERT_EQ(Result.Output0.sizes[1], refOutput0.shape[1]);
+  //##ASSERT_RESULT_SHAPE_MATCHES_REFERENCE##//
+  // ASSERT_EQ(Result.Output0.sizes[0], refOutput0.shape[0]);
+  // ASSERT_EQ(Result.Output0.sizes[1], refOutput0.shape[1]);
 
-  // ##EXPECT_RESULT_DATA_MATCHES_REFERENCE##//
-  //  for (int i = 0; i < refOutput0.num_vals; i++)
-  //    EXPECT_FLOAT_EQ(Result.Output0.data[i], refOutput0.data<float>()[i]);
+  //##EXPECT_RESULT_DATA_MATCHES_REFERENCE##//
+  // for (int i = 0; i < refOutput0.num_vals; i++)
+  //   EXPECT_FLOAT_EQ(Result.Output0.data[i], refOutput0.data<float>()[i]);
 
-  // ##DEALLOCATE_RESULT_MEMREF##//
-  //  free(Result.Output0.basePtr);
+  //##DEALLOCATE_RESULT_MEMREF##//
+  // free(Result.Output0.basePtr);
 }

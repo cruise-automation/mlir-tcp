@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Also available under a BSD-style license. See LICENSE.
 
-ARG BASE_IMG=ubuntu:24.04
+ARG BASE_IMG=ubuntu:22.04
 FROM ${BASE_IMG} as dev-base
 
 # Specify user IDs

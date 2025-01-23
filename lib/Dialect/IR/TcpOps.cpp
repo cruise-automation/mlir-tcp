@@ -192,9 +192,9 @@ LogicalResult GatherOp::verify() {
           i == gatherDim)) {
       std::stringstream ss;
       ss << "indicies index " << i
-         << " expected to be less than or equal to input "
-         << " (" << indicesTensor.getShape()[i]
-         << " <= " << inputTensor.getShape()[i] << ")";
+         << " expected to be less than or equal to input " << " ("
+         << indicesTensor.getShape()[i] << " <= " << inputTensor.getShape()[i]
+         << ")";
       return emitOpError(ss.str());
     }
   }
@@ -293,8 +293,7 @@ ParseResult BindSymbolicShapeOp::parse(OpAsmParser &parser,
 void BindSymbolicShapeOp::print(OpAsmPrinter &p) {
   p << " " << getOperand() << ", [";
   llvm::interleaveComma(getShapeSymbols(), p);
-  p << "], "
-    << "affine_map<" << getShapeExpressions().getValue() << ">";
+  p << "], " << "affine_map<" << getShapeExpressions().getValue() << ">";
   p.printOptionalAttrDict((*this)->getAttrs(),
                           /*elidedAttrs=*/{"shape_expressions"});
   p << " : " << getOperand().getType();

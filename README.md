@@ -34,7 +34,7 @@ bazel test //...
 We welcome contributions to `mlir-tcp`. When authoring new TCP ops with dialect conversions from/to Torch and Linalg, please include lit tests for dialect and conversions, as well as [aot_compile](https://github.com/cruise-automation/mlir-tcp/blob/main/tools/aot/README.md) generated e2e integration tests. Lastly, please finalize your PR with clang-format, black and bazel buildifier to ensure the C++/python sources and BUILD files are formatted consistently:
 ```shell
 # clang-format
-find . -type f -name "*.cpp" -o -name "*.h" | xargs clang-format -i
+find . -type f -name "*.cpp" -a ! -name "*execute_test.template.cpp" -o -name "*.h" | xargs clang-format -i
 
 # black
 black .
