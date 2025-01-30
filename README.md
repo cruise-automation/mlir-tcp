@@ -1,3 +1,16 @@
+# 🚨 Repository Archived and Moved 🚨
+
+`mlir-tcp` has found a new home under the LLVM organization. This repository has been **archived** and is no longer maintained.
+
+The project has moved to a new location:
+
+🔗 **[github.com/llvm/mlir-tcp](https://github.com/llvm/mlir-tcp)**
+
+For the latest updates, please visit the new repository.
+
+<details>  
+  <summary>Archived README</summary>
+  
 Tensor Compute Primitives
 =========================
 
@@ -133,3 +146,5 @@ Do this and re-run:
 bazel build @llvm-project//llvm:llvm-symbolizer
 export LLVM_SYMBOLIZER_PATH=`pwd`/bazel-bin/external/llvm-project/llvm/llvm-symbolizer
 ```
+
+</details>
